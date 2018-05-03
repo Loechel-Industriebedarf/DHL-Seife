@@ -159,8 +159,8 @@ namespace DHLSoapTest
         public static HttpWebRequest CreateWebRequest()
         {
             //Basic http authentication
-            String username = "USERNAME";
-            String password = "PASSWORD";
+            String username = "loechelindustriebedarf";
+            String password = System.IO.File.ReadAllText(@"password.txt"); //Saves me from accidently pushing our password. Just input a normal string here.
             String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
 
             //SOAP webrequest
