@@ -19,35 +19,19 @@ namespace DHLSoapTest
         public static void Execute()
         {
             /* ID in xml thingy */
-            /* 00 */
-            string xmluser = "2222222222_01";
-            /* 10 */
-            string xmlpass = "pass";
-            /* 11 */
-            string xmlaccountnumber = "22222222220101";
-            /* 12 */
-            string xmlournumber = "12345";
-            /* 01 */
-            string xmlshippmentdate = "2018-05-04"; //YYYY-MM-DD
-                                                    /* 02 */
-            string xmlweight = "1"; //In kg
-                                    /* 03 */
-            string xmlmail = "info@loechel-industriebedarf.de"; //recipient mail
-                                                                /* 04 */
-            string xmlrecipient = "Max Mustermann"; //recipient name
-                                                    /* 05 */
-            string xmlstreet = "Musterstraße"; //recipient street
-                                               /* 06 */
-            string xmlstreetnumber = "3"; //recipient streetnumber
-                                          /* 07 */
-            string xmlplz = "27254"; //recipient plz
-                                     /* 08 */
-            string xmlcity = "Siedenburg"; //recipient city
-                                           /* 09 */
-            string xmlcountry = "Deutschland"; //recipient country
-
-
-
+            /* 00 */ string xmluser = "2222222222_01";
+            /* 10 */ string xmlpass = "pass";
+            /* 11 */ string xmlaccountnumber = "22222222220101";
+            /* 12 */ string xmlournumber = "12345";
+            /* 01 */ string xmlshippmentdate = "2018-05-04"; //YYYY-MM-DD
+            /* 02 */ string xmlweight = "1"; //In kg
+            /* 03 */ string xmlmail = "info@loechel-industriebedarf.de"; //recipient mail
+            /* 04 */ string xmlrecipient = "Max Mustermann"; //recipient name
+            /* 05 */ string xmlstreet = "Musterstraße"; //recipient street
+            /* 06 */ string xmlstreetnumber = "3"; //recipient streetnumber
+            /* 07 */ string xmlplz = "27254"; //recipient plz
+            /* 08 */ string xmlcity = "Siedenburg"; //recipient city
+            /* 09 */ string xmlcountry = "Deutschland"; //recipient country
 
 
 
