@@ -21,10 +21,10 @@ namespace DHL_Seife
         private static string xmluser = "2222222222_01";
         private static string xmlpass = "pass";
         private static string xmlaccountnumber = "22222222220101";
-        private static string xmlournumber = "12345";
+        private static string xmlournumber = orderNumber;
         private static string xmlshippmentdate = "2018-05-04"; //YYYY-MM-DD
         private static string xmlweight = "1"; //In kg
-        private static string xmlmail = "info@loechel-industriebedarf.de"; //recipient mail
+        private static string xmlmail = ""; //recipient mail
         private static string xmlrecipient = "Max Mustermann"; //recipient name
         private static string xmlstreet = "Musterstraße"; //recipient street
         private static string xmlstreetnumber = "3"; //recipient streetnumber
@@ -32,28 +32,27 @@ namespace DHL_Seife
         private static string xmlcity = "Siedenburg"; //recipient city
         private static string xmlcountry = "Deutschland"; //recipient country
 
-
         public Form1()
         {
             InitializeComponent();
-            Execute();
+            doSQLMagic();
+            writeToGui();
         }
 
-        /// <summary>
-        /// Execute a Soap WebService call
-        /// </summary>
-        public static void Execute()
+        private void writeToGui()
         {
-            
-
-            doSQLMagic(orderNumber, ref xmlournumber, ref xmlshippmentdate, ref xmlrecipient, ref xmlstreet, ref xmlstreetnumber, ref xmlplz, ref xmlcity, ref xmlcountry);
-
-            request = doXMLMagic(xmluser, xmlpass, xmlaccountnumber, xmlournumber, xmlshippmentdate, xmlweight, xmlmail, xmlrecipient, xmlstreet, xmlstreetnumber, xmlplz, xmlcity, xmlcountry);
-
-            //On Button press?
+            textBoxOrdernumber.Text = xmlournumber;
+            textBoxRecepient.Text = xmlrecipient;
+            textBoxStreet.Text = xmlstreet;
+            textBoxStreetNumber.Text = xmlstreetnumber;
+            textBoxPLZ.Text = xmlplz;
+            textBoxCity.Text = xmlcity;
+            textBoxCountry.Text = xmlcountry;
+            textBoxWeight.Text = xmlweight;
+            textBoxMail.Text = xmlmail;
         }
 
-        private static void doSQLMagic(string orderNumber, ref string xmlournumber, ref string xmlshippmentdate, ref string xmlrecipient, ref string xmlstreet, ref string xmlstreetnumber, ref string xmlplz, ref string xmlcity, ref string xmlcountry)
+        private static void doSQLMagic()
         {
             string connectionString = "DSN=eNVenta SQL Server;Server=server-03;Database=LOE99;User Id=sa;Password = sasasa;";
             string sql = "SELECT * FROM dbo.AUFTRAGSKOPF WHERE BELEGNR = '" + orderNumber + "'";
@@ -92,9 +91,14 @@ namespace DHL_Seife
             }
         }
 
-        private static HttpWebRequest doXMLMagic(string xmluser, string xmlpass, string xmlaccountnumber, string xmlournumber, string xmlshippmentdate, string xmlweight, string xmlmail, string xmlrecipient, string xmlstreet, string xmlstreetnumber, string xmlplz, string xmlcity, string xmlcountry)
+        private static void doXMLMagic()
         {
-            HttpWebRequest request = CreateWebRequest();
+            String newxmlmail = "";
+            if (!String.IsNullOrEmpty(xmlmail))
+            {
+                newxmlmail = "<recipientEmailAddress>" + xmlmail + "</recipientEmailAddress>";
+            }
+            request = CreateWebRequest();
             XmlDocument soapEnvelopeXml = new XmlDocument();
             String xml = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
                 <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:cis=""http://dhl.de/webservice/cisbase"" xmlns:bus=""http://dhl.de/webservices/businesscustomershipping"">
@@ -122,7 +126,7 @@ namespace DHL_Seife
                      <weightInKG>{2}</weightInKG>
                   </ShipmentItem>
                   <Notification>
-                     <recipientEmailAddress>{3}</recipientEmailAddress>
+                     {3}
                   </Notification>
                </ShipmentDetails>
                <Shipper>
@@ -162,7 +166,7 @@ namespace DHL_Seife
          </ShipmentOrder>
       </bus:CreateShipmentOrderRequest>
    </soapenv:Body>
-</soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, xmlmail, xmlrecipient, xmlstreet, xmlstreetnumber, xmlplz, xmlcity, xmlcountry, xmlpass, xmlaccountnumber, xmlournumber);
+</soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, newxmlmail, xmlrecipient, xmlstreet, xmlstreetnumber, xmlplz, xmlcity, xmlcountry, xmlpass, xmlaccountnumber, xmlournumber);
             soapEnvelopeXml.LoadXml(xml);
 
             Console.WriteLine(xml);
@@ -171,8 +175,6 @@ namespace DHL_Seife
             {
                 soapEnvelopeXml.Save(stream);
             }
-
-            return request;
         }
 
         private static void sendSoapRequest()
@@ -227,10 +229,61 @@ namespace DHL_Seife
         }
 
         
-        private void button1_Click(object sender, EventArgs e)
+        private void printShippingLabel_Click(object sender, EventArgs e)
         {
+            doXMLMagic();
             sendSoapRequest();
             Application.Exit();
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBoxOrdernumber_TextChanged(object sender, EventArgs e)
+        {
+            xmlournumber = textBoxOrdernumber.Text;
+        }
+
+        private void textBoxRecepient_TextChanged(object sender, EventArgs e)
+        {
+            xmlrecipient = textBoxRecepient.Text;
+        }
+
+        private void textBoxStreet_TextChanged(object sender, EventArgs e)
+        {
+            xmlstreet = textBoxStreet.Text;
+        }
+
+        private void textBoxStreetNumber_TextChanged(object sender, EventArgs e)
+        {
+            xmlstreetnumber = textBoxStreetNumber.Text;
+        }
+
+        private void textBoxPLZ_TextChanged(object sender, EventArgs e)
+        {
+            xmlplz = textBoxPLZ.Text;
+        }
+
+        private void textBoxCity_TextChanged(object sender, EventArgs e)
+        {
+            xmlournumber = textBoxCity.Text;
+        }
+
+        private void textBoxCountry_TextChanged(object sender, EventArgs e)
+        {
+            xmlcountry = textBoxCountry.Text;
+        }
+
+        private void textBoxWeight_TextChanged(object sender, EventArgs e)
+        {
+            xmlweight = textBoxWeight.Text;
+        }
+
+        private void textBoxMail_TextChanged(object sender, EventArgs e)
+        {
+            xmlmail = textBoxMail.Text;
         }
     }
 }
