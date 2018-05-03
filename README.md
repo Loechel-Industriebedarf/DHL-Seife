@@ -1,2 +1,2 @@
 # DHL-Seife
-Soap request for the DHL-API.
+Basically generates a DHL-label and displays it on your default webbrowser.
