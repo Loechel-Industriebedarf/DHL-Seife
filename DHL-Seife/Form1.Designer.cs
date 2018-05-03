@@ -199,9 +199,9 @@
             this.label8.AutoSize = true;
             this.label8.Location = new System.Drawing.Point(9, 221);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(46, 13);
+            this.label8.Size = new System.Drawing.Size(83, 13);
             this.label8.TabIndex = 17;
-            this.label8.Text = "Gewicht";
+            this.label8.Text = "Gewicht (in Kilo)";
             // 
             // label9
             // 

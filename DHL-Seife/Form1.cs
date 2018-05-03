@@ -93,11 +93,19 @@ namespace DHL_Seife
 
         private static void doXMLMagic()
         {
+            //E-Mail is not a needed thing for the dhl-xml
             String newxmlmail = "";
             if (!String.IsNullOrEmpty(xmlmail))
             {
                 newxmlmail = "<recipientEmailAddress>" + xmlmail + "</recipientEmailAddress>";
             }
+
+            //DHL wants decimal values with dots, not commas
+            if (xmlweight.Contains(','))
+            {
+                xmlweight = xmlweight.Replace(",", ".");
+            }
+
             request = CreateWebRequest();
             XmlDocument soapEnvelopeXml = new XmlDocument();
             String xml = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
