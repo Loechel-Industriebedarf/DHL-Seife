@@ -1,4 +1,6 @@
 # DHL-Seife
+![DHL-Seife Logo](https://raw.githubusercontent.com/Loechel-Industriebedarf/DHL-Seife/master/DHL-Seife/dhl-seife.png)
+
 ![DHL Label](https://i.imgur.com/5fqITYd.jpg)
 
 ![DHL Label](https://i.imgur.com/JASAwrc.jpg)
