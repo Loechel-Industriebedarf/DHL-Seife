@@ -24,7 +24,7 @@ namespace DHL_Seife
         private static string xmlpass = "pass";
         private static string xmlaccountnumber = "22222222220101";
         private static string xmlournumber = orderNumber;
-        private static string xmlshippmentdate = "2018-05-04"; //YYYY-MM-DD
+        private static string xmlshippmentdate = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"); //YYYY-MM-DD
         private static string xmlweight = "1"; //In kg
         private static string xmlmail = ""; //recipient mail
         private static string xmlrecipient = ""; //recipient name
@@ -115,8 +115,6 @@ namespace DHL_Seife
                 else { xmlcountry = "Deutschland"; }
 
                 xmlournumber = dr["BELEGNR"].ToString();
-
-                xmlshippmentdate = DateTime.Now.AddDays(2).ToString("yyyy-MM-dd");
             }
         }
 
@@ -223,6 +221,8 @@ namespace DHL_Seife
 
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.LoadXml(soapResult);
+
+                    Console.WriteLine(soapResult);
 
                     XmlNodeList xnList = xmldoc.GetElementsByTagName("labelUrl");
                     foreach (XmlNode xn in xnList)
