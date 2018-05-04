@@ -11,13 +11,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using Microsoft.VisualBasic;
+using System.Threading;
 
 namespace DHL_Seife
 {
     public partial class Form1 : Form
     {
         private static HttpWebRequest request;
-        private static string orderNumber = "18336473";
+        private static string orderNumber = "";
         private static string xmluser = "2222222222_01";
         private static string xmlpass = "pass";
         private static string xmlaccountnumber = "22222222220101";
@@ -25,22 +27,44 @@ namespace DHL_Seife
         private static string xmlshippmentdate = "2018-05-04"; //YYYY-MM-DD
         private static string xmlweight = "1"; //In kg
         private static string xmlmail = ""; //recipient mail
-        private static string xmlrecipient = "Max Mustermann"; //recipient name
-        private static string xmlstreet = "Musterstraße"; //recipient street
-        private static string xmlstreetnumber = "3"; //recipient streetnumber
-        private static string xmlplz = "27254"; //recipient plz
-        private static string xmlcity = "Siedenburg"; //recipient city
+        private static string xmlrecipient = ""; //recipient name
+        private static string xmlstreet = ""; //recipient street
+        private static string xmlstreetnumber = ""; //recipient streetnumber
+        private static string xmlplz = ""; //recipient plz
+        private static string xmlcity = ""; //recipient city
         private static string xmlcountry = "Deutschland"; //recipient country
 
         public Form1()
         {
+            //The order number can be transmitted via command line parameter
+            string[] args = Environment.GetCommandLineArgs();
+            try
+            {
+                if (!String.IsNullOrEmpty(args[1])) { orderNumber = args[1]; xmlournumber = args[1]; }
+            }
+            catch(Exception ex)
+            {
+
+            }
+            
+
             InitializeComponent();
-            doSQLMagic();
+
+            if (!String.IsNullOrEmpty(xmlournumber))
+            {
+                doSQLMagic(printShippingLabel);
+                printShippingLabel.Enabled = true;
+            }
+            else
+            {
+                printManualShippingLabel.Visible = true;
+            }
             writeToGui();
         }
 
         private void writeToGui()
         {
+            orderNumber = xmlournumber;
             textBoxOrdernumber.Text = xmlournumber;
             textBoxRecepient.Text = xmlrecipient;
             textBoxStreet.Text = xmlstreet;
@@ -52,10 +76,12 @@ namespace DHL_Seife
             textBoxMail.Text = xmlmail;
         }
 
-        private static void doSQLMagic()
+        private static void doSQLMagic(Button printShippingLabel)
         {
-            string connectionString = "DSN=eNVenta SQL Server;Server=server-03;Database=LOE99;User Id=sa;Password = sasasa;";
-            string sql = "SELECT * FROM dbo.AUFTRAGSKOPF WHERE BELEGNR = '" + orderNumber + "'";
+            printShippingLabel.Text = "Versandlabel drucken";
+
+            string connectionString = "DSN=eNVenta SQL Server;Server=server-03;Database=LOE01;User Id=sa;Password = sasasa;";
+            string sql = "SELECT * FROM dbo.AUFTRAGSKOPF WHERE BELEGNR = '" + xmlournumber + "'";
             OdbcConnection conn = new OdbcConnection(connectionString);
             conn.Open();
             OdbcCommand comm = new OdbcCommand(sql, conn);
@@ -82,8 +108,11 @@ namespace DHL_Seife
                 if (String.IsNullOrEmpty(dr["LORT"].ToString())) { xmlcity = dr["RORT"].ToString(); }
                 else { xmlcity = dr["LORT"].ToString(); }
 
-                if (String.IsNullOrEmpty(dr["LLAND"].ToString())) { xmlcountry = dr["RLAND"].ToString(); }
-                else { xmlcountry = dr["LLAND"].ToString(); }
+                if (!String.IsNullOrEmpty(dr["LLAND"].ToString())) { xmlcountry = dr["LLAND"].ToString(); }
+                else if(!String.IsNullOrEmpty(dr["RLAND"].ToString())) {
+                    xmlcountry = dr["LLAND"].ToString();
+                }
+                else { xmlcountry = "Deutschland"; }
 
                 xmlournumber = dr["BELEGNR"].ToString();
 
@@ -177,8 +206,6 @@ namespace DHL_Seife
 </soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, newxmlmail, xmlrecipient, xmlstreet, xmlstreetnumber, xmlplz, xmlcity, xmlcountry, xmlpass, xmlaccountnumber, xmlournumber);
             soapEnvelopeXml.LoadXml(xml);
 
-            Console.WriteLine(xml);
-
             using (Stream stream = request.GetRequestStream())
             {
                 soapEnvelopeXml.Save(stream);
@@ -196,8 +223,6 @@ namespace DHL_Seife
 
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.LoadXml(soapResult);
-
-                    Console.WriteLine(soapResult);
 
                     XmlNodeList xnList = xmldoc.GetElementsByTagName("labelUrl");
                     foreach (XmlNode xn in xnList)
@@ -239,9 +264,18 @@ namespace DHL_Seife
         
         private void printShippingLabel_Click(object sender, EventArgs e)
         {
-            doXMLMagic();
-            sendSoapRequest();
-            Application.Exit();
+            if (String.IsNullOrEmpty(orderNumber))
+            {
+                doSQLMagic(printShippingLabel);
+                writeToGui();
+                printManualShippingLabel.Visible = false;
+            }
+            else
+            {
+                doXMLMagic();
+                sendSoapRequest();
+                Application.Exit();
+            }
         }
 
         private void label9_Click(object sender, EventArgs e)
@@ -252,6 +286,7 @@ namespace DHL_Seife
         private void textBoxOrdernumber_TextChanged(object sender, EventArgs e)
         {
             xmlournumber = textBoxOrdernumber.Text;
+            if (String.IsNullOrEmpty(xmlournumber)) { printShippingLabel.Enabled = false; } else { printShippingLabel.Enabled = true; }
         }
 
         private void textBoxRecepient_TextChanged(object sender, EventArgs e)
@@ -276,7 +311,7 @@ namespace DHL_Seife
 
         private void textBoxCity_TextChanged(object sender, EventArgs e)
         {
-            xmlournumber = textBoxCity.Text;
+            xmlcity = textBoxCity.Text;
         }
 
         private void textBoxCountry_TextChanged(object sender, EventArgs e)
@@ -292,6 +327,13 @@ namespace DHL_Seife
         private void textBoxMail_TextChanged(object sender, EventArgs e)
         {
             xmlmail = textBoxMail.Text;
+        }
+
+        private void printManualShippingLabel_Click(object sender, EventArgs e)
+        {
+            doXMLMagic();
+            sendSoapRequest();
+            Application.Exit();
         }
     }
 }

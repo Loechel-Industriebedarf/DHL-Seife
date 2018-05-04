@@ -47,15 +47,17 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
+            this.printManualShippingLabel = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // printShippingLabel
             // 
-            this.printShippingLabel.Location = new System.Drawing.Point(12, 279);
+            this.printShippingLabel.Enabled = false;
+            this.printShippingLabel.Location = new System.Drawing.Point(12, 306);
             this.printShippingLabel.Name = "printShippingLabel";
             this.printShippingLabel.Size = new System.Drawing.Size(473, 23);
             this.printShippingLabel.TabIndex = 0;
-            this.printShippingLabel.Text = "Print shipping label";
+            this.printShippingLabel.Text = "Daten aus Enventa auslesen (dafür bitte Belegnummer eintragen)";
             this.printShippingLabel.UseVisualStyleBackColor = true;
             this.printShippingLabel.Click += new System.EventHandler(this.printShippingLabel_Click);
             // 
@@ -72,9 +74,9 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(9, 12);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(75, 13);
+            this.label1.Size = new System.Drawing.Size(71, 13);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Bestellnummer";
+            this.label1.Text = "Belegnummer";
             // 
             // label2
             // 
@@ -135,7 +137,7 @@
             // 
             // textBoxMail
             // 
-            this.textBoxMail.Location = new System.Drawing.Point(206, 195);
+            this.textBoxMail.Location = new System.Drawing.Point(206, 221);
             this.textBoxMail.Name = "textBoxMail";
             this.textBoxMail.Size = new System.Drawing.Size(279, 20);
             this.textBoxMail.TabIndex = 10;
@@ -143,7 +145,7 @@
             // 
             // textBoxWeight
             // 
-            this.textBoxWeight.Location = new System.Drawing.Point(206, 221);
+            this.textBoxWeight.Location = new System.Drawing.Point(206, 195);
             this.textBoxWeight.Name = "textBoxWeight";
             this.textBoxWeight.Size = new System.Drawing.Size(279, 20);
             this.textBoxWeight.TabIndex = 11;
@@ -197,7 +199,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(9, 221);
+            this.label8.Location = new System.Drawing.Point(9, 195);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(83, 13);
             this.label8.TabIndex = 17;
@@ -206,18 +208,30 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(9, 195);
+            this.label9.Location = new System.Drawing.Point(9, 221);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(107, 13);
             this.label9.TabIndex = 18;
             this.label9.Text = "E-Mail (Darf leer sein)";
             this.label9.Click += new System.EventHandler(this.label9_Click);
             // 
+            // printManualShippingLabel
+            // 
+            this.printManualShippingLabel.Location = new System.Drawing.Point(12, 277);
+            this.printManualShippingLabel.Name = "printManualShippingLabel";
+            this.printManualShippingLabel.Size = new System.Drawing.Size(473, 23);
+            this.printManualShippingLabel.TabIndex = 19;
+            this.printManualShippingLabel.Text = "Versandlabel mit manueller Eingabe drucken";
+            this.printManualShippingLabel.UseVisualStyleBackColor = true;
+            this.printManualShippingLabel.Visible = false;
+            this.printManualShippingLabel.Click += new System.EventHandler(this.printManualShippingLabel_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(497, 319);
+            this.ClientSize = new System.Drawing.Size(497, 341);
+            this.Controls.Add(this.printManualShippingLabel);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.label7);
@@ -246,9 +260,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.Button printShippingLabel;
-        private System.Windows.Forms.TextBox textBoxOrdernumber;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox textBoxRecepient;
@@ -266,5 +277,8 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
+        public System.Windows.Forms.Button printShippingLabel;
+        private System.Windows.Forms.TextBox textBoxOrdernumber;
+        public System.Windows.Forms.Button printManualShippingLabel;
     }
 }
