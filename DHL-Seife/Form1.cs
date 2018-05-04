@@ -114,6 +114,10 @@ namespace DHL_Seife
                 }
                 else { xmlcountry = "Deutschland"; }
 
+                if (dr["CODE1"].ToString().Contains('@')) {
+                    xmlmail = dr["CODE1"].ToString();
+                }
+                    
                 xmlournumber = dr["BELEGNR"].ToString();
             }
         }
