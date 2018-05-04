@@ -25,7 +25,7 @@ namespace DHL_Seife
         private static string xmlaccountnumber = "22222222220101";
         private static string xmlournumber = orderNumber;
         private static string xmlshippmentdate = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"); //YYYY-MM-DD
-        private static string xmlweight = "1"; //In kg
+        private static string xmlweight = "0"; //In kg
         private static string xmlmail = ""; //recipient mail
         private static string xmlrecipient = ""; //recipient name
         private static string xmlstreet = ""; //recipient street
@@ -81,7 +81,10 @@ namespace DHL_Seife
             printShippingLabel.Text = "Versandlabel drucken";
 
             string connectionString = "DSN=eNVenta SQL Server;Server=server-03;Database=LOE01;User Id=sa;Password = sasasa;";
-            string sql = "SELECT * FROM dbo.AUFTRAGSKOPF WHERE BELEGNR = '" + xmlournumber + "'";
+            string sql = "SELECT LFIRMA1, RFIRMA1, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
+                "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit "  +
+                "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
+                "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "'";
             OdbcConnection conn = new OdbcConnection(connectionString);
             conn.Open();
             OdbcCommand comm = new OdbcCommand(sql, conn);
@@ -119,6 +122,13 @@ namespace DHL_Seife
                 }
                     
                 xmlournumber = dr["BELEGNR"].ToString();
+
+                if (!String.IsNullOrEmpty(dr["NetWeightPerSalesUnit"].ToString()))
+                {
+                    Console.WriteLine(Convert.ToDouble(dr["NetWeightPerSalesUnit"]));
+                    xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(dr["NetWeightPerSalesUnit"])).ToString();
+                }
+                
             }
         }
 
