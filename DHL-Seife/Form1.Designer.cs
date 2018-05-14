@@ -49,6 +49,7 @@
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.printManualShippingLabel = new System.Windows.Forms.Button();
+            this.label10 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // printShippingLabel
@@ -227,11 +228,22 @@
             this.printManualShippingLabel.Visible = false;
             this.printManualShippingLabel.Click += new System.EventHandler(this.printManualShippingLabel_Click);
             // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label10.Location = new System.Drawing.Point(13, 258);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(438, 13);
+            this.label10.TabIndex = 20;
+            this.label10.Text = "ALLE Felder (bis auf E-Mail) müssen gefüllt sein, um ein Label zu generieren";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(497, 341);
+            this.Controls.Add(this.label10);
             this.Controls.Add(this.printManualShippingLabel);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label8);
@@ -282,5 +294,6 @@
         public System.Windows.Forms.Button printShippingLabel;
         private System.Windows.Forms.TextBox textBoxOrdernumber;
         public System.Windows.Forms.Button printManualShippingLabel;
+        private System.Windows.Forms.Label label10;
     }
 }

@@ -25,7 +25,7 @@ namespace DHL_Seife
         private static string xmlaccountnumber = "22222222220101";
         private static string xmlournumber = orderNumber;
         private static string xmlshippmentdate = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"); //YYYY-MM-DD
-        private static string xmlweight = "0"; //In kg
+        private static string xmlweight = ""; //In kg
         private static string xmlmail = ""; //recipient mail
         private static string xmlrecipient = ""; //recipient name
         private static string xmlstreet = ""; //recipient street
@@ -33,6 +33,7 @@ namespace DHL_Seife
         private static string xmlplz = ""; //recipient plz
         private static string xmlcity = ""; //recipient city
         private static string xmlcountry = "Deutschland"; //recipient country
+        private static string xmlparceltype = "V01PAK"; //Parcel type (Germany only or international)
 
         public Form1()
         {
@@ -62,6 +63,9 @@ namespace DHL_Seife
             writeToGui();
         }
 
+        /// <summary>
+        /// Inserts the different variables into the gui.
+        /// </summary>
         private void writeToGui()
         {
             orderNumber = xmlournumber;
@@ -76,6 +80,9 @@ namespace DHL_Seife
             textBoxMail.Text = xmlmail;
         }
 
+        /// <summary>
+        /// Connects to the sql server and reads the needed variables.
+        /// </summary>
         private static void doSQLMagic(Button printShippingLabel)
         {
             printShippingLabel.Text = "Versandlabel drucken";
@@ -127,11 +134,21 @@ namespace DHL_Seife
                 {
                     Console.WriteLine(Convert.ToDouble(dr["NetWeightPerSalesUnit"]));
                     xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(dr["NetWeightPerSalesUnit"])).ToString();
-                }
-                
+                }  
+            }
+
+            //Weight must be greater than 0
+            if (String.IsNullOrEmpty(xmlweight) || xmlweight == "0")
+            {
+                xmlweight = "1";
             }
         }
 
+
+        /// <summary>
+        /// Create a xml-string from the inputs the user made erlier.
+        /// This xml will be sent as soap request to the dhl server.
+        /// </summary>
         private static void doXMLMagic()
         {
             //E-Mail is not a needed thing for the dhl-xml
@@ -146,6 +163,14 @@ namespace DHL_Seife
             {
                 xmlweight = xmlweight.Replace(",", ".");
             }
+
+            if (!xmlcountry.ToLower().Equals("deutschland") && !xmlcountry.ToLower().Equals("de"))
+            {
+                xmlparceltype = "V53WPAK";  //international parcel
+                xmlaccountnumber = "22222222225301"; //international account number
+            }
+
+
 
             request = CreateWebRequest();
             XmlDocument soapEnvelopeXml = new XmlDocument();
@@ -167,7 +192,7 @@ namespace DHL_Seife
             <sequenceNumber>01</sequenceNumber>
             <Shipment>
                <ShipmentDetails>
-                  <product>V01PAK</product>
+                  <product>{13}</product>
                   <cis:accountNumber>{11}</cis:accountNumber>
                   <customerReference>{12}</customerReference>
                   <shipmentDate>{1}</shipmentDate>
@@ -215,8 +240,10 @@ namespace DHL_Seife
          </ShipmentOrder>
       </bus:CreateShipmentOrderRequest>
    </soapenv:Body>
-</soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, newxmlmail, xmlrecipient, xmlstreet, xmlstreetnumber, xmlplz, xmlcity, xmlcountry, xmlpass, xmlaccountnumber, xmlournumber);
+</soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, newxmlmail, xmlrecipient, xmlstreet, xmlstreetnumber, xmlplz, xmlcity, xmlcountry, xmlpass, xmlaccountnumber, xmlournumber, xmlparceltype);
             soapEnvelopeXml.LoadXml(xml);
+
+            Console.WriteLine(xml);
 
             using (Stream stream = request.GetRequestStream())
             {
@@ -224,6 +251,13 @@ namespace DHL_Seife
             }
         }
 
+
+
+
+        /// <summary>
+        /// Sends a soap request to the dhl-api and receives an answer in xml-format.
+        /// Next, it reads the xml answer and opens the labelUrl in the default web-browser.
+        /// </summary>
         private static void sendSoapRequest()
         {
             // Get a soap response
@@ -250,9 +284,8 @@ namespace DHL_Seife
 
 
         /// <summary>
-        /// Create a soap webrequest to [Url]
+        /// Create a soap webrequest to to the dhl-api. Also adds basic http-authentication.
         /// </summary>
-        /// <returns></returns>
         public static HttpWebRequest CreateWebRequest()
         {
             //Basic http authentication
@@ -270,12 +303,12 @@ namespace DHL_Seife
             return webRequest;
         }
 
-        private void Main_Load(object sender, EventArgs e)
-        {
 
-        }
 
-        
+        /// <summary>
+        /// Primary button to create a shipping label.
+        /// If no order number was transmitted (via parameter), the button acts as "get data from Enventa"-button.
+        /// </summary>
         private void printShippingLabel_Click(object sender, EventArgs e)
         {
             if (String.IsNullOrEmpty(orderNumber))
@@ -292,9 +325,14 @@ namespace DHL_Seife
             }
         }
 
-        private void label9_Click(object sender, EventArgs e)
+        /// <summary>
+        /// This button only appears, if no data from Enventa was read. It starts the label-printing.
+        /// </summary>
+        private void printManualShippingLabel_Click(object sender, EventArgs e)
         {
-
+            doXMLMagic();
+            sendSoapRequest();
+            Application.Exit();
         }
 
         private void textBoxOrdernumber_TextChanged(object sender, EventArgs e)
@@ -343,11 +381,21 @@ namespace DHL_Seife
             xmlmail = textBoxMail.Text;
         }
 
-        private void printManualShippingLabel_Click(object sender, EventArgs e)
+        
+
+
+
+
+
+
+        private void Main_Load(object sender, EventArgs e)
         {
-            doXMLMagic();
-            sendSoapRequest();
-            Application.Exit();
+
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
