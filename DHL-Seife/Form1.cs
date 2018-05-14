@@ -132,7 +132,6 @@ namespace DHL_Seife
 
                 if (!String.IsNullOrEmpty(dr["NetWeightPerSalesUnit"].ToString()))
                 {
-                    Console.WriteLine(Convert.ToDouble(dr["NetWeightPerSalesUnit"]));
                     xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(dr["NetWeightPerSalesUnit"])).ToString();
                 }  
             }
@@ -243,8 +242,6 @@ namespace DHL_Seife
 </soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, newxmlmail, xmlrecipient, xmlstreet, xmlstreetnumber, xmlplz, xmlcity, xmlcountry, xmlpass, xmlaccountnumber, xmlournumber, xmlparceltype);
             soapEnvelopeXml.LoadXml(xml);
 
-            Console.WriteLine(xml);
-
             using (Stream stream = request.GetRequestStream())
             {
                 soapEnvelopeXml.Save(stream);
@@ -269,8 +266,6 @@ namespace DHL_Seife
 
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.LoadXml(soapResult);
-
-                    Console.WriteLine(soapResult);
 
                     XmlNodeList xnList = xmldoc.GetElementsByTagName("labelUrl");
                     foreach (XmlNode xn in xnList)
