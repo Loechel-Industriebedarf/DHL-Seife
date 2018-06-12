@@ -103,31 +103,36 @@ namespace DHL_Seife
 
                 if (String.IsNullOrEmpty(dr["LSTRASSE"].ToString()))
                 {
-                    xmlstreet = dr["RSTRASSE"].ToString().Substring(0, dr["RSTRASSE"].ToString().LastIndexOf(" ") + 1).ToString();
-                    xmlstreetnumber = dr["RSTRASSE"].ToString().Substring(dr["RSTRASSE"].ToString().LastIndexOf(" ") + 1).ToString();
+                    xmlstreet = dr["RSTRASSE"].ToString().Trim().Substring(0, dr["RSTRASSE"].ToString().LastIndexOf(" ") + 1).ToString();
+                    xmlstreetnumber = dr["RSTRASSE"].ToString().Trim().Substring(dr["RSTRASSE"].ToString().LastIndexOf(" ") + 1).ToString();
                 }
                 else
                 {
-                    xmlstreet = dr["LSTRASSE"].ToString().Substring(0, dr["LSTRASSE"].ToString().LastIndexOf(" ") + 1).ToString();
-                    xmlstreetnumber = dr["LSTRASSE"].ToString().Substring(dr["LSTRASSE"].ToString().LastIndexOf(" ") + 1).ToString();
+                    xmlstreet = dr["LSTRASSE"].ToString().Trim().Substring(0, dr["LSTRASSE"].ToString().LastIndexOf(" ") + 1).ToString();
+                    xmlstreetnumber = dr["LSTRASSE"].ToString().Trim().Substring(dr["LSTRASSE"].ToString().LastIndexOf(" ") + 1).ToString();
                 }
 
-                if (String.IsNullOrEmpty(dr["LPLZ"].ToString())) { xmlplz = dr["RPLZ"].ToString(); }
-                else { xmlplz = dr["LPLZ"].ToString(); }
+                if (String.IsNullOrEmpty(dr["LPLZ"].ToString())) { xmlplz = dr["RPLZ"].ToString().Trim(); }
+                else { xmlplz = dr["LPLZ"].ToString().Trim(); }
 
-                if (String.IsNullOrEmpty(dr["LORT"].ToString())) { xmlcity = dr["RORT"].ToString(); }
-                else { xmlcity = dr["LORT"].ToString(); }
+                if (String.IsNullOrEmpty(dr["LORT"].ToString())) { xmlcity = dr["RORT"].ToString().Trim(); }
+                else { xmlcity = dr["LORT"].ToString().Trim(); }
 
-                if (!String.IsNullOrEmpty(dr["LLAND"].ToString())) { xmlcountry = dr["LLAND"].ToString(); }
-                else if(!String.IsNullOrEmpty(dr["RLAND"].ToString())) {
-                    xmlcountry = dr["LLAND"].ToString();
+                if (!String.IsNullOrEmpty(dr["LLAND"].ToString())) { xmlcountry = dr["LLAND"].ToString().Trim(); }
+                else if(!String.IsNullOrEmpty(dr["RLAND"].ToString().Trim())) {
+                    xmlcountry = dr["LLAND"].ToString().Trim();
                 }
                 else { xmlcountry = "Deutschland"; }
+                if (String.IsNullOrEmpty(xmlcountry))
+                {
+                    xmlcountry = "Deutschland";
+                }
 
                 if (dr["CODE1"].ToString().Contains('@')) {
-                    xmlmail = dr["CODE1"].ToString();
+                    xmlmail = dr["CODE1"].ToString().Trim();
                 }
-                    
+                
+
                 xmlournumber = dr["BELEGNR"].ToString();
                 String netWeight = dr["NetWeightPerSalesUnit"].ToString();
 
@@ -290,9 +295,22 @@ namespace DHL_Seife
             }
         }
 
+
+
+
+        /// <summary>
+        /// Writes shipment-number to the database.
+        /// </summary>
         private static void writeShipmentNumber(string shipmentnumber)
         {
             Console.WriteLine(shipmentnumber);
+
+            string connectionString = "DSN=eNVenta SQL Server;Server=server-03;Database=LOE01;User Id=s.ewert;Password=loechel123;";
+            string sql = "UPDATE [LOE01].[dbo].[AUFTRAGSKOPF] SET MEMO = '" + shipmentnumber + "' WHERE [LOE01].[dbo].[AUFTRAGSKOPF].[BELEGNR] = '" + xmlournumber + "'";
+            OdbcConnection conn = new OdbcConnection(connectionString);
+            conn.Open();
+            OdbcCommand comm = new OdbcCommand(sql, conn);
+            comm.ExecuteNonQuery();
         }
 
 
