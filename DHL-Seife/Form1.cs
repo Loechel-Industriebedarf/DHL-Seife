@@ -41,9 +41,10 @@ namespace DHL_Seife
         {
             //The order number can be transmitted via command line parameter
             string[] args = Environment.GetCommandLineArgs();
+            Boolean parameterstart = false;
             try
             {
-                if (!String.IsNullOrEmpty(args[1])) { orderNumber = args[1]; xmlournumber = args[1]; }
+                if (!String.IsNullOrEmpty(args[1])) { orderNumber = args[1]; xmlournumber = args[1]; parameterstart = true; }
             }
             catch(Exception ex)
             {
@@ -57,6 +58,14 @@ namespace DHL_Seife
             {
                 doSQLMagic(printShippingLabel);
                 printShippingLabel.Enabled = true;
+                //If the program was started via a parameter, skip the whole gui thing
+                if (parameterstart)
+                {
+                    doXMLMagic();
+                    sendSoapRequest();
+                    Application.Exit();
+                    Environment.Exit(1);
+                }
             }
             else
             {
