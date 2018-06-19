@@ -287,6 +287,9 @@ namespace DHL_Seife
                     {
                         string labelUrl = xn.InnerText;
                         System.Diagnostics.Process.Start(labelUrl);
+                        WebClient Client = new WebClient();
+                        string labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmm") + "-" + xmlrecipient + ".pdf";
+                        Client.DownloadFile(labelUrl, @labelName);
                     }
 
                     xnList = xmldoc.GetElementsByTagName("cis:shipmentNumber");
@@ -311,10 +314,10 @@ namespace DHL_Seife
             string sql = "INSERT INTO [LOE01].[dbo].[AdditionalFieldValue] (FSROWVERSION, DefRowID, TableRowID, ValueString) VALUES " +
                 "('0', '" + rowidshipmentnumber + "', '" + rowid + "', '" + shipmentnumber + "')";
             Console.WriteLine(sql);
-            //OdbcConnection conn = new OdbcConnection(connectionString);
-            //conn.Open();
-            //OdbcCommand comm = new OdbcCommand(sql, conn);
-            //comm.ExecuteNonQuery();
+            OdbcConnection conn = new OdbcConnection(connectionString);
+            conn.Open();
+            OdbcCommand comm = new OdbcCommand(sql, conn);
+            comm.ExecuteNonQuery();
         }
 
 
