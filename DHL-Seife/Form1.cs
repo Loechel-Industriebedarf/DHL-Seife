@@ -34,6 +34,8 @@ namespace DHL_Seife
         private static string xmlcity = ""; //recipient city
         private static string xmlcountry = "Deutschland"; //recipient country
         private static string xmlparceltype = "V01PAK"; //Parcel type (Germany only or international)
+        private static string rowid = ""; //Row ID for insert
+        private static string rowidshipmentnumber = "{BEF38EDC-2DBF-11E8-949A-000C29018628}"; //Row ID for insert
 
         public Form1()
         {
@@ -88,7 +90,7 @@ namespace DHL_Seife
             printShippingLabel.Text = "Versandlabel drucken";
 
             string connectionString = "DSN=eNVenta SQL Server;Server=server-03;Database=LOE01;User Id=sa;Password = sasasa;";
-            string sql = "SELECT LFIRMA1, RFIRMA1, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
+            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, LFIRMA1, RFIRMA1, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
                 "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit "  +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
                 "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "'";
@@ -98,6 +100,8 @@ namespace DHL_Seife
             OdbcDataReader dr = comm.ExecuteReader();
             while (dr.Read())
             {
+                rowid = dr["FSROWID"].ToString();
+
                 if (String.IsNullOrEmpty(dr["LFIRMA1"].ToString())) { xmlrecipient = dr["RFIRMA1"].ToString(); }
                 else { xmlrecipient = dr["LFIRMA1"].ToString(); }
 
@@ -303,14 +307,14 @@ namespace DHL_Seife
         /// </summary>
         private static void writeShipmentNumber(string shipmentnumber)
         {
-            Console.WriteLine(shipmentnumber);
-
             string connectionString = "DSN=eNVenta SQL Server;Server=server-03;Database=LOE01;User Id=s.ewert;Password=loechel123;";
-            string sql = "UPDATE [LOE01].[dbo].[AUFTRAGSKOPF] SET MEMO = '" + shipmentnumber + "' WHERE [LOE01].[dbo].[AUFTRAGSKOPF].[BELEGNR] = '" + xmlournumber + "'";
-            OdbcConnection conn = new OdbcConnection(connectionString);
-            conn.Open();
-            OdbcCommand comm = new OdbcCommand(sql, conn);
-            comm.ExecuteNonQuery();
+            string sql = "INSERT INTO [LOE01].[dbo].[AdditionalFieldValue] (FSROWVERSION, DefRowID, TableRowID, ValueString) VALUES " +
+                "('0', '" + rowidshipmentnumber + "', '" + rowid + "', '" + shipmentnumber + "')";
+            Console.WriteLine(sql);
+            //OdbcConnection conn = new OdbcConnection(connectionString);
+            //conn.Open();
+            //OdbcCommand comm = new OdbcCommand(sql, conn);
+            //comm.ExecuteNonQuery();
         }
 
 
