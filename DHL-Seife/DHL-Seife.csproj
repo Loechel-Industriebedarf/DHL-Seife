@@ -38,6 +38,9 @@
     <ApplicationIcon>dhl-seife.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="RawPrint, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RawPrint.0.2.0.0\lib\net40\RawPrint.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -61,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Form1.resx">

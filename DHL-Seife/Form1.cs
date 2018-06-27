@@ -13,6 +13,8 @@ using System.Windows.Forms;
 using System.Xml;
 using Microsoft.VisualBasic;
 using System.Threading;
+using System.Diagnostics;
+using RawPrint;
 
 namespace DHL_Seife
 {
@@ -36,6 +38,7 @@ namespace DHL_Seife
         private static string xmlparceltype = "V01PAK"; //Parcel type (Germany only or international)
         private static string rowid = ""; //Row ID for insert
         private static string rowidshipmentnumber = "{BEF38EDC-2DBF-11E8-949A-000C29018628}"; //Row ID for insert
+        private static string connectionString; //Connection String for Database
 
         public Form1()
         {
@@ -48,12 +51,13 @@ namespace DHL_Seife
             }
             catch(Exception ex)
             {
-
+                Console.WriteLine(ex.ToString()); 
             }
             
 
             InitializeComponent();
 
+            connectionString = System.IO.File.ReadAllText(@"dbconnection.txt");
             if (!String.IsNullOrEmpty(xmlournumber))
             {
                 doSQLMagic(printShippingLabel);
@@ -98,7 +102,6 @@ namespace DHL_Seife
         {
             printShippingLabel.Text = "Versandlabel drucken";
 
-            string connectionString = "DSN=eNVenta SQL Server;Server=server-03;Database=LOE01;User Id=sa;Password = sasasa;";
             string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, LFIRMA1, RFIRMA1, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
                 "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit "  +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
@@ -295,10 +298,12 @@ namespace DHL_Seife
                     foreach (XmlNode xn in xnList)
                     {
                         string labelUrl = xn.InnerText;
-                        System.Diagnostics.Process.Start(labelUrl);
+                        //Download label and save it to file
                         WebClient Client = new WebClient();
-                        string labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmm") + "-" + xmlrecipient + ".pdf";
+                        string labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmm") + "-" + xmlrecipient.Replace(" ", string.Empty) + ".pdf";
                         Client.DownloadFile(labelUrl, @labelName);
+                        //Print label
+                        printLabel(labelName);
                     }
 
                     xnList = xmldoc.GetElementsByTagName("cis:shipmentNumber");
@@ -311,6 +316,34 @@ namespace DHL_Seife
             }
         }
 
+        private static void printLabel(string labelName)
+        {
+            string processString = "LPR -S \"Microsoft Print to PDF\" -P raw " + labelName;
+            Console.WriteLine(processString);
+            try
+            {
+                string Filepath = labelName;
+
+                //Filename to be shown in print-queue
+                string Filename = "label-" + DateTime.Now.ToString("yyyy-MM-dd-HHmmss") + ".pdf" ; 
+
+                //Read the printername from file
+                string PrinterName = System.IO.File.ReadAllText(@"printer.txt");
+
+                // Create an instance of the Printer
+                IPrinter printer = new Printer();
+
+                // Print the file
+                printer.PrintRawFile(PrinterName, Filepath, Filename);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+
+            
+        }
+
 
 
 
@@ -319,7 +352,6 @@ namespace DHL_Seife
         /// </summary>
         private static void writeShipmentNumber(string shipmentnumber)
         {
-            string connectionString = "DSN=eNVenta SQL Server;Server=server-03;Database=LOE01;User Id=s.ewert;Password=loechel123;";
             string sql = "INSERT INTO [LOE01].[dbo].[AdditionalFieldValue] (FSROWVERSION, DefRowID, TableRowID, ValueString) VALUES " +
                 "('0', '" + rowidshipmentnumber + "', '" + rowid + "', '" + shipmentnumber + "')";
             Console.WriteLine(sql);
