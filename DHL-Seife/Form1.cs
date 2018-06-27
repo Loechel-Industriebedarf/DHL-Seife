@@ -57,7 +57,15 @@ namespace DHL_Seife
 
             InitializeComponent();
 
-            connectionString = System.IO.File.ReadAllText(@"dbconnection.txt");
+            try
+            {
+                connectionString = System.IO.File.ReadAllText(@"dbconnection.txt");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            
             if (!String.IsNullOrEmpty(xmlournumber))
             {
                 doSQLMagic(printShippingLabel);
@@ -106,10 +114,20 @@ namespace DHL_Seife
                 "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit "  +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
                 "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "'";
-            OdbcConnection conn = new OdbcConnection(connectionString);
-            conn.Open();
-            OdbcCommand comm = new OdbcCommand(sql, conn);
-            OdbcDataReader dr = comm.ExecuteReader();
+
+            OdbcDataReader dr = null;
+            try
+            {
+                OdbcConnection conn = new OdbcConnection(connectionString);
+                conn.Open();
+                OdbcCommand comm = new OdbcCommand(sql, conn);
+                dr = comm.ExecuteReader();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            
             while (dr.Read())
             {
                 rowid = dr["FSROWID"].ToString();
@@ -158,7 +176,7 @@ namespace DHL_Seife
                 }
                 catch(Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    MessageBox.Show(ex.ToString());
                 }
   
             }
@@ -299,9 +317,17 @@ namespace DHL_Seife
                     {
                         string labelUrl = xn.InnerText;
                         //Download label and save it to file
-                        WebClient Client = new WebClient();
-                        string labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmm") + "-" + xmlrecipient.Replace(" ", string.Empty) + ".pdf";
-                        Client.DownloadFile(labelUrl, @labelName);
+                        string labelName = "";
+                        try
+                        {
+                            WebClient Client = new WebClient();
+                            labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmm") + "-" + xmlrecipient.Replace(" ", string.Empty) + ".pdf";
+                            Client.DownloadFile(labelUrl, @labelName);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.ToString());
+                        }
                         //Print label
                         printLabel(labelName);
                     }
@@ -316,25 +342,35 @@ namespace DHL_Seife
             }
         }
 
+        /// <summary>
+        /// Prints the shipping label. The printers name is saved in a txt file.
+        /// </summary>
         private static void printLabel(string labelName)
         {
-            string processString = "LPR -S \"Microsoft Print to PDF\" -P raw " + labelName;
-            Console.WriteLine(processString);
             try
             {
-                string Filepath = labelName;
+                string filepath = labelName;
 
                 //Filename to be shown in print-queue
-                string Filename = "label-" + DateTime.Now.ToString("yyyy-MM-dd-HHmmss") + ".pdf" ; 
+                string filename = "label-" + DateTime.Now.ToString("yyyy-MM-dd-HHmmss") + ".pdf" ;
 
                 //Read the printername from file
-                string PrinterName = System.IO.File.ReadAllText(@"printer.txt");
+                string printerName = "";
+                try
+                {
+                    printerName = System.IO.File.ReadAllText(@"printer.txt");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString());
+                }
+                
 
                 // Create an instance of the Printer
                 IPrinter printer = new Printer();
 
                 // Print the file
-                printer.PrintRawFile(PrinterName, Filepath, Filename);
+                printer.PrintRawFile(printerName, filepath, filename);
             }
             catch (Exception ex)
             {
@@ -354,11 +390,18 @@ namespace DHL_Seife
         {
             string sql = "INSERT INTO [LOE01].[dbo].[AdditionalFieldValue] (FSROWVERSION, DefRowID, TableRowID, ValueString) VALUES " +
                 "('0', '" + rowidshipmentnumber + "', '" + rowid + "', '" + shipmentnumber + "')";
-            Console.WriteLine(sql);
-            OdbcConnection conn = new OdbcConnection(connectionString);
-            conn.Open();
-            OdbcCommand comm = new OdbcCommand(sql, conn);
-            comm.ExecuteNonQuery();
+            try
+            {
+                OdbcConnection conn = new OdbcConnection(connectionString);
+                conn.Open();
+                OdbcCommand comm = new OdbcCommand(sql, conn);
+                comm.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            
         }
 
 
@@ -369,16 +412,32 @@ namespace DHL_Seife
         {
             //Basic http authentication
             String username = "loechelindustriebedarf";
-            String password = System.IO.File.ReadAllText(@"password.txt"); //Saves me from accidently pushing our password. Just input a normal string here.
+            String password = "";
+            try
+            {
+                password = System.IO.File.ReadAllText(@"password.txt"); //Saves me from accidently pushing our password. Just input a normal string here.
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
             String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
 
             //SOAP webrequest
-            HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(@"https://cig.dhl.de/services/sandbox/soap");
-            webRequest.Headers.Add("Authorization", "Basic " + encoded);
-            webRequest.Headers.Add(@"SOAP:Action");
-            webRequest.ContentType = "text/xml;charset=\"utf-8\"";
-            webRequest.Accept = "text/xml";
-            webRequest.Method = "POST";
+            HttpWebRequest webRequest = null;
+            try
+            {
+                webRequest = (HttpWebRequest)WebRequest.Create(@"https://cig.dhl.de/services/sandbox/soap");
+                webRequest.Headers.Add("Authorization", "Basic " + encoded);
+                webRequest.Headers.Add(@"SOAP:Action");
+                webRequest.ContentType = "text/xml;charset=\"utf-8\"";
+                webRequest.Accept = "text/xml";
+                webRequest.Method = "POST";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
             return webRequest;
         }
 
