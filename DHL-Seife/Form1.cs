@@ -51,7 +51,7 @@ namespace DHL_Seife
             }
             catch(Exception ex)
             {
-                Console.WriteLine(ex.ToString()); 
+                Console.WriteLine(ex.ToString());
             }
             
 
@@ -59,7 +59,7 @@ namespace DHL_Seife
 
             try
             {
-                connectionString = System.IO.File.ReadAllText(@"dbconnection.txt");
+                connectionString = System.IO.File.ReadAllText(@"var/dbconnection.txt");
             }
             catch (Exception ex)
             {
@@ -116,8 +116,7 @@ namespace DHL_Seife
                 "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "'";
 
             OdbcDataReader dr = null;
-            try
-            {
+            try { 
                 OdbcConnection conn = new OdbcConnection(connectionString);
                 conn.Open();
                 OdbcCommand comm = new OdbcCommand(sql, conn);
@@ -358,7 +357,7 @@ namespace DHL_Seife
                 string printerName = "";
                 try
                 {
-                    printerName = System.IO.File.ReadAllText(@"printer.txt");
+                    printerName = System.IO.File.ReadAllText(@"var/printer.txt");
                 }
                 catch (Exception ex)
                 {
@@ -411,11 +410,14 @@ namespace DHL_Seife
         public static HttpWebRequest CreateWebRequest()
         {
             //Basic http authentication
-            String username = "loechelindustriebedarf";
+            String username = "";
             String password = "";
+            String dhlsoapdest = ""; //Gives the ability to choose from sandbox and live
             try
             {
-                password = System.IO.File.ReadAllText(@"password.txt"); //Saves me from accidently pushing our password. Just input a normal string here.
+                username = System.IO.File.ReadAllText(@"var/username.txt"); //Gives the ability to configure username without changing code.
+                password = System.IO.File.ReadAllText(@"var/password.txt"); //Saves me from accidently pushing our password. Just input a normal string here.
+                dhlsoapdest = System.IO.File.ReadAllText(@"var/dhlsoapdest.txt"); //Gives the ability to choose from sandbox and live
             }
             catch (Exception ex)
             {
@@ -427,7 +429,7 @@ namespace DHL_Seife
             HttpWebRequest webRequest = null;
             try
             {
-                webRequest = (HttpWebRequest)WebRequest.Create(@"https://cig.dhl.de/services/sandbox/soap");
+                webRequest = (HttpWebRequest)WebRequest.Create(dhlsoapdest);
                 webRequest.Headers.Add("Authorization", "Basic " + encoded);
                 webRequest.Headers.Add(@"SOAP:Action");
                 webRequest.ContentType = "text/xml;charset=\"utf-8\"";
