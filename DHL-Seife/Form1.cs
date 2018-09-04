@@ -114,7 +114,7 @@ namespace DHL_Seife
             printShippingLabel.Text = "Versandlabel drucken";
 
             string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, LFIRMA1, RFIRMA1, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
-                "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit "  +
+                "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
                 "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "'";
 
@@ -173,10 +173,11 @@ namespace DHL_Seife
 
                 xmlournumber = dr["BELEGNR"].ToString();
                 String netWeight = dr["NetWeightPerSalesUnit"].ToString();
+                String orderAmount = dr["MENGE_BESTELLT"].ToString();
 
                 try
                 {
-                    xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight)).ToString();
+                    xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
                 }
                 catch(Exception ex)
                 {
