@@ -38,13 +38,14 @@ namespace DHL_Seife
         private static string xmlcountry = "Deutschland"; //recipient country
         private static string xmlparceltype = "V01PAK"; //Parcel type (Germany only or international)
         private static string rowid = ""; //Row ID for insert
-        private static string rowidshipmentnumber = "{BEF38EDC-2DBF-11E8-949A-000C29018628}"; //Row ID for insert
+        private static string rowidshipmentnumber = ""; //Row ID for insert
         private static string connectionString; //Connection String for Database
         private static string logfile = "log.log"; //Log file
         private static string printerName = ""; //Name of the printer to print on later
         private static string dhlsoapconnection = ""; //Connection string for the soap request
         private static string api_user = ""; //Username to connect to the api
         private static string api_password = ""; //Password to connect to the api
+        private static Boolean firstrun = true; //For the logging method. If it's not the first run, don't insert additional line breaks
 
         
 
@@ -70,14 +71,6 @@ namespace DHL_Seife
 
             InitializeComponent();
 
-            try
-            {
-                connectionString = System.IO.File.ReadAllText(@"var/dbconnection.txt");
-            }
-            catch (Exception ex)
-            {
-                logTextToFile(ex.ToString());
-            }
             
             if (!String.IsNullOrEmpty(xmlournumber))
             {
@@ -108,6 +101,7 @@ namespace DHL_Seife
         {
             XDocument doc = XDocument.Load("var/settings.xml");
             var dbconnection = doc.Descendants("dbconnection");
+            var dbrowid = doc.Descendants("rowid");
             var printer = doc.Descendants("printer");
             var dhlsoap = doc.Descendants("dhlsoap");
             var api_username = doc.Descendants("api_username");
@@ -116,6 +110,7 @@ namespace DHL_Seife
             var dhl_pass = doc.Descendants("dhl_password");
             var dhl_username = doc.Descendants("dhl_username");
             foreach (var foo in dbconnection) { connectionString = foo.Value; }
+            foreach (var foo in dbrowid) { rowidshipmentnumber = foo.Value; }
             foreach (var foo in printer) { printerName = foo.Value; }
             foreach (var foo in dhlsoap) { dhlsoapconnection = foo.Value; }
             foreach (var foo in api_username) { api_user = foo.Value; }
@@ -561,8 +556,12 @@ namespace DHL_Seife
         {
             using (StreamWriter sw = File.AppendText(logfile))
             {
-                sw.WriteLine();
-                sw.WriteLine(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss"));
+                if (firstrun)
+                {
+                    sw.WriteLine();
+                    sw.WriteLine(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss"));
+                    firstrun = false;
+                }
                 sw.WriteLine(log);
             }
         }
