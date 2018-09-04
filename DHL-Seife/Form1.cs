@@ -22,12 +22,12 @@ namespace DHL_Seife
     {
         private static HttpWebRequest request;
         private static string orderNumber = "";
-        private static string xmluser = "2222222222_01";
-        private static string xmlpass = "pass";
-        private static string xmlaccountnumber = "22222222220101";
+        private static string xmluser = System.IO.File.ReadAllText(@"var/dhl_username.txt"); //DHL api username
+        private static string xmlpass = System.IO.File.ReadAllText(@"var/dhl_password.txt"); //DHL api password
+        private static string xmlaccountnumber = System.IO.File.ReadAllText(@"var/dhl_id.txt"); //DHL customer id
         private static string xmlournumber = orderNumber;
         private static string xmlshippmentdate = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"); //YYYY-MM-DD
-        private static string xmlweight = "0"; //In kg
+        private static string xmlweight = "1"; //In kg
         private static string xmlmail = ""; //recipient mail
         private static string xmlrecipient = ""; //recipient name
         private static string xmlstreet = ""; //recipient street
@@ -39,6 +39,7 @@ namespace DHL_Seife
         private static string rowid = ""; //Row ID for insert
         private static string rowidshipmentnumber = "{BEF38EDC-2DBF-11E8-949A-000C29018628}"; //Row ID for insert
         private static string connectionString; //Connection String for Database
+        private static string logfile = "log.log"; //Log file
 
         public Form1()
         {
@@ -51,7 +52,9 @@ namespace DHL_Seife
             }
             catch(Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                orderNumber = "";
+                xmlournumber = "";
+                logTextToFile(ex.ToString());
             }
             
 
@@ -63,7 +66,7 @@ namespace DHL_Seife
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                logTextToFile(ex.ToString());
             }
             
             if (!String.IsNullOrEmpty(xmlournumber))
@@ -124,9 +127,11 @@ namespace DHL_Seife
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                logTextToFile(ex.ToString());
             }
-            
+
+            xmlweight = "0";
+
             while (dr.Read())
             {
                 rowid = dr["FSROWID"].ToString();
@@ -175,7 +180,7 @@ namespace DHL_Seife
                 }
                 catch(Exception ex)
                 {
-                    MessageBox.Show(ex.ToString());
+                    logTextToFile(ex.ToString());
                 }
   
             }
@@ -308,6 +313,8 @@ namespace DHL_Seife
                 {
                     string soapResult = rd.ReadToEnd();
 
+                    logTextToFile(soapResult);
+
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.LoadXml(soapResult);
 
@@ -325,7 +332,7 @@ namespace DHL_Seife
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show(ex.ToString());
+                            logTextToFile(ex.ToString());
                         }
                         //Print label
                         printLabel(labelName);
@@ -361,7 +368,7 @@ namespace DHL_Seife
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.ToString());
+                    logTextToFile(ex.ToString());
                 }
                 
 
@@ -373,7 +380,7 @@ namespace DHL_Seife
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                logTextToFile(ex.ToString());
             }
 
             
@@ -398,7 +405,7 @@ namespace DHL_Seife
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                logTextToFile(ex.ToString());
             }
             
         }
@@ -421,7 +428,7 @@ namespace DHL_Seife
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                logTextToFile(ex.ToString());
             }
             String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
 
@@ -438,7 +445,7 @@ namespace DHL_Seife
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                logTextToFile(ex.ToString());
             }
             return webRequest;
         }
@@ -521,13 +528,6 @@ namespace DHL_Seife
             xmlmail = textBoxMail.Text;
         }
 
-        
-
-
-
-
-
-
         private void Main_Load(object sender, EventArgs e)
         {
 
@@ -536,6 +536,17 @@ namespace DHL_Seife
         private void label9_Click(object sender, EventArgs e)
         {
 
+        }
+
+
+        private static void logTextToFile(String log)
+        {
+            using (StreamWriter sw = File.AppendText(logfile))
+            {
+                sw.WriteLine();
+                sw.WriteLine(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss"));
+                sw.WriteLine(log);
+            }
         }
     }
 }
