@@ -15,6 +15,7 @@ using Microsoft.VisualBasic;
 using System.Threading;
 using System.Diagnostics;
 using RawPrint;
+using System.Xml.Linq;
 
 namespace DHL_Seife
 {
@@ -22,9 +23,9 @@ namespace DHL_Seife
     {
         private static HttpWebRequest request;
         private static string orderNumber = "";
-        private static string xmluser = System.IO.File.ReadAllText(@"var/dhl_username.txt"); //DHL api username
-        private static string xmlpass = System.IO.File.ReadAllText(@"var/dhl_password.txt"); //DHL api password
-        private static string xmlaccountnumber = System.IO.File.ReadAllText(@"var/dhl_id.txt"); //DHL customer id
+        private static string xmluser = ""; //DHL api username / dhl business username
+        private static string xmlpass = ""; //DHL api password  / dhl business password
+        private static string xmlaccountnumber = ""; //DHL customer id / dhl business id
         private static string xmlournumber = orderNumber;
         private static string xmlshippmentdate = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"); //YYYY-MM-DD
         private static string xmlweight = "1"; //In kg
@@ -40,9 +41,18 @@ namespace DHL_Seife
         private static string rowidshipmentnumber = "{BEF38EDC-2DBF-11E8-949A-000C29018628}"; //Row ID for insert
         private static string connectionString; //Connection String for Database
         private static string logfile = "log.log"; //Log file
+        private static string printerName = ""; //Name of the printer to print on later
+        private static string dhlsoapconnection = ""; //Connection string for the soap request
+        private static string api_user = ""; //Username to connect to the api
+        private static string api_password = ""; //Password to connect to the api
+
+        
 
         public Form1()
         {
+            //Reads settings from xml file
+            readSettingsFromXML();
+
             //The order number can be transmitted via command line parameter
             string[] args = Environment.GetCommandLineArgs();
             Boolean parameterstart = false;
@@ -88,6 +98,34 @@ namespace DHL_Seife
             }
             writeToGui();
         }
+
+
+
+        /// <summary>
+        /// Reads the settings from the file
+        /// </summary>
+        private void readSettingsFromXML()
+        {
+            XDocument doc = XDocument.Load("var/settings.xml");
+            var dbconnection = doc.Descendants("dbconnection");
+            var printer = doc.Descendants("printer");
+            var dhlsoap = doc.Descendants("dhlsoap");
+            var api_username = doc.Descendants("api_username");
+            var api_pass = doc.Descendants("api_password");
+            var dhl_id = doc.Descendants("dhl_id");
+            var dhl_pass = doc.Descendants("dhl_password");
+            var dhl_username = doc.Descendants("dhl_username");
+            foreach (var foo in dbconnection) { connectionString = foo.Value; }
+            foreach (var foo in printer) { printerName = foo.Value; }
+            foreach (var foo in dhlsoap) { dhlsoapconnection = foo.Value; }
+            foreach (var foo in api_username) { api_user = foo.Value; }
+            foreach (var foo in api_pass) { api_password = foo.Value; }
+            foreach (var foo in dhl_id) { xmlaccountnumber = foo.Value; }
+            foreach (var foo in dhl_pass) { xmlpass = foo.Value; }
+            foreach (var foo in dhl_username) { xmluser = foo.Value; }
+        }
+
+
 
         /// <summary>
         /// Inserts the different variables into the gui.
@@ -364,17 +402,6 @@ namespace DHL_Seife
 
                 //Filename to be shown in print-queue
                 string filename = "label-" + DateTime.Now.ToString("yyyy-MM-dd-HHmmss") + ".pdf" ;
-
-                //Read the printername from file
-                string printerName = "";
-                try
-                {
-                    printerName = System.IO.File.ReadAllText(@"var/printer.txt");
-                }
-                catch (Exception ex)
-                {
-                    logTextToFile(ex.ToString());
-                }
                 
 
                 // Create an instance of the Printer
@@ -421,27 +448,13 @@ namespace DHL_Seife
         /// </summary>
         public static HttpWebRequest CreateWebRequest()
         {
-            //Basic http authentication
-            String username = "";
-            String password = "";
-            String dhlsoapdest = ""; //Gives the ability to choose from sandbox and live
-            try
-            {
-                username = System.IO.File.ReadAllText(@"var/username.txt"); //Gives the ability to configure username without changing code.
-                password = System.IO.File.ReadAllText(@"var/password.txt"); //Saves me from accidently pushing our password. Just input a normal string here.
-                dhlsoapdest = System.IO.File.ReadAllText(@"var/dhlsoapdest.txt"); //Gives the ability to choose from sandbox and live
-            }
-            catch (Exception ex)
-            {
-                logTextToFile(ex.ToString());
-            }
-            String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
+            String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(api_user + ":" + api_password));
 
             //SOAP webrequest
             HttpWebRequest webRequest = null;
             try
             {
-                webRequest = (HttpWebRequest)WebRequest.Create(dhlsoapdest);
+                webRequest = (HttpWebRequest)WebRequest.Create(dhlsoapconnection);
                 webRequest.Headers.Add("Authorization", "Basic " + encoded);
                 webRequest.Headers.Add(@"SOAP:Action");
                 webRequest.ContentType = "text/xml;charset=\"utf-8\"";
