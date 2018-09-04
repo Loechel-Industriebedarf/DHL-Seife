@@ -313,7 +313,11 @@ namespace DHL_Seife
                 {
                     string soapResult = rd.ReadToEnd();
 
-                    logTextToFile(soapResult);
+                    //Check, if a hard validation error occurs. If yes: log it.
+                    if(soapResult.Contains("Hard validation"))
+                    {
+                        logTextToFile(soapResult);
+                    }
 
                     XmlDocument xmldoc = new XmlDocument();
                     xmldoc.LoadXml(soapResult);
