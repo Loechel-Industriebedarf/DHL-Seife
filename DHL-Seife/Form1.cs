@@ -502,6 +502,26 @@ namespace DHL_Seife
             Application.Exit();
         }
 
+        /// <summary>
+        /// Logs given text to file. If it's the first log of the programs run, add a empty line and the current date.
+        /// </summary>
+        private static void logTextToFile(String log)
+        {
+            using (StreamWriter sw = File.AppendText(logfile))
+            {
+                if (firstrun)
+                {
+                    sw.WriteLine();
+                    sw.WriteLine(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss"));
+                    firstrun = false;
+                }
+                sw.WriteLine(log);
+            }
+        }
+
+        /// <summary>
+        /// Disable reading stuff from enventa database, when no order number is given.
+        /// </summary>
         private void textBoxOrdernumber_TextChanged(object sender, EventArgs e)
         {
             xmlournumber = textBoxOrdernumber.Text;
@@ -558,19 +578,6 @@ namespace DHL_Seife
 
         }
 
-
-        private static void logTextToFile(String log)
-        {
-            using (StreamWriter sw = File.AppendText(logfile))
-            {
-                if (firstrun)
-                {
-                    sw.WriteLine();
-                    sw.WriteLine(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss"));
-                    firstrun = false;
-                }
-                sw.WriteLine(log);
-            }
-        }
+        
     }
 }
