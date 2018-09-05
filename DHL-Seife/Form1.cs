@@ -39,6 +39,7 @@ namespace DHL_Seife
         private static string xmlparceltype = "V01PAK"; //Parcel type (Germany only or international)
         private static string rowid = ""; //Row ID for insert
         private static string rowidshipmentnumber = ""; //Row ID for insert
+        private static string rowidcarrier = ""; //Row ID for insert
         private static string connectionString; //Connection String for Database
         private static string logfile = "log.log"; //Log file
         private static string printerName = ""; //Name of the printer to print on later
@@ -101,7 +102,8 @@ namespace DHL_Seife
         {
             XDocument doc = XDocument.Load("var/settings.xml");
             var dbconnection = doc.Descendants("dbconnection");
-            var dbrowid = doc.Descendants("rowid");
+            var dbrowidshipment = doc.Descendants("rowidshipment");
+            var dbrowidcarrier = doc.Descendants("rowidcarrier");
             var printer = doc.Descendants("printer");
             var dhlsoap = doc.Descendants("dhlsoap");
             var api_username = doc.Descendants("api_username");
@@ -110,7 +112,8 @@ namespace DHL_Seife
             var dhl_pass = doc.Descendants("dhl_password");
             var dhl_username = doc.Descendants("dhl_username");
             foreach (var foo in dbconnection) { connectionString = foo.Value; }
-            foreach (var foo in dbrowid) { rowidshipmentnumber = foo.Value; }
+            foreach (var foo in dbrowidshipment) { rowidshipmentnumber = foo.Value; }
+            foreach (var foo in dbrowidcarrier) { rowidcarrier = foo.Value; }
             foreach (var foo in printer) { printerName = foo.Value; }
             foreach (var foo in dhlsoap) { dhlsoapconnection = foo.Value; }
             foreach (var foo in api_username) { api_user = foo.Value; }
@@ -423,12 +426,16 @@ namespace DHL_Seife
         {
             string sql = "INSERT INTO [LOE01].[dbo].[AdditionalFieldValue] (FSROWVERSION, DefRowID, TableRowID, ValueString) VALUES " +
                 "('0', '" + rowidshipmentnumber + "', '" + rowid + "', '" + shipmentnumber + "')";
+            string sql_carrier = "INSERT INTO [LOE01].[dbo].[AdditionalFieldValue] (FSROWVERSION, DefRowID, TableRowID, ValueString) VALUES " +
+                "('0', '" + rowidcarrier + "', '" + rowid + "', 'DHL')";
             try
             {
                 OdbcConnection conn = new OdbcConnection(connectionString);
                 conn.Open();
                 OdbcCommand comm = new OdbcCommand(sql, conn);
+                OdbcCommand comm_carrier = new OdbcCommand(sql_carrier, conn);
                 comm.ExecuteNonQuery();
+                comm_carrier.ExecuteNonQuery();
             }
             catch (Exception ex)
             {
