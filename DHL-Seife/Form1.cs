@@ -178,8 +178,8 @@ namespace DHL_Seife
             {
                 rowid = dr["FSROWID"].ToString();
 
-                if (String.IsNullOrEmpty(dr["LFIRMA1"].ToString())) { xmlrecipient = dr["RFIRMA1"].ToString(); }
-                else { xmlrecipient = dr["LFIRMA1"].ToString(); }
+                if (String.IsNullOrEmpty(dr["LFIRMA1"].ToString())) { xmlrecipient = dr["RFIRMA1"].ToString().Replace("&", " "); }
+                else { xmlrecipient = dr["LFIRMA1"].ToString().Replace("&", " "); }
 
                 if (String.IsNullOrEmpty(dr["LSTRASSE"].ToString()))
                 {
