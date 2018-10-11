@@ -16,6 +16,7 @@ using System.Threading;
 using System.Diagnostics;
 using RawPrint;
 using System.Xml.Linq;
+using System.Text.RegularExpressions;
 
 namespace DHL_Seife
 {
@@ -178,8 +179,8 @@ namespace DHL_Seife
             {
                 rowid = dr["FSROWID"].ToString();
 
-                if (String.IsNullOrEmpty(dr["LFIRMA1"].ToString())) { xmlrecipient = dr["RFIRMA1"].ToString().Replace("&", " "); }
-                else { xmlrecipient = dr["LFIRMA1"].ToString().Replace("&", " "); }
+                if (String.IsNullOrEmpty(dr["LFIRMA1"].ToString())) { xmlrecipient = removeSpecialCharacters(dr["RFIRMA1"].ToString()); }
+                else { xmlrecipient = removeSpecialCharacters(dr["LFIRMA1"].ToString()); }
 
                 if (String.IsNullOrEmpty(dr["LSTRASSE"].ToString()))
                 {
@@ -187,13 +188,13 @@ namespace DHL_Seife
                     //If there is no space or number in the string, write eveything into the street and set the street number to 0
                     if (lastindex == -1 || !dr["RSTRASSE"].ToString().Any(char.IsDigit))
                     {
-                        xmlstreet = dr["RSTRASSE"].ToString().Trim();
+                        xmlstreet = removeSpecialCharacters(dr["RSTRASSE"].ToString().Trim());
                         xmlstreetnumber = "0";
                     }
                     else
                     {
-                        xmlstreet = dr["RSTRASSE"].ToString().Trim().Substring(0, lastindex + 1).ToString();
-                        xmlstreetnumber = dr["RSTRASSE"].ToString().Trim().Substring(lastindex + 1).ToString();
+                        xmlstreet = removeSpecialCharacters(dr["RSTRASSE"].ToString().Trim().Substring(0, lastindex + 1).ToString());
+                        xmlstreetnumber = removeSpecialCharacters(dr["RSTRASSE"].ToString().Trim().Substring(lastindex + 1).ToString());
                     }  
                 }
                 else
@@ -202,21 +203,21 @@ namespace DHL_Seife
                     //If there is no space or number in the string, write eveything into the street and set the street number to 0
                     if (lastindex == -1 || !dr["LSTRASSE"].ToString().Any(char.IsDigit))
                     {
-                        xmlstreet = dr["LSTRASSE"].ToString().Trim();
+                        xmlstreet = removeSpecialCharacters(dr["LSTRASSE"].ToString().Trim());
                         xmlstreetnumber = "0";
                     }
                     else
                     {
-                        xmlstreet = dr["LSTRASSE"].ToString().Trim().Substring(0, lastindex + 1).ToString();
-                        xmlstreetnumber = dr["LSTRASSE"].ToString().Trim().Substring(lastindex + 1).ToString();
+                        xmlstreet = removeSpecialCharacters(dr["LSTRASSE"].ToString().Trim().Substring(0, lastindex + 1).ToString());
+                        xmlstreetnumber = removeSpecialCharacters(dr["LSTRASSE"].ToString().Trim().Substring(lastindex + 1).ToString());
                     }  
                 }
 
                 if (String.IsNullOrEmpty(dr["LPLZ"].ToString())) { xmlplz = dr["RPLZ"].ToString().Trim(); }
                 else { xmlplz = dr["LPLZ"].ToString().Trim(); }
 
-                if (String.IsNullOrEmpty(dr["LORT"].ToString())) { xmlcity = dr["RORT"].ToString().Trim(); }
-                else { xmlcity = dr["LORT"].ToString().Trim(); }
+                if (String.IsNullOrEmpty(dr["LORT"].ToString())) { xmlcity = removeSpecialCharacters(dr["RORT"].ToString().Trim()); }
+                else { xmlcity = removeSpecialCharacters(dr["LORT"].ToString().Trim()); }
 
                 if (!String.IsNullOrEmpty(dr["LLAND"].ToString())) { xmlcountry = dr["LLAND"].ToString().Trim(); }
                 else if(!String.IsNullOrEmpty(dr["RLAND"].ToString().Trim())) {
@@ -547,6 +548,14 @@ namespace DHL_Seife
                 }
                 sw.WriteLine(log);
             }
+        }
+
+        /// <summary>
+        /// This function removes all special characters from a string.
+        /// </summary>
+        public static string removeSpecialCharacters(string str)
+        {
+            return Regex.Replace(str, "[^a-zA-Z0-9äÄöÖüÜß_.]+", " ", RegexOptions.Compiled);
         }
 
         /// <summary>
