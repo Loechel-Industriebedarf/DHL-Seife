@@ -395,7 +395,7 @@ namespace DHL_Seife
                         try
                         {
                             WebClient Client = new WebClient();
-                            labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmm") + "-" + xmlrecipient.Replace(" ", string.Empty) + ".pdf";
+                            labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + xmlrecipient.Replace(" ", string.Empty) + ".pdf";
                             Client.DownloadFile(labelUrl, @labelName);
                         }
                         catch (Exception ex)
@@ -426,8 +426,7 @@ namespace DHL_Seife
                 string filepath = labelName;
 
                 //Filename to be shown in print-queue
-                string filename = "label-" + DateTime.Now.ToString("yyyy-MM-dd-HHmmss") + ".pdf" ;
-                
+                string filename = "label-" + DateTime.Now.ToString("yyyy-MM-dd-HHmmss") + ".pdf";
 
                 // Create an instance of the Printer
                 IPrinter printer = new Printer();
