@@ -183,13 +183,33 @@ namespace DHL_Seife
 
                 if (String.IsNullOrEmpty(dr["LSTRASSE"].ToString()))
                 {
-                    xmlstreet = dr["RSTRASSE"].ToString().Trim().Substring(0, dr["RSTRASSE"].ToString().LastIndexOf(" ") + 1).ToString();
-                    xmlstreetnumber = dr["RSTRASSE"].ToString().Trim().Substring(dr["RSTRASSE"].ToString().LastIndexOf(" ") + 1).ToString();
+                    int lastindex = dr["RSTRASSE"].ToString().LastIndexOf(" ");
+                    //If there is no space or number in the string, write eveything into the street and set the street number to 0
+                    if (lastindex == -1 || !dr["RSTRASSE"].ToString().Any(char.IsDigit))
+                    {
+                        xmlstreet = dr["RSTRASSE"].ToString().Trim();
+                        xmlstreetnumber = "0";
+                    }
+                    else
+                    {
+                        xmlstreet = dr["RSTRASSE"].ToString().Trim().Substring(0, lastindex + 1).ToString();
+                        xmlstreetnumber = dr["RSTRASSE"].ToString().Trim().Substring(lastindex + 1).ToString();
+                    }  
                 }
                 else
                 {
-                    xmlstreet = dr["LSTRASSE"].ToString().Trim().Substring(0, dr["LSTRASSE"].ToString().LastIndexOf(" ") + 1).ToString();
-                    xmlstreetnumber = dr["LSTRASSE"].ToString().Trim().Substring(dr["LSTRASSE"].ToString().LastIndexOf(" ") + 1).ToString();
+                    int lastindex = dr["LSTRASSE"].ToString().LastIndexOf(" ");
+                    //If there is no space or number in the string, write eveything into the street and set the street number to 0
+                    if (lastindex == -1 || !dr["LSTRASSE"].ToString().Any(char.IsDigit))
+                    {
+                        xmlstreet = dr["LSTRASSE"].ToString().Trim();
+                        xmlstreetnumber = "0";
+                    }
+                    else
+                    {
+                        xmlstreet = dr["LSTRASSE"].ToString().Trim().Substring(0, lastindex + 1).ToString();
+                        xmlstreetnumber = dr["LSTRASSE"].ToString().Trim().Substring(lastindex + 1).ToString();
+                    }  
                 }
 
                 if (String.IsNullOrEmpty(dr["LPLZ"].ToString())) { xmlplz = dr["RPLZ"].ToString().Trim(); }
