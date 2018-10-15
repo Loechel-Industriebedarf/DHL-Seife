@@ -156,7 +156,7 @@ namespace DHL_Seife
         {
             printShippingLabel.Text = "Versandlabel drucken";
 
-            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, LFIRMA1, RFIRMA1, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
+            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
                 "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
                 "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "'";
@@ -179,8 +179,8 @@ namespace DHL_Seife
             {
                 rowid = dr["FSROWID"].ToString();
 
-                if (String.IsNullOrEmpty(dr["LFIRMA1"].ToString())) { xmlrecipient = removeSpecialCharacters(dr["RFIRMA1"].ToString()); }
-                else { xmlrecipient = removeSpecialCharacters(dr["LFIRMA1"].ToString()); }
+                if (String.IsNullOrEmpty(dr["LFIRMA1"].ToString())) { xmlrecipient = removeSpecialCharacters(dr["RFIRMA1"].ToString() + " " + dr["RFIRMA2"].ToString()); }
+                else { xmlrecipient = removeSpecialCharacters(dr["LFIRMA1"].ToString() + " " + dr["LFIRMA2"].ToString()); }
 
                 if (String.IsNullOrEmpty(dr["LSTRASSE"].ToString()))
                 {
@@ -281,6 +281,15 @@ namespace DHL_Seife
                 xmlparceltype = "V53WPAK";  //international parcel
                 xmlaccountnumber = "22222222225301"; //international account number
             }
+
+            //These values have a max length; Cut them, if they are too long
+            if (xmlrecipient.Length > 35) { xmlrecipient = xmlrecipient.Substring(0, 34); }
+            if (xmlstreet.Length > 35) { xmlstreet = xmlstreet.Substring(0, 34); }
+            if (xmlstreetnumber.Length > 5) { xmlstreetnumber = xmlstreetnumber.Substring(0, 4); }
+            if (xmlplz.Length > 10) { xmlplz = xmlplz.Substring(0, 9); }
+            if (xmlcity.Length > 35) { xmlcity = xmlcity.Substring(0, 34); }
+            if (xmlcountry.Length > 30) { xmlcountry = xmlcountry.Substring(0, 29); }
+            if (newxmlmail.Length > 70) { newxmlmail = newxmlmail.Substring(0, 69); }
 
 
 
