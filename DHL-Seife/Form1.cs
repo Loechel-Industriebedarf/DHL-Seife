@@ -442,6 +442,8 @@ namespace DHL_Seife
 
                 // Print the file
                 printer.PrintRawFile(printerName, filepath, filename);
+
+                logTextToFile(labelName + " successfully printed!");
             }
             catch (Exception ex)
             {
