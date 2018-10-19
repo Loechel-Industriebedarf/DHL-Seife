@@ -17,16 +17,18 @@ using System.Diagnostics;
 using RawPrint;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography.X509Certificates;
 
 namespace DHL_Seife
 {
     public partial class Form1 : Form
     {
-        private static HttpWebRequest request;
+        private static HttpWebRequest webRequest;
         private static string orderNumber = "";
         private static string xmluser = ""; //DHL api username / dhl business username
         private static string xmlpass = ""; //DHL api password  / dhl business password
         private static string xmlaccountnumber = ""; //DHL customer id / dhl business id
+        private static string xmlaccountnumberint = ""; //DHL customer id / dhl business id international
         private static string xmlournumber = orderNumber;
         private static string xmlshippmentdate = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"); //YYYY-MM-DD
         private static string xmlweight = "1"; //In kg
@@ -112,6 +114,7 @@ namespace DHL_Seife
             var api_username = doc.Descendants("api_username");
             var api_pass = doc.Descendants("api_password");
             var dhl_id = doc.Descendants("dhl_id");
+            var dhl_id_int = doc.Descendants("dhl_id_int");
             var dhl_pass = doc.Descendants("dhl_password");
             var dhl_username = doc.Descendants("dhl_username");
             var insertshipmenttodb = doc.Descendants("insertshipmenttodb");
@@ -124,6 +127,7 @@ namespace DHL_Seife
             foreach (var foo in api_username) { api_user = foo.Value; }
             foreach (var foo in api_pass) { api_password = foo.Value; }
             foreach (var foo in dhl_id) { xmlaccountnumber = foo.Value; }
+            foreach (var foo in dhl_id_int) { xmlaccountnumberint = foo.Value; }
             foreach (var foo in dhl_pass) { xmlpass = foo.Value; }
             foreach (var foo in dhl_username) { xmluser = foo.Value; }
             foreach (var foo in insertshipmenttodb) { sqlshipmentnumber = foo.Value; }
@@ -279,7 +283,7 @@ namespace DHL_Seife
             if (!xmlcountry.ToLower().Equals("deutschland") && !xmlcountry.ToLower().Equals("de"))
             {
                 xmlparceltype = "V53WPAK";  //international parcel
-                xmlaccountnumber = "22222222225301"; //international account number
+                xmlaccountnumber = xmlaccountnumberint; //international account number
             }
 
             //These values have a max length; Cut them, if they are too long
@@ -293,7 +297,7 @@ namespace DHL_Seife
 
 
 
-            request = CreateWebRequest();
+            webRequest = CreateWebRequest();
             XmlDocument soapEnvelopeXml = new XmlDocument();
             String xml = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
                 <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:cis=""http://dhl.de/webservice/cisbase"" xmlns:bus=""http://dhl.de/webservices/businesscustomershipping"">
@@ -364,10 +368,19 @@ namespace DHL_Seife
 </soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, newxmlmail, xmlrecipient, xmlstreet, xmlstreetnumber, xmlplz, xmlcity, xmlcountry, xmlpass, xmlaccountnumber, xmlournumber, xmlparceltype);
             soapEnvelopeXml.LoadXml(xml);
 
-            using (Stream stream = request.GetRequestStream())
+
+            try
             {
-                soapEnvelopeXml.Save(stream);
+                using (Stream stream = webRequest.GetRequestStream())
+                {
+                    soapEnvelopeXml.Save(stream);
+                }
             }
+            catch(Exception ex)
+            {
+                logTextToFile(ex.ToString());
+            }
+            
         }
 
 
@@ -379,49 +392,56 @@ namespace DHL_Seife
         /// </summary>
         private static void sendSoapRequest()
         {
-            // Get a soap response
-            using (WebResponse response = request.GetResponse())
+            try
             {
-                using (StreamReader rd = new StreamReader(response.GetResponseStream()))
+                // Get a soap response
+                using (WebResponse response = webRequest.GetResponse())
                 {
-                    string soapResult = rd.ReadToEnd();
-
-                    //Check, if a hard validation error occurs. If yes: log it.
-                    if(soapResult.Contains("Hard validation"))
+                    using (StreamReader rd = new StreamReader(response.GetResponseStream()))
                     {
-                        logTextToFile(soapResult);
-                    }
+                        string soapResult = rd.ReadToEnd();
 
-                    XmlDocument xmldoc = new XmlDocument();
-                    xmldoc.LoadXml(soapResult);
-
-                    XmlNodeList xnList = xmldoc.GetElementsByTagName("labelUrl");
-                    foreach (XmlNode xn in xnList)
-                    {
-                        string labelUrl = xn.InnerText;
-                        //Download label and save it to file
-                        string labelName = "";
-                        try
+                        //Check, if a hard validation error occurs. If yes: log it.
+                        if (soapResult.Contains("Hard validation"))
                         {
-                            WebClient Client = new WebClient();
-                            labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + xmlrecipient.Replace(" ", string.Empty) + ".pdf";
-                            Client.DownloadFile(labelUrl, @labelName);
+                            logTextToFile(soapResult);
                         }
-                        catch (Exception ex)
-                        {
-                            logTextToFile(ex.ToString());
-                        }
-                        //Print label
-                        printLabel(labelName);
-                    }
 
-                    xnList = xmldoc.GetElementsByTagName("cis:shipmentNumber");
-                    foreach (XmlNode xn in xnList)
-                    {
-                        string shipmentnumber = xn.InnerText;
-                        writeShipmentNumber(shipmentnumber);
+                        XmlDocument xmldoc = new XmlDocument();
+                        xmldoc.LoadXml(soapResult);
+
+                        XmlNodeList xnList = xmldoc.GetElementsByTagName("labelUrl");
+                        foreach (XmlNode xn in xnList)
+                        {
+                            string labelUrl = xn.InnerText;
+                            //Download label and save it to file
+                            string labelName = "";
+                            try
+                            {
+                                WebClient Client = new WebClient();
+                                labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + xmlrecipient.Replace(" ", string.Empty) + ".pdf";
+                                Client.DownloadFile(labelUrl, @labelName);
+                            }
+                            catch (Exception ex)
+                            {
+                                logTextToFile(ex.ToString());
+                            }
+                            //Print label
+                            printLabel(labelName);
+                        }
+
+                        xnList = xmldoc.GetElementsByTagName("cis:shipmentNumber");
+                        foreach (XmlNode xn in xnList)
+                        {
+                            string shipmentnumber = xn.InnerText;
+                            writeShipmentNumber(shipmentnumber);
+                        }
                     }
                 }
+            }
+            catch(Exception ex)
+            {
+                logTextToFile(ex.ToString());
             }
         }
 
@@ -441,7 +461,14 @@ namespace DHL_Seife
                 IPrinter printer = new Printer();
 
                 // Print the file
-                printer.PrintRawFile(printerName, filepath, filename);
+                try
+                {
+                    printer.PrintRawFile(printerName, filepath, filename);
+                }
+                catch(Exception ex)
+                {
+                    logTextToFile(ex.ToString());
+                }
 
                 logTextToFile(labelName + " successfully printed!");
             }
@@ -491,18 +518,19 @@ namespace DHL_Seife
         /// </summary>
         public static HttpWebRequest CreateWebRequest()
         {
-            String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(api_user + ":" + api_password));
+            String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("iso-8859-1").GetBytes(api_user + ":" + api_password));
 
             //SOAP webrequest
             HttpWebRequest webRequest = null;
             try
             {
-                webRequest = (HttpWebRequest)WebRequest.Create(dhlsoapconnection);
+                webRequest = (HttpWebRequest)WebRequest.Create(@dhlsoapconnection);
                 webRequest.Headers.Add("Authorization", "Basic " + encoded);
-                webRequest.Headers.Add(@"SOAP:Action");
+                webRequest.Headers.Add("SOAPAction: urn:createShipmentOrder");
                 webRequest.ContentType = "text/xml;charset=\"utf-8\"";
                 webRequest.Accept = "text/xml";
                 webRequest.Method = "POST";
+                webRequest.KeepAlive = true;                
             }
             catch (Exception ex)
             {
@@ -553,7 +581,7 @@ namespace DHL_Seife
                 if (firstrun)
                 {
                     sw.WriteLine();
-                    sw.WriteLine(DateTime.Now.ToString("dd.MM.yyyy hh:mm:ss"));
+                    sw.WriteLine(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"));
                     firstrun = false;
                 }
                 sw.WriteLine(log);
