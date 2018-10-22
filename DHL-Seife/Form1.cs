@@ -1,23 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Data.Odbc;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
-using Microsoft.VisualBasic;
-using System.Threading;
-using System.Diagnostics;
 using RawPrint;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
-using System.Security.Cryptography.X509Certificates;
+using Spire.Pdf;
 
 namespace DHL_Seife
 {
@@ -457,13 +448,16 @@ namespace DHL_Seife
                 //Filename to be shown in print-queue
                 string filename = "label-" + DateTime.Now.ToString("yyyy-MM-dd-HHmmss") + ".pdf";
 
-                // Create an instance of the Printer
-                IPrinter printer = new Printer();
-
                 // Print the file
                 try
                 {
-                    printer.PrintRawFile(printerName, filepath, filename);
+                    PdfDocument pdfdocument = new PdfDocument();
+                    pdfdocument.LoadFromFile(filepath);
+                    pdfdocument.PrinterName = printerName;
+                    pdfdocument.PrintDocument.PrinterSettings.Copies = 1;
+                    pdfdocument.PrintDocument.Print();
+                    pdfdocument.Dispose();
+
                 }
                 catch(Exception ex)
                 {

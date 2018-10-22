@@ -38,8 +38,11 @@
     <ApplicationIcon>dhl-seife.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="RawPrint, Version=0.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RawPrint.0.2.0.0\lib\net40\RawPrint.dll</HintPath>
+    <Reference Include="Spire.License, Version=1.3.6.40, Culture=neutral, PublicKeyToken=b1144360237c8b3f, processorArchitecture=MSIL">
+      <HintPath>..\packages\FreeSpire.PDF.4.3.1\lib\net40\Spire.License.dll</HintPath>
+    </Reference>
+    <Reference Include="Spire.Pdf, Version=4.3.0.20040, Culture=neutral, PublicKeyToken=663f351905198cb3, processorArchitecture=MSIL">
+      <HintPath>..\packages\FreeSpire.PDF.4.3.1\lib\net40\Spire.Pdf.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
