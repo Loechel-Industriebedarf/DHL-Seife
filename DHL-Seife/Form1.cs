@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Windows.Forms;
 using System.Xml;
-using RawPrint;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
 using Spire.Pdf;
@@ -25,6 +24,8 @@ namespace DHL_Seife
         private static string xmlweight = "1"; //In kg
         private static string xmlmail = ""; //recipient mail
         private static string xmlrecipient = ""; //recipient name
+        private static string xmlrecipient02 = ""; //recipient name (second line)
+        private static string xmlrecipient03 = ""; //recipient name (third line)
         private static string xmlstreet = ""; //recipient street
         private static string xmlstreetnumber = ""; //recipient streetnumber
         private static string xmlplz = ""; //recipient plz
@@ -151,7 +152,7 @@ namespace DHL_Seife
         {
             printShippingLabel.Text = "Versandlabel drucken";
 
-            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
+            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
                 "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
                 "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "'";
@@ -174,8 +175,14 @@ namespace DHL_Seife
             {
                 rowid = dr["FSROWID"].ToString();
 
-                if (String.IsNullOrEmpty(dr["LFIRMA1"].ToString())) { xmlrecipient = removeSpecialCharacters(dr["RFIRMA1"].ToString() + " " + dr["RFIRMA2"].ToString()); }
-                else { xmlrecipient = removeSpecialCharacters(dr["LFIRMA1"].ToString() + " " + dr["LFIRMA2"].ToString()); }
+                if (String.IsNullOrEmpty(dr["LFIRMA1"].ToString())) { xmlrecipient = removeSpecialCharacters(dr["RFIRMA1"].ToString()); }
+                else { xmlrecipient = removeSpecialCharacters(dr["LFIRMA1"].ToString()); }
+
+                if (String.IsNullOrEmpty(dr["LFIRMA2"].ToString())) { xmlrecipient02 = removeSpecialCharacters(dr["RFIRMA2"].ToString()); }
+                else { xmlrecipient02 = removeSpecialCharacters(dr["LFIRMA2"].ToString()); }
+
+                if (String.IsNullOrEmpty(dr["DCOMPANY3"].ToString())) { xmlrecipient03 = removeSpecialCharacters(dr["ICOMPANY3"].ToString()); }
+                else { xmlrecipient03 = removeSpecialCharacters(dr["DCOMPANY3"].ToString()); }
 
                 if (String.IsNullOrEmpty(dr["LSTRASSE"].ToString()))
                 {
@@ -248,6 +255,7 @@ namespace DHL_Seife
             if (String.IsNullOrEmpty(xmlweight) || xmlweight == "0")
             {
                 xmlweight = "1";
+                logTextToFile(xmlweight);
             }
         }
 
@@ -260,8 +268,12 @@ namespace DHL_Seife
         {
             //E-Mail is not a needed thing for the dhl-xml
             String newxmlmail = "";
-            if (!String.IsNullOrEmpty(xmlmail))
+            String newxmlmailopen = "";
+            String newxmlmailclose = "";
+            if (!String.IsNullOrEmpty(xmlmail) && xmlmail.Contains("@"))
             {
+                newxmlmailopen = "<recipientEmailAddress>";
+                newxmlmailclose = "</recipientEmailAddress>";
                 newxmlmail = "<recipientEmailAddress>" + xmlmail + "</recipientEmailAddress>";
             }
 
@@ -277,8 +289,23 @@ namespace DHL_Seife
                 xmlaccountnumber = xmlaccountnumberint; //international account number
             }
 
+            string packstationStart = "";
+            string packstationEnd = "";
+            string packstationNumber = "";
+            if (xmlstreet.Contains("Packstation"))
+            {
+                packstationStart = "<Packstation>" +
+                    "<cis:postNumber>";
+                packstationEnd = "</cis:postNumber>" +
+                  "</Packstation>";
+                packstationNumber = xmlrecipient02;
+            }
+
+
             //These values have a max length; Cut them, if they are too long
-            if (xmlrecipient.Length > 35) { xmlrecipient = xmlrecipient.Substring(0, 34); }
+            if (xmlrecipient.Length > 35) { xmlrecipient02 = xmlrecipient02 + xmlrecipient.Substring(34, xmlrecipient.Length-34); xmlrecipient = xmlrecipient.Substring(0, 34); }
+            if (xmlrecipient02.Length > 35) { xmlrecipient03 = xmlrecipient03 + xmlrecipient02.Substring(34, xmlrecipient02.Length-34); xmlrecipient02 = xmlrecipient.Substring(0, 34); }
+            if (xmlrecipient03.Length > 35) { xmlrecipient03 = xmlrecipient.Substring(0, 34); }
             if (xmlstreet.Length > 35) { xmlstreet = xmlstreet.Substring(0, 34); }
             if (xmlstreetnumber.Length > 5) { xmlstreetnumber = xmlstreetnumber.Substring(0, 4); }
             if (xmlplz.Length > 10) { xmlplz = xmlplz.Substring(0, 9); }
@@ -290,7 +317,9 @@ namespace DHL_Seife
 
             webRequest = CreateWebRequest();
             XmlDocument soapEnvelopeXml = new XmlDocument();
-            String xml = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            try
+            {
+                String xml = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
                 <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:cis=""http://dhl.de/webservice/cisbase"" xmlns:bus=""http://dhl.de/webservices/businesscustomershipping"">
    <soapenv:Header>
       <cis:Authentification>
@@ -316,7 +345,7 @@ namespace DHL_Seife
                      <weightInKG>{2}</weightInKG>
                   </ShipmentItem>
                   <Notification>
-                     {3}
+                     {14}{3}{15}
                   </Notification>
                </ShipmentDetails>
                <Shipper>
@@ -339,6 +368,9 @@ namespace DHL_Seife
                </Shipper>
                <Receiver>
                   <cis:name1>{4}</cis:name1>
+                  <cis:name2>{16}</cis:name2>
+                  <cis:name3>{17}</cis:name3>
+                    {18}{20}{19}
                   <Address>
                      <cis:streetName>{5}</cis:streetName>
                      <cis:streetNumber>{6}</cis:streetNumber>
@@ -356,9 +388,15 @@ namespace DHL_Seife
          </ShipmentOrder>
       </bus:CreateShipmentOrderRequest>
    </soapenv:Body>
-</soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, newxmlmail, xmlrecipient, xmlstreet, xmlstreetnumber, xmlplz, xmlcity, xmlcountry, xmlpass, xmlaccountnumber, xmlournumber, xmlparceltype);
-            soapEnvelopeXml.LoadXml(xml);
-
+</soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, xmlmail, xmlrecipient, xmlstreet, xmlstreetnumber,
+    xmlplz, xmlcity, xmlcountry, xmlpass, xmlaccountnumber, xmlournumber, xmlparceltype, newxmlmailopen, newxmlmailclose, xmlrecipient02, xmlrecipient03, 
+    packstationStart, packstationEnd, packstationNumber);
+                soapEnvelopeXml.LoadXml(xml);
+            }
+            catch(Exception ex)
+            {
+                logTextToFile(ex.ToString());
+            }
 
             try
             {
