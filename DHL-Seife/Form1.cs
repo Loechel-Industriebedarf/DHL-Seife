@@ -20,7 +20,7 @@ namespace DHL_Seife
         private static string xmlaccountnumber = ""; //DHL customer id / dhl business id
         private static string xmlaccountnumberint = ""; //DHL customer id / dhl business id international
         private static string xmlournumber = orderNumber;
-        private static string xmlshippmentdate = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"); //YYYY-MM-DD
+        private static string xmlshippmentdate = DateTime.Now.ToString("yyyy-MM-dd"); //YYYY-MM-DD
         private static string xmlweight = "1"; //In kg
         private static string xmlmail = ""; //recipient mail
         private static string xmlrecipient = ""; //recipient name
@@ -57,7 +57,7 @@ namespace DHL_Seife
             Boolean parameterstart = false;
             try
             {
-                if (!String.IsNullOrEmpty(args[1])) { orderNumber = args[1]; xmlournumber = args[1]; parameterstart = true; }
+                if (!String.IsNullOrEmpty(args[1])) { orderNumber = args[1]; xmlournumber = args[1]; parameterstart = true; logTextToFile(args[1]); }
             }
             catch(Exception ex)
             {
@@ -221,6 +221,7 @@ namespace DHL_Seife
                 if (String.IsNullOrEmpty(dr["LORT"].ToString())) { xmlcity = removeSpecialCharacters(dr["RORT"].ToString().Trim()); }
                 else { xmlcity = removeSpecialCharacters(dr["LORT"].ToString().Trim()); }
 
+                //Read delivery country; If it is emty, set it to "Deutschland"
                 if (!String.IsNullOrEmpty(dr["LLAND"].ToString())) { xmlcountry = dr["LLAND"].ToString().Trim(); }
                 else if(!String.IsNullOrEmpty(dr["RLAND"].ToString().Trim())) {
                     xmlcountry = dr["LLAND"].ToString().Trim();
@@ -231,6 +232,7 @@ namespace DHL_Seife
                     xmlcountry = "Deutschland";
                 }
 
+                //If the "CODE1" field contains an @, it is an e-mail adress.
                 if (dr["CODE1"].ToString().Contains('@')) {
                     xmlmail = dr["CODE1"].ToString().Trim();
                 }
@@ -255,7 +257,6 @@ namespace DHL_Seife
             if (String.IsNullOrEmpty(xmlweight) || xmlweight == "0")
             {
                 xmlweight = "1";
-                logTextToFile(xmlweight);
             }
         }
 
@@ -283,12 +284,14 @@ namespace DHL_Seife
                 xmlweight = xmlweight.Replace(",", ".");
             }
 
+            //If the country is not Germany, send an international parcel
             if (!xmlcountry.ToLower().Equals("deutschland") && !xmlcountry.ToLower().Equals("de"))
             {
                 xmlparceltype = "V53WPAK";  //international parcel
                 xmlaccountnumber = xmlaccountnumberint; //international account number
             }
 
+            //If the street name contains "Packstation", we deliver to a packing station
             string packstationStart = "";
             string packstationEnd = "";
             string packstationNumber = "";
@@ -303,8 +306,9 @@ namespace DHL_Seife
 
 
             //These values have a max length; Cut them, if they are too long
-            if (xmlrecipient.Length > 35) { xmlrecipient02 = xmlrecipient02 + xmlrecipient.Substring(34, xmlrecipient.Length-34); xmlrecipient = xmlrecipient.Substring(0, 34); }
-            if (xmlrecipient02.Length > 35) { xmlrecipient03 = xmlrecipient03 + xmlrecipient02.Substring(34, xmlrecipient02.Length-34); xmlrecipient02 = xmlrecipient.Substring(0, 34); }
+            //If recipient(01) is too long, write the rest of it to recipient02. If recipient02 is too long, write the rest to recipient03
+            if (xmlrecipient.Length > 35) { xmlrecipient02 = xmlrecipient.Substring(34, xmlrecipient.Length-34) + " " + xmlrecipient02; xmlrecipient = xmlrecipient.Substring(0, 34); }
+            if (xmlrecipient02.Length > 35) { xmlrecipient03 = xmlrecipient02.Substring(34, xmlrecipient02.Length-34) + " " + xmlrecipient03; xmlrecipient02 = xmlrecipient02.Substring(0, 34); }
             if (xmlrecipient03.Length > 35) { xmlrecipient03 = xmlrecipient.Substring(0, 34); }
             if (xmlstreet.Length > 35) { xmlstreet = xmlstreet.Substring(0, 34); }
             if (xmlstreetnumber.Length > 5) { xmlstreetnumber = xmlstreetnumber.Substring(0, 4); }
