@@ -233,7 +233,8 @@ namespace DHL_Seife
                 }
 
                 //If the "CODE1" field contains an @, it is an e-mail adress.
-                if (dr["CODE1"].ToString().Contains('@')) {
+                //If the "CODE1" field contains an amazon adress, ignore it; Amazon blocks DHL mails
+                if (dr["CODE1"].ToString().Contains('@') && !dr["CODE1"].ToString().Contains("amazon")) {
                     xmlmail = dr["CODE1"].ToString().Trim();
                 }
                 
@@ -271,7 +272,7 @@ namespace DHL_Seife
             String newxmlmail = "";
             String newxmlmailopen = "";
             String newxmlmailclose = "";
-            if (!String.IsNullOrEmpty(xmlmail) && xmlmail.Contains("@"))
+            if (!String.IsNullOrEmpty(xmlmail) && xmlmail.Contains("@") && !xmlmail.Contains("amazon"))
             {
                 newxmlmailopen = "<recipientEmailAddress>";
                 newxmlmailclose = "</recipientEmailAddress>";
