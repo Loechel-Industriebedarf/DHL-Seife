@@ -49,6 +49,9 @@ namespace DHL_Seife
 
         public Form1()
         {
+            //Our users tend to run the program twice, per "accident"...
+            checkDoubleRun();
+
             //Reads settings from xml file
             readSettingsFromXML();
 
@@ -89,6 +92,32 @@ namespace DHL_Seife
                 printManualShippingLabel.Visible = true;
             }
             writeToGui();
+        }
+
+        /// <summary>
+        /// Checks, how much seconds passed since the last run. If it's less than 10, don't run the program
+        /// </summary>
+        private void checkDoubleRun()
+        {
+            DateTime now = DateTime.Now;
+            DateTime lastrun = Properties.Settings.Default.lastRun;
+            TimeSpan diff = (now - lastrun);
+
+            //If more than 10 seconds passed, write the new time to the settings.
+            if(diff.TotalSeconds > 10)
+            {
+                Properties.Settings.Default.lastRun = now;
+                Properties.Settings.Default.Save();
+            }
+            //If less than 10 seconds passed, kill the program.
+            else
+            {
+                logTextToFile("> Less than 10 seconds passed! Double run!");
+                Application.Exit();
+                Environment.Exit(1);
+            }
+
+            
         }
 
 
