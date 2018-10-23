@@ -57,12 +57,13 @@ namespace DHL_Seife
             Boolean parameterstart = false;
             try
             {
-                if (!String.IsNullOrEmpty(args[1])) { orderNumber = args[1]; xmlournumber = args[1]; parameterstart = true; logTextToFile(args[1]); }
+                if (!String.IsNullOrEmpty(args[1])) { orderNumber = args[1]; xmlournumber = args[1]; parameterstart = true; logTextToFile("> " + args[1]); }
             }
             catch(Exception ex)
             {
                 orderNumber = "";
                 xmlournumber = "";
+                logTextToFile("> The program was started manually.");
                 logTextToFile(ex.ToString());
             }
             
@@ -227,6 +228,7 @@ namespace DHL_Seife
                 }
                 catch(Exception ex)
                 {
+                    logTextToFile("> Article weight or stock unit missing!");
                     logTextToFile(ex.ToString());
                 }
   
@@ -496,9 +498,6 @@ namespace DHL_Seife
             {
                 string filepath = labelName;
 
-                //Filename to be shown in print-queue
-                string filename = "label-" + DateTime.Now.ToString("yyyy-MM-dd-HHmmss") + ".pdf";
-
                 // Print the file
                 try
                 {
@@ -515,7 +514,7 @@ namespace DHL_Seife
                     logTextToFile(ex.ToString());
                 }
 
-                logTextToFile(labelName + " successfully printed!");
+                logTextToFile("> " + labelName + " successfully printed!");
             }
             catch (Exception ex)
             {
