@@ -202,17 +202,26 @@ namespace DHL_Seife
                 else
                 {
                     int lastindex = dr["LSTRASSE"].ToString().LastIndexOf(" ");
-                    //If there is no space or number in the string, write eveything into the street and set the street number to 0
-                    if (lastindex == -1 || !dr["LSTRASSE"].ToString().Any(char.IsDigit))
+                    int lastindexdot = dr["LSTRASSE"].ToString().LastIndexOf(".");
+                    Console.WriteLine(lastindex + " " + lastindexdot);
+                    //If there is no number in the string, write eveything into the street and set the street number to 0
+                    if (!dr["LSTRASSE"].ToString().Any(char.IsDigit))
                     {
                         xmlstreet = removeSpecialCharacters(dr["LSTRASSE"].ToString().Trim());
                         xmlstreetnumber = "0";
                     }
+                    //The user didn't put a space before the street number
+                    else if (lastindexdot > lastindex)
+                    {
+                        xmlstreet = removeSpecialCharacters(dr["LSTRASSE"].ToString().Trim().Substring(0, lastindexdot + 1).ToString());
+                        xmlstreetnumber = removeSpecialCharacters(dr["LSTRASSE"].ToString().Trim().Substring(lastindexdot + 1).ToString());
+                    }
+                    //"Correct" street adress
                     else
                     {
                         xmlstreet = removeSpecialCharacters(dr["LSTRASSE"].ToString().Trim().Substring(0, lastindex + 1).ToString());
                         xmlstreetnumber = removeSpecialCharacters(dr["LSTRASSE"].ToString().Trim().Substring(lastindex + 1).ToString());
-                    }  
+                    }
                 }
 
                 if (String.IsNullOrEmpty(dr["LPLZ"].ToString())) { xmlplz = dr["RPLZ"].ToString().Trim(); }
@@ -397,6 +406,8 @@ namespace DHL_Seife
     xmlplz, xmlcity, xmlcountry, xmlpass, xmlaccountnumber, xmlournumber, xmlparceltype, newxmlmailopen, newxmlmailclose, xmlrecipient02, xmlrecipient03, 
     packstationStart, packstationEnd, packstationNumber);
                 soapEnvelopeXml.LoadXml(xml);
+
+                Console.WriteLine(xml);
             }
             catch(Exception ex)
             {
