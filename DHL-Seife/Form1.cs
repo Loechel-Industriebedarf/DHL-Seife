@@ -186,42 +186,11 @@ namespace DHL_Seife
 
                 if (String.IsNullOrEmpty(dr["LSTRASSE"].ToString()))
                 {
-                    int lastindex = dr["RSTRASSE"].ToString().LastIndexOf(" ");
-                    //If there is no space or number in the string, write eveything into the street and set the street number to 0
-                    if (lastindex == -1 || !dr["RSTRASSE"].ToString().Any(char.IsDigit))
-                    {
-                        xmlstreet = removeSpecialCharacters(dr["RSTRASSE"].ToString().Trim());
-                        xmlstreetnumber = "0";
-                    }
-                    else
-                    {
-                        xmlstreet = removeSpecialCharacters(dr["RSTRASSE"].ToString().Trim().Substring(0, lastindex + 1).ToString());
-                        xmlstreetnumber = removeSpecialCharacters(dr["RSTRASSE"].ToString().Trim().Substring(lastindex + 1).ToString());
-                    }  
+                    getStreetAndStreetnumber(dr, "RSTRASSE");
                 }
                 else
                 {
-                    int lastindex = dr["LSTRASSE"].ToString().LastIndexOf(" ");
-                    int lastindexdot = dr["LSTRASSE"].ToString().LastIndexOf(".");
-                    Console.WriteLine(lastindex + " " + lastindexdot);
-                    //If there is no number in the string, write eveything into the street and set the street number to 0
-                    if (!dr["LSTRASSE"].ToString().Any(char.IsDigit))
-                    {
-                        xmlstreet = removeSpecialCharacters(dr["LSTRASSE"].ToString().Trim());
-                        xmlstreetnumber = "0";
-                    }
-                    //The user didn't put a space before the street number
-                    else if (lastindexdot > lastindex)
-                    {
-                        xmlstreet = removeSpecialCharacters(dr["LSTRASSE"].ToString().Trim().Substring(0, lastindexdot + 1).ToString());
-                        xmlstreetnumber = removeSpecialCharacters(dr["LSTRASSE"].ToString().Trim().Substring(lastindexdot + 1).ToString());
-                    }
-                    //"Correct" street adress
-                    else
-                    {
-                        xmlstreet = removeSpecialCharacters(dr["LSTRASSE"].ToString().Trim().Substring(0, lastindex + 1).ToString());
-                        xmlstreetnumber = removeSpecialCharacters(dr["LSTRASSE"].ToString().Trim().Substring(lastindex + 1).ToString());
-                    }
+                    getStreetAndStreetnumber(dr, "LSTRASSE");
                 }
 
                 if (String.IsNullOrEmpty(dr["LPLZ"].ToString())) { xmlplz = dr["RPLZ"].ToString().Trim(); }
@@ -267,6 +236,35 @@ namespace DHL_Seife
             if (String.IsNullOrEmpty(xmlweight) || xmlweight == "0")
             {
                 xmlweight = "1";
+            }
+        }
+
+        /// <summary>
+        /// Figures out, if the input street contains a street number and returns the street name and number seperatly
+        /// </summary>
+        private static void getStreetAndStreetnumber(OdbcDataReader dr, string streetDef)
+        {
+            int lastindex = dr[streetDef].ToString().LastIndexOf(" ");
+            int lastindexdot = dr[streetDef].ToString().LastIndexOf(".");
+            int indexlength = dr[streetDef].ToString().Length;
+            if (lastindex > indexlength) { lastindex = indexlength - 1; } //Fixes a problem, if last letter is a space
+            //If there is no number in the string, write eveything into the street and set the street number to 0
+            if (!dr[streetDef].ToString().Any(char.IsDigit))
+            {
+                xmlstreet = removeSpecialCharacters(dr[streetDef].ToString().Trim());
+                xmlstreetnumber = "0";
+            }
+            //The user didn't put a space before the street number
+            else if (lastindexdot > lastindex)
+            {
+                xmlstreet = removeSpecialCharacters(dr[streetDef].ToString().Trim().Substring(0, lastindexdot + 1).ToString());
+                xmlstreetnumber = removeSpecialCharacters(dr[streetDef].ToString().Trim().Substring(lastindexdot + 1).ToString());
+            }
+            //"Correct" street adress
+            else
+            {
+                xmlstreet = removeSpecialCharacters(dr[streetDef].ToString().Trim().Substring(0, lastindex + 1).ToString());
+                xmlstreetnumber = removeSpecialCharacters(dr[streetDef].ToString().Trim().Substring(lastindex + 1).ToString());
             }
         }
 
@@ -317,15 +315,15 @@ namespace DHL_Seife
 
             //These values have a max length; Cut them, if they are too long
             //If recipient(01) is too long, write the rest of it to recipient02. If recipient02 is too long, write the rest to recipient03
-            if (xmlrecipient.Length > 35) { xmlrecipient02 = xmlrecipient.Substring(34, xmlrecipient.Length-34) + " " + xmlrecipient02; xmlrecipient = xmlrecipient.Substring(0, 34); }
-            if (xmlrecipient02.Length > 35) { xmlrecipient03 = xmlrecipient02.Substring(34, xmlrecipient02.Length-34) + " " + xmlrecipient03; xmlrecipient02 = xmlrecipient02.Substring(0, 34); }
-            if (xmlrecipient03.Length > 35) { xmlrecipient03 = xmlrecipient.Substring(0, 34); }
-            if (xmlstreet.Length > 35) { xmlstreet = xmlstreet.Substring(0, 34); }
-            if (xmlstreetnumber.Length > 5) { xmlstreetnumber = xmlstreetnumber.Substring(0, 4); }
-            if (xmlplz.Length > 10) { xmlplz = xmlplz.Substring(0, 9); }
-            if (xmlcity.Length > 35) { xmlcity = xmlcity.Substring(0, 34); }
-            if (xmlcountry.Length > 30) { xmlcountry = xmlcountry.Substring(0, 29); }
-            if (newxmlmail.Length > 70) { newxmlmail = newxmlmail.Substring(0, 69); }
+            if (xmlrecipient.Length > 35) { xmlrecipient02 = xmlrecipient.Substring(35, xmlrecipient.Length- 35) + " " + xmlrecipient02; xmlrecipient = xmlrecipient.Substring(0, 35); }
+            if (xmlrecipient02.Length > 35) { xmlrecipient03 = xmlrecipient02.Substring(35, xmlrecipient02.Length- 35) + " " + xmlrecipient03; xmlrecipient02 = xmlrecipient02.Substring(0, 35); }
+            if (xmlrecipient03.Length > 35) { xmlrecipient03 = xmlrecipient.Substring(0, 35); }
+            if (xmlstreet.Length > 35) { xmlstreet = xmlstreet.Substring(0, 35); }
+            if (xmlstreetnumber.Length > 5) { xmlstreetnumber = xmlstreetnumber.Substring(0, 5); }
+            if (xmlplz.Length > 10) { xmlplz = xmlplz.Substring(0, 10); }
+            if (xmlcity.Length > 35) { xmlcity = xmlcity.Substring(0, 35); }
+            if (xmlcountry.Length > 30) { xmlcountry = xmlcountry.Substring(0, 30); }
+            if (newxmlmail.Length > 70) { newxmlmail = newxmlmail.Substring(0, 70); }
 
 
 
@@ -407,7 +405,6 @@ namespace DHL_Seife
     packstationStart, packstationEnd, packstationNumber);
                 soapEnvelopeXml.LoadXml(xml);
 
-                Console.WriteLine(xml);
             }
             catch(Exception ex)
             {
