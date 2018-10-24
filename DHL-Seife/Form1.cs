@@ -297,6 +297,10 @@ namespace DHL_Seife
                 xmlstreet = removeSpecialCharacters(dr[streetDef].ToString().Trim().Substring(0, lastindex + 1).ToString());
                 xmlstreetnumber = removeSpecialCharacters(dr[streetDef].ToString().Trim().Substring(lastindex + 1).ToString());
             }
+
+            //People don't like to write the word "street" completely
+            // xmlstreet = xmlstreet.Replace("str.", "straße");
+            // xmlstreet = xmlstreet.Replace("Str.", "Straße");
         }
 
 
@@ -334,7 +338,7 @@ namespace DHL_Seife
             string packstationStart = "";
             string packstationEnd = "";
             string packstationNumber = "";
-            if (xmlstreet.Contains("Packstation"))
+            if (xmlstreet.ToLower().Contains("packstation"))
             {
                 packstationStart = "<Packstation>" +
                     "<cis:postNumber>";
@@ -436,6 +440,7 @@ namespace DHL_Seife
     packstationStart, packstationEnd, packstationNumber);
                 soapEnvelopeXml.LoadXml(xml);
 
+                Console.WriteLine(xml);
             }
             catch(Exception ex)
             {
