@@ -277,11 +277,12 @@ namespace DHL_Seife
         {
             string streetDefinition = dr[streetDef].ToString().Trim();
             int lastindex = streetDefinition.LastIndexOf(" ");
+            Console.WriteLine(lastindex);
             int lastindexdot = streetDefinition.LastIndexOf(".");
             int indexlength = streetDefinition.Length;
 
             //If there is no number in the string, write eveything into the street and set the street number to 0
-            if (!streetDefinition.Any(char.IsDigit))
+            if (!streetDefinition.Any(char.IsDigit) || lastindex == -1)
             {
                 xmlstreet = removeSpecialCharacters(streetDefinition);
                 xmlstreetnumber = "0";
@@ -291,6 +292,10 @@ namespace DHL_Seife
             {
                 xmlstreet = removeSpecialCharacters(streetDefinition.Substring(0, lastindexdot + 1).ToString());
                 xmlstreetnumber = removeSpecialCharacters(streetDefinition.Substring(lastindexdot + 1).ToString());
+            }
+            else if (lastindex == -1)
+            {
+                //TODO: function for adresses, that don't contain a space, but contain a number.
             }
             //"Correct" street adress
             else
