@@ -5,6 +5,6 @@
 
 ![DHL Label](https://i.imgur.com/JASAwrc.jpg)
 
-Basically generates a DHL-label and displays it on your default webbrowser.
+Basically generates, downloads and prints a DHL-label.
 
 Icon based on the design from Freepik on [Flaticon.com](https://www.flaticon.com/free-icon/pet-shampoo_877139#term=soap&page=1&position=3).
