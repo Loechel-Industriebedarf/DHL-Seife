@@ -281,27 +281,37 @@ namespace DHL_Seife
             int lastindexdot = streetDefinition.LastIndexOf(".");
             int indexlength = streetDefinition.Length;
 
-            //If there is no number in the string, write eveything into the street and set the street number to 0
-            if (!streetDefinition.Any(char.IsDigit) || lastindex == -1)
+            try
+            {
+                //If there is no number in the string, write eveything into the street and set the street number to 0
+                if (!streetDefinition.Any(char.IsDigit) || lastindex == -1)
+                {
+                    xmlstreet = removeSpecialCharacters(streetDefinition);
+                    xmlstreetnumber = "0";
+                }
+                //The user didn't put a space before the street number
+                else if (lastindexdot > lastindex)
+                {
+                    xmlstreet = removeSpecialCharacters(streetDefinition.Substring(0, lastindexdot + 1).ToString());
+                    xmlstreetnumber = removeSpecialCharacters(streetDefinition.Substring(lastindexdot + 1).ToString());
+                }
+                else if (lastindex == -1)
+                {
+                    //TODO: function for adresses, that don't contain a space, but contain a number.
+                    //If function is implemented, remove the || lastindex == -1 on line 285
+                }
+                //"Correct" street adress
+                else
+                {
+                    xmlstreet = removeSpecialCharacters(streetDefinition.Substring(0, lastindex + 1).ToString());
+                    xmlstreetnumber = removeSpecialCharacters(streetDefinition.Substring(lastindex + 1).ToString());
+                }
+            }
+            catch(Exception ex)
             {
                 xmlstreet = removeSpecialCharacters(streetDefinition);
                 xmlstreetnumber = "0";
-            }
-            //The user didn't put a space before the street number
-            else if (lastindexdot > lastindex)
-            {
-                xmlstreet = removeSpecialCharacters(streetDefinition.Substring(0, lastindexdot + 1).ToString());
-                xmlstreetnumber = removeSpecialCharacters(streetDefinition.Substring(lastindexdot + 1).ToString());
-            }
-            else if (lastindex == -1)
-            {
-                //TODO: function for adresses, that don't contain a space, but contain a number.
-            }
-            //"Correct" street adress
-            else
-            {
-                xmlstreet = removeSpecialCharacters(streetDefinition.Substring(0, lastindex + 1).ToString());
-                xmlstreetnumber = removeSpecialCharacters(streetDefinition.Substring(lastindex + 1).ToString());
+                logTextToFile(ex.ToString());
             }
 
             //People don't like to write the word "street" completely
