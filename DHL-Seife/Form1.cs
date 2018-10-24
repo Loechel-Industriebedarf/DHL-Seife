@@ -275,27 +275,28 @@ namespace DHL_Seife
         /// </summary>
         private static void getStreetAndStreetnumber(OdbcDataReader dr, string streetDef)
         {
-            int lastindex = dr[streetDef].ToString().LastIndexOf(" ");
-            int lastindexdot = dr[streetDef].ToString().LastIndexOf(".");
-            int indexlength = dr[streetDef].ToString().Length;
-            if (lastindex > indexlength) { lastindex = indexlength - 1; } //Fixes a problem, if last letter is a space
+            string streetDefinition = dr[streetDef].ToString().Trim();
+            int lastindex = streetDefinition.LastIndexOf(" ");
+            int lastindexdot = streetDefinition.LastIndexOf(".");
+            int indexlength = streetDefinition.Length;
+
             //If there is no number in the string, write eveything into the street and set the street number to 0
-            if (!dr[streetDef].ToString().Any(char.IsDigit))
+            if (!streetDefinition.Any(char.IsDigit))
             {
-                xmlstreet = removeSpecialCharacters(dr[streetDef].ToString().Trim());
+                xmlstreet = removeSpecialCharacters(streetDefinition);
                 xmlstreetnumber = "0";
             }
             //The user didn't put a space before the street number
             else if (lastindexdot > lastindex)
             {
-                xmlstreet = removeSpecialCharacters(dr[streetDef].ToString().Trim().Substring(0, lastindexdot + 1).ToString());
-                xmlstreetnumber = removeSpecialCharacters(dr[streetDef].ToString().Trim().Substring(lastindexdot + 1).ToString());
+                xmlstreet = removeSpecialCharacters(streetDefinition.Substring(0, lastindexdot + 1).ToString());
+                xmlstreetnumber = removeSpecialCharacters(streetDefinition.Substring(lastindexdot + 1).ToString());
             }
             //"Correct" street adress
             else
             {
-                xmlstreet = removeSpecialCharacters(dr[streetDef].ToString().Trim().Substring(0, lastindex + 1).ToString());
-                xmlstreetnumber = removeSpecialCharacters(dr[streetDef].ToString().Trim().Substring(lastindex + 1).ToString());
+                xmlstreet = removeSpecialCharacters(streetDefinition.Substring(0, lastindex + 1).ToString());
+                xmlstreetnumber = removeSpecialCharacters(streetDefinition.Substring(lastindex + 1).ToString());
             }
 
             //People don't like to write the word "street" completely
