@@ -214,12 +214,10 @@ namespace DHL_Seife
                 if (String.IsNullOrEmpty(dr["DCOMPANY3"].ToString())) { xmlrecipient03 = removeSpecialCharacters(dr["ICOMPANY3"].ToString()); }
                 else { xmlrecipient03 = removeSpecialCharacters(dr["DCOMPANY3"].ToString()); }
 
-                if (String.IsNullOrEmpty(dr["LSTRASSE"].ToString()))
-                {
+                if (String.IsNullOrEmpty(dr["LSTRASSE"].ToString())){
                     getStreetAndStreetnumber(dr, "RSTRASSE");
                 }
-                else
-                {
+                else {
                     getStreetAndStreetnumber(dr, "LSTRASSE");
                 }
 
@@ -253,7 +251,6 @@ namespace DHL_Seife
 
                 try
                 {
-                    Console.WriteLine(xmlweight + " + " + netWeight + " x " + orderAmount);
                     if (!netWeight.Equals(""))
                     {
                         xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
@@ -277,8 +274,7 @@ namespace DHL_Seife
         /// <summary>
         /// Figures out, if the input street contains a street number and returns the street name and number seperatly
         /// </summary>
-        private static void getStreetAndStreetnumber(OdbcDataReader dr, string streetDef)
-        {
+        private static void getStreetAndStreetnumber(OdbcDataReader dr, string streetDef) {
             string streetDefinition = dr[streetDef].ToString().Trim();
             int lastindex = streetDefinition.LastIndexOf(" ");
             int lastindexdot = streetDefinition.LastIndexOf(".");
@@ -287,7 +283,7 @@ namespace DHL_Seife
             try
             {
                 //If there is no number in the string, write eveything into the street and set the street number to 0
-                if (!streetDefinition.Any(char.IsDigit) || lastindex == -1)
+                if (!streetDefinition.Any(char.IsDigit))
                 {
                     xmlstreet = removeSpecialCharacters(streetDefinition);
                     xmlstreetnumber = "0";
@@ -298,17 +294,48 @@ namespace DHL_Seife
                     xmlstreet = removeSpecialCharacters(streetDefinition.Substring(0, lastindexdot + 1).ToString());
                     xmlstreetnumber = removeSpecialCharacters(streetDefinition.Substring(lastindexdot + 1).ToString());
                 }
-                else if (lastindex == -1)
+                //If the last degit of the adress is not a number
+                else if(!char.IsDigit(streetDefinition[streetDefinition.Length - 1]))
                 {
-                    //TODO: function for adresses, that don't contain a space, but contain a number at the end like "Teststrasse19".
-                    //If function is implemented, remove the || lastindex == -1 on line 285
+                    if (lastindex == -1)
+                    {
+                        xmlstreet = removeSpecialCharacters(streetDefinition);
+                        xmlstreetnumber = "0";
+                    }
+                    else
+                    {
+                        xmlstreet = removeSpecialCharacters(streetDefinition.Substring(0, lastindex + 1).ToString());
+                        xmlstreetnumber = removeSpecialCharacters(streetDefinition.Substring(lastindex + 1).ToString());
+                    }       
                 }
-                //"Correct" street adress
+                //"Correct" street adress, or adress without spaces in the end (Teststreet 123; Teststreet123; Test street 123; Test street123)
                 else
                 {
-                    xmlstreet = removeSpecialCharacters(streetDefinition.Substring(0, lastindex + 1).ToString());
-                    xmlstreetnumber = removeSpecialCharacters(streetDefinition.Substring(lastindex + 1).ToString());
+                    int i = 1;
+                    xmlstreetnumber = "";
+                    //The street number cannot contain more than 5 numbers
+                    for (i = 1; i <= 5; i++)
+                    {
+                        if (char.IsDigit(streetDefinition[streetDefinition.Length - i]))
+                        {
+                            //Add the last digit to the end of the street number
+                            xmlstreetnumber = streetDefinition[streetDefinition.Length - i].ToString() + xmlstreetnumber;
+                        }
+                        else
+                        {
+                            //If last number is actually a letter, just set the streetnumber to 0
+                            if(i == 1)
+                            {
+                                xmlstreetnumber = "0";
+                            }
+                            //If there is no more number, break the loop
+                            break;
+                        }
+                    }
+
+                    xmlstreet = streetDefinition.Substring(0, streetDefinition.Length - i + 1);
                 }
+                
             }
             catch(Exception ex)
             {
