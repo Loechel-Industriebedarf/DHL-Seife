@@ -404,6 +404,15 @@ namespace DHL_Seife
             if (xmlcity.Length > 35) { xmlcity = xmlcity.Substring(0, 35); }
             if (xmlcountry.Length > 30) { xmlcountry = xmlcountry.Substring(0, 30); }
             if (newxmlmail.Length > 70) { newxmlmail = newxmlmail.Substring(0, 70); }
+            try
+            {
+                if (Convert.ToDouble(xmlweight) > 30) { xmlweight = "30"; }
+            }
+            catch(Exception ex)
+            {
+                logTextToFile(ex.ToString());
+            }
+            
 
 
 
