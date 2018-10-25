@@ -253,7 +253,11 @@ namespace DHL_Seife
 
                 try
                 {
-                    xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
+                    Console.WriteLine(xmlweight + " + " + netWeight + " x " + orderAmount);
+                    if (!netWeight.Equals(""))
+                    {
+                        xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
+                    }
                 }
                 catch(Exception ex)
                 {
@@ -277,7 +281,6 @@ namespace DHL_Seife
         {
             string streetDefinition = dr[streetDef].ToString().Trim();
             int lastindex = streetDefinition.LastIndexOf(" ");
-            Console.WriteLine(lastindex);
             int lastindexdot = streetDefinition.LastIndexOf(".");
             int indexlength = streetDefinition.Length;
 
@@ -297,7 +300,7 @@ namespace DHL_Seife
                 }
                 else if (lastindex == -1)
                 {
-                    //TODO: function for adresses, that don't contain a space, but contain a number.
+                    //TODO: function for adresses, that don't contain a space, but contain a number at the end like "Teststrasse19".
                     //If function is implemented, remove the || lastindex == -1 on line 285
                 }
                 //"Correct" street adress
@@ -460,6 +463,7 @@ namespace DHL_Seife
             }
             catch(Exception ex)
             {
+                logTextToFile("> XML error!");
                 logTextToFile(ex.ToString());
             }
 
@@ -535,6 +539,7 @@ namespace DHL_Seife
             }
             catch(Exception ex)
             {
+                logTextToFile("> Error while connecting to DHL-API!");
                 logTextToFile(ex.ToString());
             }
         }
