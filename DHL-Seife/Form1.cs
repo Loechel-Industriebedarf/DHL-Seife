@@ -251,10 +251,7 @@ namespace DHL_Seife
 
                 try
                 {
-                    if (!netWeight.Equals(""))
-                    {
-                        xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
-                    }
+                   xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
                 }
                 catch(Exception ex)
                 {
@@ -276,6 +273,8 @@ namespace DHL_Seife
         /// </summary>
         private static void getStreetAndStreetnumber(OdbcDataReader dr, string streetDef) {
             string streetDefinition = dr[streetDef].ToString().Trim();
+            xmlstreetnumber = "";
+            xmlstreet = "";
             int lastindex = streetDefinition.LastIndexOf(" ");
             int lastindexdot = streetDefinition.LastIndexOf(".");
             int indexlength = streetDefinition.Length;
@@ -312,7 +311,6 @@ namespace DHL_Seife
                 else
                 {
                     int i = 1;
-                    xmlstreetnumber = "";
                     //The street number cannot contain more than 5 numbers
                     for (i = 1; i <= 5; i++)
                     {
