@@ -284,14 +284,14 @@ namespace DHL_Seife
                 //If there is no number in the string, write eveything into the street and set the street number to 0
                 if (!streetDefinition.Any(char.IsDigit))
                 {
-                    xmlstreet = removeSpecialCharacters(streetDefinition);
+                    xmlstreet = streetDefinition;
                     xmlstreetnumber = "0";
                 }
                 //The user didn't put a space before the street number
                 else if (lastindexdot > lastindex)
                 {
-                    xmlstreet = removeSpecialCharacters(streetDefinition.Substring(0, lastindexdot + 1).ToString());
-                    xmlstreetnumber = removeSpecialCharacters(streetDefinition.Substring(lastindexdot + 1).ToString());
+                    xmlstreet = streetDefinition.Substring(0, lastindexdot + 1).ToString();
+                    xmlstreetnumber = streetDefinition.Substring(lastindexdot + 1).ToString();
                 }
                 //If the last degit of the adress is not a number
                 else if(!char.IsDigit(streetDefinition[streetDefinition.Length - 1]))
@@ -303,8 +303,8 @@ namespace DHL_Seife
                     }
                     else
                     {
-                        xmlstreet = removeSpecialCharacters(streetDefinition.Substring(0, lastindex + 1).ToString());
-                        xmlstreetnumber = removeSpecialCharacters(streetDefinition.Substring(lastindex + 1).ToString());
+                        xmlstreet = streetDefinition.Substring(0, lastindex + 1).ToString();
+                        xmlstreetnumber = streetDefinition.Substring(lastindex + 1).ToString();
                     }       
                 }
                 //"Correct" street adress, or adress without spaces in the end (Teststreet 123; Teststreet123; Test street 123; Test street123)
@@ -333,7 +333,8 @@ namespace DHL_Seife
 
                     xmlstreet = streetDefinition.Substring(0, streetDefinition.Length - i + 1);
                 }
-                
+
+                xmlstreet = removeSpecialCharacters(xmlstreet);
             }
             catch(Exception ex)
             {
@@ -717,7 +718,7 @@ namespace DHL_Seife
         /// </summary>
         public static string removeSpecialCharacters(string str)
         {
-            return Regex.Replace(str, "[^a-zA-Z0-9äÄöÖüÜß_.]+", " ", RegexOptions.Compiled);
+            return Regex.Replace(str, "[^a-zA-Z0-9äÄöÖüÜß\\-_.]+", " ", RegexOptions.Compiled);
         }
 
         /// <summary>
