@@ -262,7 +262,7 @@ namespace DHL_Seife
             }
 
             //Weight must be greater than 0
-            if (String.IsNullOrEmpty(xmlweight) || xmlweight == "0")
+            if (String.IsNullOrEmpty(xmlweight) || xmlweight == "0" || xmlweight == "0.001")
             {
                 xmlweight = "1";
             }
@@ -406,7 +406,9 @@ namespace DHL_Seife
             if (newxmlmail.Length > 70) { newxmlmail = newxmlmail.Substring(0, 70); }
             try
             {
-                if (Convert.ToDouble(xmlweight) > 30) { xmlweight = "30"; }
+                double weight = Convert.ToDouble(xmlweight.Replace(".",","));
+                if (weight > 30) { xmlweight = "30"; }
+                else if (weight <= 0.1) { xmlweight = "1";  }
             }
             catch(Exception ex)
             {
