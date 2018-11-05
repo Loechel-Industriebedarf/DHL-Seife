@@ -392,7 +392,7 @@ namespace DHL_Seife
                     "<cis:postNumber>";
                 packstationEnd = "</cis:postNumber>" +
                   "</Packstation>";
-                packstationNumber = Regex.Replace(xmlrecipient02, @"[a-zA-Z\\-]", "").Trim(); //For people who write additional words in the packstation number field
+                packstationNumber = Regex.Replace(xmlrecipient02, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
             }
 
 
