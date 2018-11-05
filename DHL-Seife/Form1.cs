@@ -395,13 +395,17 @@ namespace DHL_Seife
                   "</Packstation>";
                 packstationNumber = Regex.Replace(xmlrecipient02, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
             }
+            else
+            {
+                xmlrecipient = xmlrecipient + " " + xmlrecipient02 + " " + xmlrecipient03; //Combines the recipients for unneccessary use of multiple fields
+            }
 
 
             //These values have a max length; Cut them, if they are too long
             //If recipient(01) is too long, write the rest of it to recipient02. If recipient02 is too long, write the rest to recipient03
             if (xmlrecipient.Length > 35) { xmlrecipient02 = xmlrecipient.Substring(35, xmlrecipient.Length- 35) + " " + xmlrecipient02; xmlrecipient = xmlrecipient.Substring(0, 35); }
             if (xmlrecipient02.Length > 35) { xmlrecipient03 = xmlrecipient02.Substring(35, xmlrecipient02.Length- 35) + " " + xmlrecipient03; xmlrecipient02 = xmlrecipient02.Substring(0, 35); }
-            if (xmlrecipient03.Length > 35) { xmlrecipient03 = xmlrecipient.Substring(0, 35); }
+            if (xmlrecipient03.Length > 35) { xmlrecipient03 = xmlrecipient03.Substring(0, 35); }
             if (xmlstreet.Length > 35) { xmlstreet = xmlstreet.Substring(0, 35); }
             if (xmlstreetnumber.Length > 5) { xmlstreetnumber = xmlstreetnumber.Substring(0, 5); }
             if (xmlplz.Length > 10) { xmlplz = xmlplz.Substring(0, 10); }
