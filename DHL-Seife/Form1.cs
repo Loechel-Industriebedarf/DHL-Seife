@@ -226,6 +226,7 @@ namespace DHL_Seife
 
                 if (String.IsNullOrEmpty(dr["LPLZ"].ToString())) { xmlplz = dr["RPLZ"].ToString().Trim(); }
                 else { xmlplz = dr["LPLZ"].ToString().Trim(); }
+                xmlplz = Regex.Replace(xmlplz, @"[^0-9]", "").Trim(); //PLZ may not contain letters
 
                 if (String.IsNullOrEmpty(dr["LORT"].ToString())) { xmlcity = removeSpecialCharacters(dr["RORT"].ToString().Trim()); }
                 else { xmlcity = removeSpecialCharacters(dr["LORT"].ToString().Trim()); }
