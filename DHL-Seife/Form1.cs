@@ -32,6 +32,7 @@ namespace DHL_Seife
         private static string xmlcity = ""; //recipient city
         private static string xmlcountry = "Deutschland"; //recipient country
         private static string xmlparceltype = "V01PAK"; //Parcel type (Germany only or international)
+        private static string xmlordertype = "1"; //Parcel type (Germany only or international)
         private static string rowid = ""; //Row ID for insert
         private static string rowidshipmentnumber = ""; //Row ID for insert
         private static string rowidcarrier = ""; //Row ID for insert
@@ -182,7 +183,7 @@ namespace DHL_Seife
         {
             printShippingLabel.Text = "Versandlabel drucken";
 
-            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
+            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
                 "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
                 "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "'";
@@ -204,6 +205,8 @@ namespace DHL_Seife
             while (dr.Read())
             {
                 rowid = dr["FSROWID"].ToString();
+
+                xmlordertype = dr["BELEGART"].ToString();
 
                 if (String.IsNullOrEmpty(dr["LFIRMA1"].ToString())) { xmlrecipient = removeSpecialCharacters(dr["RFIRMA1"].ToString()); }
                 else { xmlrecipient = removeSpecialCharacters(dr["LFIRMA1"].ToString()); }
@@ -389,7 +392,7 @@ namespace DHL_Seife
                     "<cis:postNumber>";
                 packstationEnd = "</cis:postNumber>" +
                   "</Packstation>";
-                packstationNumber = xmlrecipient02;
+                packstationNumber = Regex.Replace(xmlrecipient02, @"[a-zA-Z\\-]", "").Trim(); //For people who write additional words in the packstation number field
             }
 
 
@@ -422,6 +425,33 @@ namespace DHL_Seife
             XmlDocument soapEnvelopeXml = new XmlDocument();
             try
             {
+                string senderName = "";
+                string senderStreetName = "";
+                string senderStreetNumber = "";
+                string senderZip = "";
+                string senderCity =  "";
+                string senderNumber =  "";
+                if (xmlordertype.Equals("10"))
+                {
+                    senderName = "Mercateo Deutschland AG";
+                    senderStreetName = "Museumsgasse";
+                    senderStreetNumber = "4-5";
+                    senderZip = "06366";
+                    senderCity = "Köthen";
+                    senderNumber = "+49 89 12 140 777";
+                }
+                else
+                {
+                    senderName = "Löchel Industriebedarf";
+                    senderStreetName = "Hans-Hermann-Meyer-Strasse";
+                    senderStreetNumber = "2";
+                    senderZip = "27232";
+                    senderCity = "Sulingen";
+                    senderNumber = "+49 4271 5727";
+                }
+
+
+                //Starts at 0, the string variables on the bottom are groups of five
                 String xml = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
                 <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:cis=""http://dhl.de/webservice/cisbase"" xmlns:bus=""http://dhl.de/webservices/businesscustomershipping"">
    <soapenv:Header>
@@ -453,20 +483,20 @@ namespace DHL_Seife
                </ShipmentDetails>
                <Shipper>
                   <Name>
-                     <cis:name1>Löchel Industriebedarf</cis:name1>
+                     <cis:name1>{21}</cis:name1>
                   </Name>
                   <Address>
-                     <cis:streetName>Hans-Hermann-Meyer-Strasse</cis:streetName>
-                     <cis:streetNumber>2</cis:streetNumber>
+                     <cis:streetName>{22}</cis:streetName>
+                     <cis:streetNumber>{23}</cis:streetNumber>
                      <cis:addressAddition>?</cis:addressAddition>
-                     <cis:zip>27232</cis:zip>
-                     <cis:city>Sulingen</cis:city>    
+                     <cis:zip>{24}</cis:zip>
+                     <cis:city>{25}</cis:city>    
                      <cis:Origin>
                         <cis:country>Deutschland</cis:country>
                      </cis:Origin>
                   </Address>
                   <Communication>
-                  <cis:phone>+49 4271 5727</cis:phone>
+                  <cis:phone>{26}</cis:phone>
                   </Communication>
                </Shipper>
                <Receiver>
@@ -491,9 +521,12 @@ namespace DHL_Seife
          </ShipmentOrder>
       </bus:CreateShipmentOrderRequest>
    </soapenv:Body>
-</soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, xmlmail, xmlrecipient, xmlstreet, xmlstreetnumber,
-    xmlplz, xmlcity, xmlcountry, xmlpass, xmlaccountnumber, xmlournumber, xmlparceltype, newxmlmailopen, newxmlmailclose, xmlrecipient02, xmlrecipient03, 
-    packstationStart, packstationEnd, packstationNumber);
+</soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, xmlmail, xmlrecipient, 
+xmlstreet, xmlstreetnumber, xmlplz, xmlcity, xmlcountry, 
+xmlpass, xmlaccountnumber, xmlournumber, xmlparceltype, newxmlmailopen, 
+newxmlmailclose, xmlrecipient02, xmlrecipient03, packstationStart, packstationEnd, 
+packstationNumber, senderName, senderStreetName, senderStreetNumber, senderZip,
+senderCity, senderNumber);
                 soapEnvelopeXml.LoadXml(xml);
 
                 Console.WriteLine(xml);
