@@ -291,13 +291,15 @@ namespace DHL_Seife
                     xmlstreet = streetDefinition;
                     xmlstreetnumber = "0";
                 }
-                //The user didn't put a space before the street number
-                else if (lastindexdot > lastindex)
+                //The user didn't put a space before the street number (Teststr.123)
+                //AND user didn't put a dot at the end of the adress line (Teststreet 1. | for weird people that write their adress like that...)
+                else if (lastindexdot > lastindex && streetDefinition.Length - lastindexdot != 1)
                 {
+                    Console.WriteLine(lastindexdot.ToString() + " " + lastindex.ToString() + " " + streetDefinition.Length + " " + (lastindexdot - lastindex).ToString());
                     xmlstreet = streetDefinition.Substring(0, lastindexdot + 1).ToString();
                     xmlstreetnumber = streetDefinition.Substring(lastindexdot + 1).ToString();
                 }
-                //If the last degit of the adress is not a number
+                //If the last degit of the adress is not a number (Teststreet; Teststreet 123B)
                 else if(!char.IsDigit(streetDefinition[streetDefinition.Length - 1]))
                 {
                     if (lastindex == -1)
@@ -311,7 +313,8 @@ namespace DHL_Seife
                         xmlstreetnumber = streetDefinition.Substring(lastindex + 1).ToString();
                     }       
                 }
-                //"Correct" street adress, or adress without spaces in the end (Teststreet 123; Teststreet123; Test street 123; Test street123)
+                //"Correct" street adress (Test street 123; Teststreet 123)
+                //OR adress without spaces in the end (Teststreet123; Test street123)
                 else
                 {
                     int i = 1;
