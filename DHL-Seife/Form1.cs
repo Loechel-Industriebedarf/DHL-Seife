@@ -334,11 +334,15 @@ namespace DHL_Seife
                             break;
                         }
                     }
-
+                    
                     xmlstreet = streetDefinition.Substring(0, streetDefinition.Length - i + 1);
                 }
 
                 xmlstreet = removeSpecialCharacters(xmlstreet);
+                if (String.IsNullOrEmpty(xmlstreetnumber))
+                {
+                    xmlstreetnumber = "0";
+                }
             }
             catch(Exception ex)
             {
