@@ -226,7 +226,29 @@ namespace DHL_Seife
 
                 if (String.IsNullOrEmpty(dr["LPLZ"].ToString())) { xmlplz = dr["RPLZ"].ToString().Trim(); }
                 else { xmlplz = dr["LPLZ"].ToString().Trim(); }
-                xmlplz = Regex.Replace(xmlplz, @"[^0-9]", "").Trim(); //PLZ may not contain letters
+                //Check, if zip code contains letters
+                if (Regex.Matches(xmlplz, @"[a-zA-Z]").Count > 0) 
+                {
+                    //For zips like 5051DV
+                    if (!xmlplz.ToLower().Contains(' '))
+                    {
+                        int i = 0;
+                        //Check how many chars there are at the end of the zip
+                        for (i = xmlplz.Length-1; i >= 0; i--)
+                        {
+                            if (!char.IsDigit(xmlplz[i]))
+                            {
+                                break;
+                            }
+                        }
+                        //Substring starts at 1...; isDigit starts at 0
+                        i--;
+
+                        //DHL wants zips with numbers splitted: 5051DV -> 5051 DV
+                        xmlplz = xmlplz.Substring(0, i) + " " + xmlplz.Substring(i);
+                        Console.WriteLine(i + " " + xmlplz);
+                    }
+                }
 
                 if (String.IsNullOrEmpty(dr["LORT"].ToString())) { xmlcity = removeSpecialCharacters(dr["RORT"].ToString().Trim()); }
                 else { xmlcity = removeSpecialCharacters(dr["LORT"].ToString().Trim()); }
@@ -295,7 +317,6 @@ namespace DHL_Seife
                 //AND user didn't put a dot at the end of the adress line (Teststreet 1. | for weird people that write their adress like that...)
                 else if (lastindexdot > lastindex && streetDefinition.Length - lastindexdot != 1)
                 {
-                    Console.WriteLine(lastindexdot.ToString() + " " + lastindex.ToString() + " " + streetDefinition.Length + " " + (lastindexdot - lastindex).ToString());
                     xmlstreet = streetDefinition.Substring(0, lastindexdot + 1).ToString();
                     xmlstreetnumber = streetDefinition.Substring(lastindexdot + 1).ToString();
                 }
@@ -541,7 +562,6 @@ packstationNumber, senderName, senderStreetName, senderStreetNumber, senderZip,
 senderCity, senderNumber);
                 soapEnvelopeXml.LoadXml(xml);
 
-                Console.WriteLine(xml);
             }
             catch(Exception ex)
             {
