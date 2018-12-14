@@ -342,7 +342,8 @@ namespace DHL_Seife
                     //The street number cannot contain more than 5 numbers
                     for (i = 1; i <= 5; i++)
                     {
-                        if (char.IsDigit(streetDefinition[streetDefinition.Length - i]))
+                        //Fix for street numbers like 25-26
+                        if (char.IsDigit(streetDefinition[streetDefinition.Length - i]) || streetDefinition[streetDefinition.Length - i].Equals('-'))
                         {
                             //Add the last digit to the end of the street number
                             xmlstreetnumber = streetDefinition[streetDefinition.Length - i].ToString() + xmlstreetnumber;
@@ -602,7 +603,7 @@ senderCity, senderNumber);
                         string soapResult = rd.ReadToEnd();
 
                         //Check, if a hard validation error occurs. If yes: log it.
-                        if (soapResult.Contains("Hard validation"))
+                        if (soapResult.Contains("Hard validation") || soapResult.Contains("Weak validation"))
                         {
                             logTextToFile(soapResult);
                         }
