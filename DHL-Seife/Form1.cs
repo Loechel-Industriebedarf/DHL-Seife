@@ -778,6 +778,9 @@ senderCity, senderNumber);
         /// </summary>
         private static void logTextToFile(String log)
         {
+            string sql = "UPDATE [LOE99].[dbo].[AUFTRAGSKOPF] SET Memo = ISNULL(CONVERT(varchar(8000), Memo), '') + '" + log + "' WHERE BelegNr = '" + orderNumber + "'";
+            Console.WriteLine(sql);
+
             using (StreamWriter sw = File.AppendText(logfile))
             {
                 if (firstrun)
@@ -787,6 +790,17 @@ senderCity, senderNumber);
                     firstrun = false;
                 }
                 sw.WriteLine(log);
+                try
+                {
+                    OdbcConnection conn = new OdbcConnection(connectionString);
+                    conn.Open();
+                    OdbcCommand comm = new OdbcCommand(sql, conn);
+                    comm.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+
+                }
             }
         }
 
