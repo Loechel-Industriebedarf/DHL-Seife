@@ -69,7 +69,7 @@ namespace DHL_Seife
                 xmlournumber = "";
                 //logTextToFile("> The program was started manually.");
                 logTextToFile("> Das Programm wurde manuell gestartet.");
-                logTextToFile(ex.ToString());
+                logTextToFile(ex.ToString(), true);
             }
             
 
@@ -199,7 +199,7 @@ namespace DHL_Seife
             }
             catch (Exception ex)
             {
-                logTextToFile(ex.ToString());
+                logTextToFile(ex.ToString(), true);
             }
 
             xmlweight = "0";
@@ -285,7 +285,7 @@ namespace DHL_Seife
                 {
                     //logTextToFile("> Article weight or stock unit missing!");
                     logTextToFile("> Artikelgewicht fehlt!");
-                    logTextToFile(ex.ToString());
+                    logTextToFile(ex.ToString(), true);
                 }
   
             }
@@ -376,7 +376,7 @@ namespace DHL_Seife
             {
                 xmlstreet = removeSpecialCharacters(streetDefinition);
                 xmlstreetnumber = "0";
-                logTextToFile(ex.ToString());
+                logTextToFile(ex.ToString(), true);
             }
 
             //People don't like to write the word "street" completely
@@ -452,7 +452,7 @@ namespace DHL_Seife
             }
             catch(Exception ex)
             {
-                logTextToFile(ex.ToString());
+                logTextToFile(ex.ToString(), true);
             }
             
 
@@ -571,7 +571,7 @@ senderCity, senderNumber);
             {
                 //logTextToFile("> XML error!");
                 logTextToFile("> XML Fehler!");
-                logTextToFile(ex.ToString());
+                logTextToFile(ex.ToString(), true);
             }
 
             try
@@ -610,14 +610,14 @@ senderCity, senderNumber);
                         if (soapResult.Contains("Hard validation"))
                         {
                             //logTextToFile("Critical adress-error!");
-                            logTextToFile("Kritischer Adressfehler!");
-                            logTextToFile(soapResult);
+                            logTextToFile("> Kritischer Adressfehler!");
+                            logTextToFile(soapResult, true);
                         }
                         else if (soapResult.Contains("Weak validation"))
                         {
                             //logTextToFile("You'll have to pay 'Leitcodenachentgelt' for this order!");
-                            logTextToFile("Leitcodenachentgelt muss für diesen Auftrag bezahlt werden!");
-                            logTextToFile(soapResult);
+                            logTextToFile("> Leitcodenachentgelt muss für diesen Auftrag bezahlt werden!");
+                            logTextToFile(soapResult, true);
                         }
 
                         XmlDocument xmldoc = new XmlDocument();
@@ -637,7 +637,7 @@ senderCity, senderNumber);
                             }
                             catch (Exception ex)
                             {
-                                logTextToFile(ex.ToString());
+                                logTextToFile(ex.ToString(), true);
                             }
                             //Print label
                             printLabel(labelName);
@@ -656,7 +656,7 @@ senderCity, senderNumber);
             {
                 //logTextToFile("> Error while connecting to DHL-API!");
                 logTextToFile("> Fehler bei der Verbindung mit der DHL-API!");
-                logTextToFile(ex.ToString());
+                logTextToFile(ex.ToString(), true);
             }
         }
 
@@ -682,7 +682,7 @@ senderCity, senderNumber);
                 }
                 catch(Exception ex)
                 {
-                    logTextToFile(ex.ToString());
+                    logTextToFile(ex.ToString(), true);
                 }
 
                 //logTextToFile("> " + labelName + " successfully printed!");
@@ -690,7 +690,7 @@ senderCity, senderNumber);
             }
             catch (Exception ex)
             {
-                logTextToFile(ex.ToString());
+                logTextToFile(ex.ToString(), true);
             }
 
             
@@ -723,7 +723,7 @@ senderCity, senderNumber);
             }
             catch (Exception ex)
             {
-                logTextToFile(ex.ToString());
+                logTextToFile(ex.ToString(), true);
             }
             
         }
@@ -750,7 +750,7 @@ senderCity, senderNumber);
             }
             catch (Exception ex)
             {
-                logTextToFile(ex.ToString());
+                logTextToFile(ex.ToString(), true);
             }
             return webRequest;
         }
@@ -792,9 +792,30 @@ senderCity, senderNumber);
         /// </summary>
         private static void logTextToFile(String log)
         {
-            string sql = "UPDATE [LOE01].[dbo].[AUFTRAGSKOPF] SET Memo = ISNULL(CONVERT(varchar(8000), Memo), '') + '" + log + "\r\n' WHERE BelegNr = '" + orderNumber + "'";
-            Console.WriteLine(sql);
+            logTextToFile(log, false);
+        }
+        private static void logTextToFile(String log, Boolean nl)
+        {
+            //Write to database
+            try
+            {
+                string sql = "UPDATE [LOE01].[dbo].[AUFTRAGSKOPF] SET Memo = ISNULL(CONVERT(varchar(8000), Memo), '') + '" + log;
+                if (nl)
+                {
+                    sql += "\r\n";
+                }
+                sql += "\r\n' WHERE BelegNr = '" + orderNumber + "'";
+                OdbcConnection conn = new OdbcConnection(connectionString);
+                conn.Open();
+                OdbcCommand comm = new OdbcCommand(sql, conn);
+                comm.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
 
+            }
+
+            //Write to log file
             using (StreamWriter sw = File.AppendText(logfile))
             {
                 if (firstrun)
@@ -804,16 +825,9 @@ senderCity, senderNumber);
                     firstrun = false;
                 }
                 sw.WriteLine(log);
-                try
+                if (nl)
                 {
-                    OdbcConnection conn = new OdbcConnection(connectionString);
-                    conn.Open();
-                    OdbcCommand comm = new OdbcCommand(sql, conn);
-                    comm.ExecuteNonQuery();
-                }
-                catch (Exception ex)
-                {
-
+                    sw.WriteLine();
                 }
             }
         }
