@@ -607,8 +607,16 @@ senderCity, senderNumber);
                         string soapResult = rd.ReadToEnd();
 
                         //Check, if a hard validation error occurs. If yes: log it.
-                        if (soapResult.Contains("Hard validation") || soapResult.Contains("Weak validation"))
+                        if (soapResult.Contains("Hard validation"))
                         {
+                            //logTextToFile("Critical adress-error!");
+                            logTextToFile("Kritischer Adressfehler!");
+                            logTextToFile(soapResult);
+                        }
+                        else if (soapResult.Contains("Weak validation"))
+                        {
+                            //logTextToFile("You'll have to pay 'Leitcodenachentgelt' for this order!");
+                            logTextToFile("Leitcodenachentgelt muss für diesen Auftrag bezahlt werden!");
                             logTextToFile(soapResult);
                         }
 
