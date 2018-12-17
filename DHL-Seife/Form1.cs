@@ -778,7 +778,7 @@ senderCity, senderNumber);
         /// </summary>
         private static void logTextToFile(String log)
         {
-            string sql = "UPDATE [LOE99].[dbo].[AUFTRAGSKOPF] SET Memo = ISNULL(CONVERT(varchar(8000), Memo), '') + '" + log + "' WHERE BelegNr = '" + orderNumber + "'";
+            string sql = "UPDATE [LOE01].[dbo].[AUFTRAGSKOPF] SET Memo = ISNULL(CONVERT(varchar(8000), Memo), '') + '" + log + "\r\n' WHERE BelegNr = '" + orderNumber + "'";
             Console.WriteLine(sql);
 
             using (StreamWriter sw = File.AppendText(logfile))
