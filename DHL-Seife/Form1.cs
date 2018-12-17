@@ -67,7 +67,8 @@ namespace DHL_Seife
             {
                 orderNumber = "";
                 xmlournumber = "";
-                logTextToFile("> The program was started manually.");
+                //logTextToFile("> The program was started manually.");
+                logTextToFile("> Das Programm wurde manuell gestartet.");
                 logTextToFile(ex.ToString());
             }
             
@@ -113,7 +114,8 @@ namespace DHL_Seife
             //If less than 10 seconds passed, kill the program.
             else
             {
-                logTextToFile("> Less than 10 seconds passed! Double run!");
+                //logTextToFile("> Less than 10 seconds passed! Double run!");
+                logTextToFile("> Doppelte Ausführung! Bitte 10 Sekunden warten.");
                 Application.Exit();
                 Environment.Exit(1);
             }
@@ -281,7 +283,8 @@ namespace DHL_Seife
                 }
                 catch(Exception ex)
                 {
-                    logTextToFile("> Article weight or stock unit missing!");
+                    //logTextToFile("> Article weight or stock unit missing!");
+                    logTextToFile("> Artikelgewicht fehlt!");
                     logTextToFile(ex.ToString());
                 }
   
@@ -566,7 +569,8 @@ senderCity, senderNumber);
             }
             catch(Exception ex)
             {
-                logTextToFile("> XML error!");
+                //logTextToFile("> XML error!");
+                logTextToFile("> XML Fehler!");
                 logTextToFile(ex.ToString());
             }
 
@@ -642,7 +646,8 @@ senderCity, senderNumber);
             }
             catch(Exception ex)
             {
-                logTextToFile("> Error while connecting to DHL-API!");
+                //logTextToFile("> Error while connecting to DHL-API!");
+                logTextToFile("> Fehler bei der Verbindung mit der DHL-API!");
                 logTextToFile(ex.ToString());
             }
         }
@@ -672,7 +677,8 @@ senderCity, senderNumber);
                     logTextToFile(ex.ToString());
                 }
 
-                logTextToFile("> " + labelName + " successfully printed!");
+                //logTextToFile("> " + labelName + " successfully printed!");
+                logTextToFile("> " + labelName + " wurde erfolgreich gedruckt!");
             }
             catch (Exception ex)
             {
