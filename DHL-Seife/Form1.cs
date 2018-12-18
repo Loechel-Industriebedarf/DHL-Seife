@@ -333,7 +333,7 @@ namespace DHL_Seife
                         xmlstreetnumber = "0";
                     }
                     //Last char is a letter (Teststreet 123 B)
-                    else if (streetDefinition[lastindex].Equals(' '))
+                    else if (streetDefinition[lastindex].Equals(' ') && char.IsLetter(streetDefinition[lastindex + 1]))
                     {
                         xmlstreet = streetDefinition.Substring(0, lastindex).ToString();
                         int lastindexnew = xmlstreet.LastIndexOf(" ");
