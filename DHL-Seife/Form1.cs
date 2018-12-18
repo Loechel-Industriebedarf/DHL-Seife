@@ -61,7 +61,7 @@ namespace DHL_Seife
             Boolean parameterstart = false;
             try
             {
-                if (!String.IsNullOrEmpty(args[1])) { orderNumber = args[1]; xmlournumber = args[1]; parameterstart = true; logTextToFile("> " + args[1]); }
+                if (!String.IsNullOrEmpty(args[1])) { orderNumber = args[1]; xmlournumber = args[1]; parameterstart = true; logTextToFile("> " + args[1], true); }
             }
             catch(Exception ex)
             {
@@ -323,14 +323,25 @@ namespace DHL_Seife
                     xmlstreet = streetDefinition.Substring(0, lastindexdot + 1).ToString();
                     xmlstreetnumber = streetDefinition.Substring(lastindexdot + 1).ToString();
                 }
-                //If the last degit of the adress is not a number (Teststreet; Teststreet 123B)
+                //If the last degit of the adress is not a number (Teststreet; Teststreet 123B; Teststreet 123 B)
                 else if(!char.IsDigit(streetDefinition[streetDefinition.Length - 1]))
                 {
+                    //There are no spaces and no numbers at the street number (Teststreet)
                     if (lastindex == -1)
                     {
                         xmlstreet = removeSpecialCharacters(streetDefinition);
                         xmlstreetnumber = "0";
                     }
+                    //Last char is a letter (Teststreet 123 B)
+                    else if (streetDefinition[lastindex].Equals(' '))
+                    {
+                        xmlstreet = streetDefinition.Substring(0, lastindex).ToString();
+                        int lastindexnew = xmlstreet.LastIndexOf(" ");
+                        Console.WriteLine("lastindex: " + lastindex.ToString() + " lastindexnew: " + lastindexnew.ToString() + " xmlstreet: " + xmlstreet);
+                        xmlstreet = streetDefinition.Substring(0, lastindexnew + 1).ToString();
+                        xmlstreetnumber = streetDefinition.Substring(lastindexnew + 1).ToString();
+                    }
+                    //Last char is a letter and no spaces between streetnumber and letter (Teststreet 123B)
                     else
                     {
                         xmlstreet = streetDefinition.Substring(0, lastindex + 1).ToString();
@@ -821,7 +832,9 @@ senderCity, senderNumber);
                 if (firstrun)
                 {
                     sw.WriteLine();
-                    sw.WriteLine(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"));
+                    sw.WriteLine();
+                    sw.WriteLine();
+                    sw.WriteLine("> " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"));
                     firstrun = false;
                 }
                 sw.WriteLine(log);
