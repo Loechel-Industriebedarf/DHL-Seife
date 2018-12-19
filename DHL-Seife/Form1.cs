@@ -337,7 +337,6 @@ namespace DHL_Seife
                     {
                         xmlstreet = streetDefinition.Substring(0, lastindex).ToString();
                         int lastindexnew = xmlstreet.LastIndexOf(" ");
-                        Console.WriteLine("lastindex: " + lastindex.ToString() + " lastindexnew: " + lastindexnew.ToString() + " xmlstreet: " + xmlstreet);
                         xmlstreet = streetDefinition.Substring(0, lastindexnew + 1).ToString();
                         xmlstreetnumber = streetDefinition.Substring(lastindexnew + 1).ToString();
                     }
@@ -377,6 +376,7 @@ namespace DHL_Seife
                     xmlstreet = streetDefinition.Substring(0, streetDefinition.Length - i + 1);
                 }
 
+                xmlstreet = xmlstreet.Trim();
                 xmlstreet = removeSpecialCharacters(xmlstreet);
                 if (String.IsNullOrEmpty(xmlstreetnumber))
                 {
@@ -536,7 +536,6 @@ namespace DHL_Seife
                   <Address>
                      <cis:streetName>{22}</cis:streetName>
                      <cis:streetNumber>{23}</cis:streetNumber>
-                     <cis:addressAddition>?</cis:addressAddition>
                      <cis:zip>{24}</cis:zip>
                      <cis:city>{25}</cis:city>    
                      <cis:Origin>
@@ -555,7 +554,6 @@ namespace DHL_Seife
                   <Address>
                      <cis:streetName>{5}</cis:streetName>
                      <cis:streetNumber>{6}</cis:streetNumber>
-                     <cis:addressAddition>?</cis:addressAddition>
                      <cis:zip>{7}</cis:zip>
                      <cis:city>{8}</cis:city>
                      <cis:Origin>
@@ -576,7 +574,6 @@ newxmlmailclose, xmlrecipient02, xmlrecipient03, packstationStart, packstationEn
 packstationNumber, senderName, senderStreetName, senderStreetNumber, senderZip,
 senderCity, senderNumber);
                 soapEnvelopeXml.LoadXml(xml);
-
             }
             catch(Exception ex)
             {
