@@ -847,7 +847,7 @@ senderCity, senderNumber);
         /// </summary>
         public static string removeSpecialCharacters(string str)
         {
-            return Regex.Replace(str, "[^a-zA-Z0-9äÄöÖüÜß\\-_.]+", " ", RegexOptions.Compiled);
+            return Regex.Replace(str, @"[^a-zA-Z0-9äÄöÖüÜß\/\-_.]+", " ", RegexOptions.Compiled);
         }
 
         /// <summary>
