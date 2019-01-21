@@ -640,7 +640,7 @@ senderCity, senderNumber);
                             try
                             {
                                 WebClient Client = new WebClient();
-                                labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + xmlrecipient.Replace(" ", string.Empty) + ".pdf";
+                                labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + xmlrecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
                                 Client.DownloadFile(labelUrl, @labelName);
                             }
                             catch (Exception ex)
