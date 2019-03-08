@@ -258,7 +258,7 @@ namespace DHL_Seife
                 //Read delivery country; If it is emty, set it to "Deutschland"
                 if (!String.IsNullOrEmpty(dr["LLAND"].ToString())) { xmlcountry = dr["LLAND"].ToString().Trim(); }
                 else if(!String.IsNullOrEmpty(dr["RLAND"].ToString().Trim())) {
-                    xmlcountry = dr["LLAND"].ToString().Trim();
+                    xmlcountry = dr["RLAND"].ToString().Trim();
                 }
                 else { xmlcountry = "Deutschland"; }
                 if (String.IsNullOrEmpty(xmlcountry))
@@ -459,7 +459,8 @@ namespace DHL_Seife
             {
                 double weight = Convert.ToDouble(xmlweight.Replace(".",","));
                 if (weight > 30) { xmlweight = "30"; }
-                else if (weight <= 0.1) { xmlweight = "1";  }
+                else if (weight <= 0.01) { xmlweight = "4";  }
+                else if (weight < 0.1) { xmlweight = "0.1"; }
             }
             catch(Exception ex)
             {
