@@ -430,18 +430,30 @@ namespace DHL_Seife
             string packstationStart = "";
             string packstationEnd = "";
             string packstationNumber = "";
+            if (xmlstreet.ToLower().Contains("dhl-packstation"))
+            {
+                xmlstreet = xmlstreet.Replace("dhl-", "");
+            }
+            else if (xmlstreet.ToLower().Contains("dhl packstation"))
+            {
+                xmlstreet = xmlstreet.Replace("dhl ", "");
+            }
             if (xmlstreet.ToLower().Contains("packstation"))
             {
                 packstationStart = "<Packstation>" +
                     "<cis:postNumber>";
                 packstationEnd = "</cis:postNumber>" +
                   "</Packstation>";
-                packstationNumber = Regex.Replace(xmlrecipient02, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
+                if (!String.IsNullOrEmpty(xmlrecipient02))
+                {
+                    packstationNumber = Regex.Replace(xmlrecipient02, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
+                }
+                else
+                {
+                    packstationNumber = Regex.Replace(xmlrecipient03, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
+                }
             }
-            else
-            {
-                xmlrecipient = xmlrecipient + " " + xmlrecipient02 + " " + xmlrecipient03; //Combines the recipients for unneccessary use of multiple fields
-            }
+            xmlrecipient = xmlrecipient + " " + xmlrecipient02 + " " + xmlrecipient03; //Combines the recipients for unneccessary use of multiple fields
 
 
             //These values have a max length; Cut them, if they are too long
@@ -574,6 +586,7 @@ xmlpass, xmlaccountnumber, xmlournumber, xmlparceltype, newxmlmailopen,
 newxmlmailclose, xmlrecipient02, xmlrecipient03, packstationStart, packstationEnd, 
 packstationNumber, senderName, senderStreetName, senderStreetNumber, senderZip,
 senderCity, senderNumber);
+                Console.WriteLine(xml);
                 soapEnvelopeXml.LoadXml(xml);
             }
             catch(Exception ex)
