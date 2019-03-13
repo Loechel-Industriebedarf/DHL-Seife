@@ -291,9 +291,9 @@ namespace DHL_Seife
             }
 
             //Weight must be greater than 0
-            if (String.IsNullOrEmpty(xmlweight) || xmlweight == "0" || xmlweight == "0.001")
+            if (String.IsNullOrEmpty(xmlweight) || xmlweight == "0.001")
             {
-                xmlweight = "1";
+                xmlweight = "0";
             }
         }
 
