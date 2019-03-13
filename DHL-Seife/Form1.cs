@@ -106,7 +106,7 @@ namespace DHL_Seife
             TimeSpan diff = (now - lastrun);
 
             //If more than 10 seconds passed, write the new time to the settings.
-            if(diff.TotalSeconds > 10)
+            if(diff.TotalSeconds > 5)
             {
                 Properties.Settings.Default.lastRun = now;
                 Properties.Settings.Default.Save();
@@ -115,7 +115,7 @@ namespace DHL_Seife
             else
             {
                 //logTextToFile("> Less than 10 seconds passed! Double run!");
-                logTextToFile("> Doppelte Ausführung! Bitte 10 Sekunden warten.");
+                logTextToFile("> Doppelte Ausführung! Bitte 5 Sekunden warten.");
                 Application.Exit();
                 Environment.Exit(1);
             }
@@ -186,9 +186,9 @@ namespace DHL_Seife
             printShippingLabel.Text = "Versandlabel drucken";
 
             string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
-                "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT " +
+                "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
-                "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "'";
+                "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.STATUS = 2";
 
             OdbcDataReader dr = null;
             try { 
@@ -279,7 +279,7 @@ namespace DHL_Seife
 
                 try
                 {
-                   xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
+                    xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();        
                 }
                 catch(Exception ex)
                 {
@@ -290,8 +290,8 @@ namespace DHL_Seife
   
             }
 
-            //Weight must be greater than 0
-            if (String.IsNullOrEmpty(xmlweight) || xmlweight == "0.001")
+                //If the weight is to small, set it to zero
+                if (String.IsNullOrEmpty(xmlweight) || xmlweight == "0.001")
             {
                 xmlweight = "0";
             }
