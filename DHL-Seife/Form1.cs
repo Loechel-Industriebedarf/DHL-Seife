@@ -633,6 +633,7 @@ senderCity, senderNumber);
         /// Sends a soap request to the dhl-api and receives an answer in xml-format.
         /// Next, it reads the xml answer and opens the labelUrl in the default web-browser.
         /// </summary>
+        static int apiConnectTries = 0; //If the connection to the api fails, it should try again.
         private static void sendSoapRequest()
         {
             try
@@ -695,6 +696,14 @@ senderCity, senderNumber);
                 //logTextToFile("> Error while connecting to DHL-API!");
                 logTextToFile("> Fehler bei der Verbindung mit der DHL-API!");
                 logTextToFile(ex.ToString(), true);
+
+                apiConnectTries++;
+                //If there is an error while connecting to the api, try again 3 times
+                if(apiConnectTries <= 3)
+                {
+                    System.Threading.Thread.Sleep(5000);
+                    sendSoapRequest();
+                }   
             }
         }
 
@@ -848,7 +857,9 @@ senderCity, senderNumber);
                 OdbcCommand comm = new OdbcCommand(sql, conn);
                 comm.ExecuteNonQuery();
             }
+#pragma warning disable CS0168 // Variable is declared but never used
             catch (Exception ex)
+#pragma warning restore CS0168 // Variable is declared but never used
             {
 
             }
