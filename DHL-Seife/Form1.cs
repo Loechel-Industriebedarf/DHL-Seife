@@ -188,7 +188,7 @@ namespace DHL_Seife
             string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
                 "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
-                "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.STATUS = 2";
+                "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "'";
 
             OdbcDataReader dr = null;
             try { 
@@ -203,6 +203,7 @@ namespace DHL_Seife
             }
 
             xmlweight = "0";
+            String xmlweightTemp = "0";
 
             while (dr.Read())
             {
@@ -279,7 +280,15 @@ namespace DHL_Seife
 
                 try
                 {
-                    xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();        
+                    if(dr["STATUS"].ToString() == "2")
+                    {
+                        xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
+                    }
+                    else
+                    {
+                        //If there are no positions with status 2, just take the weight of all positions
+                        xmlweightTemp = (Convert.ToDouble(xmlweightTemp) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
+                    }
                 }
                 catch(Exception ex)
                 {
@@ -290,10 +299,17 @@ namespace DHL_Seife
   
             }
 
-                //If the weight is to small, set it to zero
-                if (String.IsNullOrEmpty(xmlweight) || xmlweight == "0.001")
+            //If the weight is to small, set it to zero
+            if (String.IsNullOrEmpty(xmlweight) || xmlweight == "0.001")
             {
-                xmlweight = "0";
+                if (Convert.ToDouble(xmlweightTemp) > 0.001)
+                {
+                    xmlweight = xmlweightTemp;
+                }
+                else
+                {
+                    xmlweight = "0";
+                }       
             }
         }
 
