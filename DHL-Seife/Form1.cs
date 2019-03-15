@@ -186,7 +186,7 @@ namespace DHL_Seife
             printShippingLabel.Text = "Versandlabel drucken";
 
             string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
-                "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR " +
+                "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, dbo.AUFTRAGSPOS.ARTIKELNR " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
                 "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "'";
 
@@ -292,8 +292,8 @@ namespace DHL_Seife
                 }
                 catch(Exception ex)
                 {
-                    //logTextToFile("> Article weight or stock unit missing!");
-                    logTextToFile("> Artikelgewicht fehlt!");
+                    //logTextToFile("> Article weight for "+ dr["ARTIKELNR"] + " missing!");
+                    logTextToFile("> Artikelgewicht für "+ dr["ARTIKELNR"] + " fehlt!");
                     logTextToFile(ex.ToString(), true);
                 }
   
