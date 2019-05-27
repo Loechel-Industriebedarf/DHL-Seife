@@ -45,6 +45,7 @@ namespace DHL_Seife
         private static Boolean firstrun = true; //For the logging method. If it's not the first run, don't insert additional line breaks
         private static string sqlshipmentnumber = ""; //Insert String to insert the shipment number to the database
         private static string sql_carrier_shipmentnumber = ""; //Insert String to insert the carrier number to the database
+        private static string xmlcommunicationmail = ""; //Mail that gets used for postfilals
 
 
 
@@ -272,7 +273,8 @@ namespace DHL_Seife
                 if (dr["CODE1"].ToString().Contains('@') && !dr["CODE1"].ToString().Contains("amazon")) {
                     xmlmail = dr["CODE1"].ToString().Trim();
                 }
-                
+                xmlcommunicationmail = dr["CODE1"].ToString().Trim();
+
 
                 xmlournumber = dr["BELEGNR"].ToString();
                 String netWeight = dr["NetWeightPerSalesUnit"].ToString();
@@ -473,7 +475,7 @@ namespace DHL_Seife
             if (xmlstreet.ToLower().Contains("postfiliale"))
             {
                 postFiliale = "<Communication>" +
-                    "<cis:email>" + xmlmail + "</cis:email>" +
+                    "<cis:email>" + xmlcommunicationmail + "</cis:email>" +
                     "</Communication>" +
                     "<Postfiliale>" +
                     "<cis:postfilialNumber>" + xmlstreetnumber +
