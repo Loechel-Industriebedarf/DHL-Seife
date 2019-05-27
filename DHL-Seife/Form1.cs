@@ -105,17 +105,17 @@ namespace DHL_Seife
             DateTime lastrun = Properties.Settings.Default.lastRun;
             TimeSpan diff = (now - lastrun);
 
-            //If more than 10 seconds passed, write the new time to the settings.
-            if(diff.TotalSeconds > 5)
+            //If more than 3 seconds passed, write the new time to the settings.
+            if(diff.TotalSeconds > 3)
             {
                 Properties.Settings.Default.lastRun = now;
                 Properties.Settings.Default.Save();
             }
-            //If less than 10 seconds passed, kill the program.
+            //If less than 3 seconds passed, kill the program.
             else
             {
-                //logTextToFile("> Less than 10 seconds passed! Double run!");
-                logTextToFile("> Doppelte Ausführung! Bitte 5 Sekunden warten.");
+                //logTextToFile("> Less than 3 seconds passed! Double run!");
+                logTextToFile("> Doppelte Ausführung! Bitte 3 Sekunden warten.");
                 Application.Exit();
                 Environment.Exit(1);
             }
@@ -446,6 +446,7 @@ namespace DHL_Seife
             string packstationStart = "";
             string packstationEnd = "";
             string packstationNumber = "";
+            string postFiliale = "";
             if (xmlstreet.ToLower().Contains("dhl-packstation"))
             {
                 xmlstreet = xmlstreet.Replace("dhl-", "");
@@ -469,7 +470,17 @@ namespace DHL_Seife
                     packstationNumber = Regex.Replace(xmlrecipient03, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
                 }
             }
-            xmlrecipient = xmlrecipient + " " + xmlrecipient02 + " " + xmlrecipient03; //Combines the recipients for unneccessary use of multiple fields
+            if (xmlstreet.ToLower().Contains("postfiliale"))
+            {
+                postFiliale = "<Communication>" +
+                    "<cis:email>" + xmlmail + "</cis:email>" +
+                    "</Communication>" +
+                    "<Postfiliale>" +
+                    "<cis:postfilialNumber>" + xmlstreetnumber +
+                    "</cis:postfilialNumber>" +
+                  "</Postfiliale>";
+            }
+                xmlrecipient = xmlrecipient + " " + xmlrecipient02 + " " + xmlrecipient03; //Combines the recipients for unneccessary use of multiple fields
 
 
             //These values have a max length; Cut them, if they are too long
@@ -579,7 +590,7 @@ namespace DHL_Seife
                   <cis:name1>{4}</cis:name1>
                   <cis:name2>{16}</cis:name2>
                   <cis:name3>{17}</cis:name3>
-                    {18}{20}{19}
+                    {18}{20}{19}{27}
                   <Address>
                      <cis:streetName>{5}</cis:streetName>
                      <cis:streetNumber>{6}</cis:streetNumber>
@@ -596,12 +607,12 @@ namespace DHL_Seife
          </ShipmentOrder>
       </bus:CreateShipmentOrderRequest>
    </soapenv:Body>
-</soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, xmlmail, xmlrecipient, 
-xmlstreet, xmlstreetnumber, xmlplz, xmlcity, xmlcountry, 
-xmlpass, xmlaccountnumber, xmlournumber, xmlparceltype, newxmlmailopen, 
-newxmlmailclose, xmlrecipient02, xmlrecipient03, packstationStart, packstationEnd, 
-packstationNumber, senderName, senderStreetName, senderStreetNumber, senderZip,
-senderCity, senderNumber);
+</soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, xmlmail, xmlrecipient, xmlstreet, 
+xmlstreetnumber, xmlplz, xmlcity, xmlcountry, xmlpass, 
+xmlaccountnumber, xmlournumber, xmlparceltype, newxmlmailopen, newxmlmailclose, 
+xmlrecipient02, xmlrecipient03, packstationStart, packstationEnd, packstationNumber, 
+senderName, senderStreetName, senderStreetNumber, senderZip, senderCity, 
+senderNumber, postFiliale);
                 Console.WriteLine(xml);
                 soapEnvelopeXml.LoadXml(xml);
             }
