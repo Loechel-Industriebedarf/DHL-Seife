@@ -313,6 +313,11 @@ namespace DHL_Seife
                     xmlweight = "0";
                 }       
             }
+            //If the weight is fine, add 300 grams for packaging
+            else
+            {
+                xmlweight = (Convert.ToDouble(xmlweight) + 0.3).ToString();
+            }
         }
 
         /// <summary>
