@@ -284,9 +284,11 @@ namespace DHL_Seife
 
                 try
                 {
-                    if (dr["GEWICHT"] == null) {
+                    Console.WriteLine(dr["GEWICHT"].ToString());
+
+                    if (dr["GEWICHT"].ToString() == null || dr["GEWICHT"].ToString() == "") {
                         if (dr["STATUS"].ToString() == "2")
-                        {
+                        {       
                             xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
                         }
                         else
