@@ -187,8 +187,10 @@ namespace DHL_Seife
             printShippingLabel.Text = "Versandlabel drucken";
 
             string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
-                "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, dbo.AUFTRAGSPOS.ARTIKELNR " +
+                "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, dbo.AUFTRAGSPOS.ARTIKELNR, " +
+                "GEWICHT " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
+                "LEFT JOIN dbo.VERSANDGUT ON dbo.VERSANDGUT.BELEGNR = dbo.AUFTRAGSPOS.BELEGNR " +
                 "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "'";
 
             OdbcDataReader dr = null;
@@ -205,6 +207,7 @@ namespace DHL_Seife
 
             xmlweight = "0";
             String xmlweightTemp = "0";
+            Boolean addPackaging = true; //If the weight wasn't added manually: add extra weight for packaging later
 
             while (dr.Read())
             {
@@ -250,7 +253,6 @@ namespace DHL_Seife
 
                         //DHL wants zips with numbers splitted: 5051DV -> 5051 DV
                         xmlplz = xmlplz.Substring(0, i) + " " + xmlplz.Substring(i);
-                        Console.WriteLine(i + " " + xmlplz);
                     }
                 }
 
@@ -282,14 +284,21 @@ namespace DHL_Seife
 
                 try
                 {
-                    if(dr["STATUS"].ToString() == "2")
-                    {
-                        xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
+                    if (dr["GEWICHT"] == null) {
+                        if (dr["STATUS"].ToString() == "2")
+                        {
+                            xmlweight = (Convert.ToDouble(xmlweight) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
+                        }
+                        else
+                        {
+                            //If there are no positions with status 2, just take the weight of all positions
+                            xmlweightTemp = (Convert.ToDouble(xmlweightTemp) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
+                        }
                     }
                     else
                     {
-                        //If there are no positions with status 2, just take the weight of all positions
-                        xmlweightTemp = (Convert.ToDouble(xmlweightTemp) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
+                        xmlweight = dr["GEWICHT"].ToString();
+                        addPackaging = false;
                     }
                 }
                 catch(Exception ex)
@@ -313,10 +322,13 @@ namespace DHL_Seife
                     xmlweight = "0";
                 }       
             }
-            //If the weight is fine, add 300 grams for packaging
+            //If the weight is fine and extra weight for packaging should be added, add 300 grams for packaging
             else
             {
-                xmlweight = (Convert.ToDouble(xmlweight) + 0.3).ToString();
+                if (addPackaging)
+                {
+                    xmlweight = (Convert.ToDouble(xmlweight) + 0.3).ToString();
+                }    
             }
         }
 
@@ -620,7 +632,6 @@ xmlaccountnumber, xmlournumber, xmlparceltype, newxmlmailopen, newxmlmailclose,
 xmlrecipient02, xmlrecipient03, packstationStart, packstationEnd, packstationNumber, 
 senderName, senderStreetName, senderStreetNumber, senderZip, senderCity, 
 senderNumber, postFiliale);
-                Console.WriteLine(xml);
                 soapEnvelopeXml.LoadXml(xml);
             }
             catch(Exception ex)
