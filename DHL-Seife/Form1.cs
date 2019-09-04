@@ -46,6 +46,7 @@ namespace DHL_Seife
         private static string sqlshipmentnumber = ""; //Insert String to insert the shipment number to the database
         private static string sql_carrier_shipmentnumber = ""; //Insert String to insert the carrier number to the database
         private static string xmlcommunicationmail = ""; //Mail that gets used for postfilals
+        private static string sqlinsertnewmemo = ""; //Insert String to insert memo to the database
 
 
 
@@ -145,6 +146,7 @@ namespace DHL_Seife
             var dhl_username = doc.Descendants("dhl_username");
             var insertshipmenttodb = doc.Descendants("insertshipmenttodb");
             var insertcarriertodb = doc.Descendants("insertcarriertodb");
+            var insertnewmemotodb = doc.Descendants("insertnewmemotodb");
             foreach (var foo in dbconnection) { connectionString = foo.Value; }
             foreach (var foo in dbrowidshipment) { rowidshipmentnumber = foo.Value; }
             foreach (var foo in dbrowidcarrier) { rowidcarrier = foo.Value; }
@@ -158,6 +160,7 @@ namespace DHL_Seife
             foreach (var foo in dhl_username) { xmluser = foo.Value; }
             foreach (var foo in insertshipmenttodb) { sqlshipmentnumber = foo.Value; }
             foreach (var foo in insertcarriertodb) { sql_carrier_shipmentnumber = foo.Value; }
+            foreach (var foo in insertnewmemotodb) { sqlinsertnewmemo = foo.Value; }
         }
 
 
@@ -737,6 +740,8 @@ senderNumber, postFiliale);
                     using (var reader = new StreamReader(data))
                     {
                         string text = reader.ReadToEnd();
+                        //logTextToFile("> Error while connecting to DHL-API!");
+                        logTextToFile("> Fehler bei der Verbindung mit der DHL-API!");
                         logTextToFile(text, true);
                     }
                 }
@@ -897,7 +902,7 @@ senderNumber, postFiliale);
             //Write to database
             try
             {
-                string sql = "UPDATE [LOE01].[dbo].[AUFTRAGSKOPF] SET Memo = ISNULL(CONVERT(varchar(8000), Memo), '') + '" + log;
+                string sql = sqlinsertnewmemo + " + '" + log;
                 if (nl)
                 {
                     sql += "\r\n";
@@ -908,9 +913,7 @@ senderNumber, postFiliale);
                 OdbcCommand comm = new OdbcCommand(sql, conn);
                 comm.ExecuteNonQuery();
             }
-#pragma warning disable CS0168 // Variable is declared but never used
             catch (Exception ex)
-#pragma warning restore CS0168 // Variable is declared but never used
             {
 
             }
