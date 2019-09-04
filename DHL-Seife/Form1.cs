@@ -635,6 +635,8 @@ xmlrecipient02, xmlrecipient03, packstationStart, packstationEnd, packstationNum
 senderName, senderStreetName, senderStreetNumber, senderZip, senderCity, 
 senderNumber, postFiliale);
                 soapEnvelopeXml.LoadXml(xml);
+
+                Console.WriteLine(xml);
             }
             catch(Exception ex)
             {
@@ -642,6 +644,8 @@ senderNumber, postFiliale);
                 logTextToFile("> XML Fehler!");
                 logTextToFile(ex.ToString(), true);
             }
+
+            
 
             try
             {
@@ -722,7 +726,22 @@ senderNumber, postFiliale);
                     }
                 }
             }
-            catch(Exception ex)
+            catch (WebException ex)
+            {
+                //Log the error message of the WebException
+                using (WebResponse response = ex.Response)
+                {
+                    HttpWebResponse httpResponse = (HttpWebResponse)response;
+                    Console.WriteLine("Error code: {0}", httpResponse.StatusCode);
+                    using (Stream data = response.GetResponseStream())
+                    using (var reader = new StreamReader(data))
+                    {
+                        string text = reader.ReadToEnd();
+                        logTextToFile(text, true);
+                    }
+                }
+            }
+            catch (Exception ex)
             {
                 //logTextToFile("> Error while connecting to DHL-API!");
                 logTextToFile("> Fehler bei der Verbindung mit der DHL-API!");
@@ -736,6 +755,7 @@ senderNumber, postFiliale);
                     sendSoapRequest();
                 }   
             }
+            
         }
 
         /// <summary>
