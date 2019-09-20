@@ -732,18 +732,27 @@ senderNumber, postFiliale);
             catch (WebException ex)
             {
                 //Log the error message of the WebException
-                using (WebResponse response = ex.Response)
+                try
                 {
-                    HttpWebResponse httpResponse = (HttpWebResponse)response;
-                    Console.WriteLine("Error code: {0}", httpResponse.StatusCode);
-                    using (Stream data = response.GetResponseStream())
-                    using (var reader = new StreamReader(data))
+                    using (WebResponse response = ex.Response)
                     {
-                        string text = reader.ReadToEnd();
-                        //logTextToFile("> Error while connecting to DHL-API!");
-                        logTextToFile("> Fehler bei der Verbindung mit der DHL-API!");
-                        logTextToFile(text, true);
+                        HttpWebResponse httpResponse = (HttpWebResponse)response;
+                        Console.WriteLine("Error code: {0}", httpResponse.StatusCode);
+                        using (Stream data = response.GetResponseStream())
+                        using (var reader = new StreamReader(data))
+                        {
+                            string text = reader.ReadToEnd();
+                            //logTextToFile("> Error while connecting to DHL-API!");
+                            logTextToFile("> Fehler bei der Verbindung mit der DHL-API!");
+                            logTextToFile(text, true);
+                        }
                     }
+                }
+                catch (Exception ex1)
+                {
+                    //logTextToFile("> Error while connecting to DHL-API!");
+                    logTextToFile("> Fehler bei der Verbindung mit der DHL-API!");
+                    logTextToFile(ex1.ToString(), true);
                 }
             }
             catch (Exception ex)
@@ -754,11 +763,11 @@ senderNumber, postFiliale);
 
                 apiConnectTries++;
                 //If there is an error while connecting to the api, try again 3 times
-                if(apiConnectTries <= 3)
+                if (apiConnectTries <= 3)
                 {
                     System.Threading.Thread.Sleep(5000);
                     sendSoapRequest();
-                }   
+                }
             }
             
         }
