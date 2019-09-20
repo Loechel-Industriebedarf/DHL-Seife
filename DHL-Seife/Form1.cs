@@ -71,7 +71,8 @@ namespace DHL_Seife
                 xmlournumber = "";
                 //logTextToFile("> The program was started manually.");
                 logTextToFile("> Das Programm wurde manuell gestartet.");
-                logTextToFile(ex.ToString(), true);
+                logTextToFile(ex.ToString());
+                logTextToFile(ex.Message.ToString(), true);
             }
             
 
@@ -205,7 +206,8 @@ namespace DHL_Seife
             }
             catch (Exception ex)
             {
-                logTextToFile(ex.ToString(), true);
+                logTextToFile(ex.ToString());
+                logTextToFile(ex.Message.ToString(), true);
             }
 
             xmlweight = "0";
@@ -310,7 +312,8 @@ namespace DHL_Seife
                 {
                     //logTextToFile("> Article weight for "+ dr["ARTIKELNR"] + " missing!");
                     logTextToFile("> Artikelgewicht für "+ dr["ARTIKELNR"] + " fehlt!");
-                    logTextToFile(ex.ToString(), true);
+                    logTextToFile(ex.ToString());
+                    logTextToFile(ex.Message.ToString(), true);
                 }
   
             }
@@ -427,7 +430,8 @@ namespace DHL_Seife
             {
                 xmlstreet = removeSpecialCharacters(streetDefinition);
                 xmlstreetnumber = "0";
-                logTextToFile(ex.ToString(), true);
+                logTextToFile(ex.ToString());
+                logTextToFile(ex.Message.ToString(), true);
             }
 
             //People don't like to write the word "street" completely
@@ -527,7 +531,8 @@ namespace DHL_Seife
             }
             catch(Exception ex)
             {
-                logTextToFile(ex.ToString(), true);
+                logTextToFile(ex.ToString());
+                logTextToFile(ex.Message.ToString(), true);
             }
             
 
@@ -645,7 +650,8 @@ senderNumber, postFiliale);
             {
                 //logTextToFile("> XML error!");
                 logTextToFile("> XML Fehler!");
-                logTextToFile(ex.ToString(), true);
+                logTextToFile(ex.ToString());
+                logTextToFile(ex.Message.ToString(), true);
             }
 
             
@@ -660,6 +666,7 @@ senderNumber, postFiliale);
             catch(Exception ex)
             {
                 logTextToFile(ex.ToString());
+                logTextToFile(ex.Message.ToString(), true);
             }
             
         }
@@ -715,6 +722,7 @@ senderNumber, postFiliale);
                             catch (Exception ex)
                             {
                                 logTextToFile(ex.ToString(), true);
+                                logTextToFile(ex.Message.ToString(), true);
                             }
                             //Print label
                             printLabel(labelName);
@@ -737,7 +745,6 @@ senderNumber, postFiliale);
                     using (WebResponse response = ex.Response)
                     {
                         HttpWebResponse httpResponse = (HttpWebResponse)response;
-                        Console.WriteLine("Error code: {0}", httpResponse.StatusCode);
                         using (Stream data = response.GetResponseStream())
                         using (var reader = new StreamReader(data))
                         {
@@ -752,14 +759,16 @@ senderNumber, postFiliale);
                 {
                     //logTextToFile("> Error while connecting to DHL-API!");
                     logTextToFile("> Fehler bei der Verbindung mit der DHL-API!");
-                    logTextToFile(ex1.ToString(), true);
+                    logTextToFile(ex1.ToString());
+                    logTextToFile(ex1.Message.ToString(), true);
                 }
             }
             catch (Exception ex)
             {
                 //logTextToFile("> Error while connecting to DHL-API!");
                 logTextToFile("> Fehler bei der Verbindung mit der DHL-API!");
-                logTextToFile(ex.ToString(), true);
+                logTextToFile(ex.ToString());
+                logTextToFile(ex.Message.ToString(), true);
 
                 apiConnectTries++;
                 //If there is an error while connecting to the api, try again 3 times
@@ -794,7 +803,8 @@ senderNumber, postFiliale);
                 }
                 catch(Exception ex)
                 {
-                    logTextToFile(ex.ToString(), true);
+                    logTextToFile(ex.ToString());
+                    logTextToFile(ex.Message.ToString(), true);
                 }
 
                 //logTextToFile("> " + labelName + " successfully printed!");
@@ -802,7 +812,8 @@ senderNumber, postFiliale);
             }
             catch (Exception ex)
             {
-                logTextToFile(ex.ToString(), true);
+                logTextToFile(ex.ToString());
+                logTextToFile(ex.Message.ToString(), true);
             }
 
             
@@ -836,6 +847,7 @@ senderNumber, postFiliale);
             catch (Exception ex)
             {
                 logTextToFile(ex.ToString(), true);
+                logTextToFile(ex.Message.ToString(), true);
             }
             
         }
@@ -863,6 +875,7 @@ senderNumber, postFiliale);
             catch (Exception ex)
             {
                 logTextToFile(ex.ToString(), true);
+                logTextToFile(ex.Message.ToString(), true);
             }
             return webRequest;
         }
