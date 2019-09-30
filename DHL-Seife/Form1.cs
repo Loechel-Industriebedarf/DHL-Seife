@@ -319,16 +319,16 @@ namespace DHL_Seife
             }
 
             //If the weight is to small, set it to zero
-            if (String.IsNullOrEmpty(xmlweight) || xmlweight == "0.001")
+            if (String.IsNullOrEmpty(xmlweight) || Convert.ToDouble(xmlweight) <= 0.001)
             {
-                if (Convert.ToDouble(xmlweightTemp) > 0.001)
-                {
-                    xmlweight = xmlweightTemp;
+                if (String.IsNullOrEmpty(xmlweightTemp) || Convert.ToDouble(xmlweightTemp) == 0)
+                { 
+                    xmlweight = "0";
                 }
                 else
                 {
-                    xmlweight = "0";
-                }       
+                    xmlweight = (Convert.ToDouble(xmlweightTemp) + 0.3).ToString();
+                }            
             }
             //If the weight is fine and extra weight for packaging should be added, add 300 grams for packaging
             else
