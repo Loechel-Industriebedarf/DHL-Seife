@@ -8,6 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
 using Spire.Pdf;
+using System.Collections;
 
 namespace DHL_Seife
 {
@@ -47,6 +48,10 @@ namespace DHL_Seife
         private static string sql_carrier_shipmentnumber = ""; //Insert String to insert the carrier number to the database
         private static string xmlcommunicationmail = ""; //Mail that gets used for postfilals
         private static string sqlinsertnewmemo = ""; //Insert String to insert memo to the database
+        private static string sqlinsertnewtermin = ""; //Insert String to insert termin to the database
+        private static string xmlpscount = "1"; //Number of shipments in a package
+        private static ArrayList xmlweightarray = new ArrayList(); //Number of shipments in a package
+
 
 
 
@@ -148,6 +153,7 @@ namespace DHL_Seife
             var insertshipmenttodb = doc.Descendants("insertshipmenttodb");
             var insertcarriertodb = doc.Descendants("insertcarriertodb");
             var insertnewmemotodb = doc.Descendants("insertnewmemotodb");
+            var insertnewtermin = doc.Descendants("insertnewtermin");
             foreach (var foo in dbconnection) { connectionString = foo.Value; }
             foreach (var foo in dbrowidshipment) { rowidshipmentnumber = foo.Value; }
             foreach (var foo in dbrowidcarrier) { rowidcarrier = foo.Value; }
@@ -162,6 +168,7 @@ namespace DHL_Seife
             foreach (var foo in insertshipmenttodb) { sqlshipmentnumber = foo.Value; }
             foreach (var foo in insertcarriertodb) { sql_carrier_shipmentnumber = foo.Value; }
             foreach (var foo in insertnewmemotodb) { sqlinsertnewmemo = foo.Value; }
+            foreach (var foo in insertnewtermin) { sqlinsertnewtermin = foo.Value; }
         }
 
 
@@ -192,7 +199,7 @@ namespace DHL_Seife
 
             string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
                 "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, dbo.AUFTRAGSPOS.ARTIKELNR, " +
-                "GEWICHT " +
+                "GEWICHT, (select count(*) from dbo.VERSANDGUT m2 where m2.BELEGNR = '" + xmlournumber + "') as PSCount " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
                 "LEFT JOIN dbo.VERSANDGUT ON dbo.VERSANDGUT.BELEGNR = dbo.AUFTRAGSPOS.BELEGNR " +
                 "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + xmlournumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + xmlournumber + "'";
@@ -217,6 +224,10 @@ namespace DHL_Seife
             while (dr.Read())
             {
                 rowid = dr["FSROWID"].ToString();
+                if (!String.IsNullOrEmpty(dr["PSCount"].ToString()) && dr["PSCount"].ToString() != "0") {
+                    xmlpscount = dr["PSCount"].ToString();
+                }
+
 
                 xmlordertype = dr["BELEGART"].ToString();
 
@@ -289,8 +300,6 @@ namespace DHL_Seife
 
                 try
                 {
-                    Console.WriteLine(dr["GEWICHT"].ToString());
-
                     if (dr["GEWICHT"].ToString() == null || dr["GEWICHT"].ToString() == "") {
                         if (dr["STATUS"].ToString() == "2")
                         {       
@@ -304,6 +313,7 @@ namespace DHL_Seife
                     }
                     else
                     {
+                        xmlweightarray.Add(dr["GEWICHT"].ToString());
                         xmlweight = dr["GEWICHT"].ToString();
                         addPackaging = false;
                     }
@@ -315,13 +325,14 @@ namespace DHL_Seife
                     logTextToFile(ex.ToString());
                     logTextToFile(ex.Message.ToString(), true);
                 }
-  
+
             }
 
             //If the weight is to small, set it to zero
             if (String.IsNullOrEmpty(xmlweight) || Convert.ToDouble(xmlweight) <= 0.001)
             {
-                if (String.IsNullOrEmpty(xmlweightTemp) || Convert.ToDouble(xmlweightTemp) == 0)
+                //If temporary weight was set (no position with status 2): use that one.
+                if (String.IsNullOrEmpty(xmlweightTemp) || Convert.ToDouble(xmlweightTemp) <= 0.001)
                 { 
                     xmlweight = "0";
                 }
@@ -336,7 +347,7 @@ namespace DHL_Seife
                 if (addPackaging)
                 {
                     xmlweight = (Convert.ToDouble(xmlweight) + 0.3).ToString();
-                }    
+                }
             }
         }
 
@@ -569,6 +580,80 @@ namespace DHL_Seife
 
 
                 //Starts at 0, the string variables on the bottom are groups of five
+
+                //I need to clean this up. blargh.
+                String xmlmultiple = "";
+                if (Convert.ToDouble(xmlpscount) > 1)
+                {
+                    xmlweight = xmlweightarray[0].ToString().Replace(",", ".");
+
+                    for (int i = 1; i < Convert.ToDouble(xmlpscount); i++)
+                    {
+                        String weightbuffer = xmlweightarray[0].ToString().Replace(",", ".");
+                        String ournumberbuffer = xmlournumber + " - Paket " + i + " von " + Convert.ToDouble(xmlpscount);
+
+                        xmlmultiple = xmlmultiple + String.Format(@"<ShipmentOrder>
+                        <sequenceNumber>{28}</sequenceNumber>
+                        <Shipment>
+                           <ShipmentDetails>
+                              <product>{13}</product>
+                              <cis:accountNumber>{11}</cis:accountNumber>
+                              <customerReference>{12}</customerReference>
+                              <shipmentDate>{1}</shipmentDate>
+                              <ShipmentItem>
+                                 <weightInKG>{2}</weightInKG>
+                              </ShipmentItem>
+                              <Notification>
+                                 {14}{3}{15}
+                              </Notification>
+                           </ShipmentDetails>
+                           <Shipper>
+                              <Name>
+                                 <cis:name1>{21}</cis:name1>
+                              </Name>
+                              <Address>
+                                 <cis:streetName>{22}</cis:streetName>
+                                 <cis:streetNumber>{23}</cis:streetNumber>
+                                 <cis:zip>{24}</cis:zip>
+                                 <cis:city>{25}</cis:city>    
+                                 <cis:Origin>
+                                    <cis:country>Deutschland</cis:country>
+                                 </cis:Origin>
+                              </Address>
+                              <Communication>
+                              <cis:phone>{26}</cis:phone>
+                              </Communication>
+                           </Shipper>
+                           <Receiver>
+                              <cis:name1>{4}</cis:name1>
+                              <cis:name2>{16}</cis:name2>
+                              <cis:name3>{17}</cis:name3>
+                                {18}{20}{19}{27}
+                              <Address>
+                                 <cis:streetName>{5}</cis:streetName>
+                                 <cis:streetNumber>{6}</cis:streetNumber>
+                                 <cis:zip>{7}</cis:zip>
+                                 <cis:city>{8}</cis:city>
+                                 <cis:Origin>
+                                    <cis:country>{9}</cis:country>
+                                 </cis:Origin>
+                              </Address>
+                              <Communication>
+                              </Communication>
+                           </Receiver>
+                        </Shipment>
+                     </ShipmentOrder>", xmluser, xmlshippmentdate, weightbuffer, xmlmail, xmlrecipient, xmlstreet,
+xmlstreetnumber, xmlplz, xmlcity, xmlcountry, xmlpass,
+xmlaccountnumber, ournumberbuffer, xmlparceltype, newxmlmailopen, newxmlmailclose,
+xmlrecipient02, xmlrecipient03, packstationStart, packstationEnd, packstationNumber,
+senderName, senderStreetName, senderStreetNumber, senderZip, senderCity,
+senderNumber, postFiliale, xmlpscount);
+                    }      
+                    
+                    xmlournumber = xmlournumber + " - Paket " + Convert.ToDouble(xmlpscount) + " von " + Convert.ToDouble(xmlpscount);
+                }
+                
+
                 String xml = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
                 <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:cis=""http://dhl.de/webservice/cisbase"" xmlns:bus=""http://dhl.de/webservices/businesscustomershipping"">
    <soapenv:Header>
@@ -584,7 +669,7 @@ namespace DHL_Seife
             <minorRelease>0</minorRelease>
          </bus:Version>
          <ShipmentOrder>
-            <sequenceNumber>01</sequenceNumber>
+            <sequenceNumber>{28}</sequenceNumber>
             <Shipment>
                <ShipmentDetails>
                   <product>{13}</product>
@@ -633,7 +718,7 @@ namespace DHL_Seife
                   </Communication>
                </Receiver>
             </Shipment>
-         </ShipmentOrder>
+         </ShipmentOrder>{29}
       </bus:CreateShipmentOrderRequest>
    </soapenv:Body>
 </soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, xmlmail, xmlrecipient, xmlstreet, 
@@ -641,14 +726,16 @@ xmlstreetnumber, xmlplz, xmlcity, xmlcountry, xmlpass,
 xmlaccountnumber, xmlournumber, xmlparceltype, newxmlmailopen, newxmlmailclose, 
 xmlrecipient02, xmlrecipient03, packstationStart, packstationEnd, packstationNumber, 
 senderName, senderStreetName, senderStreetNumber, senderZip, senderCity, 
-senderNumber, postFiliale);
-                soapEnvelopeXml.LoadXml(xml);
+senderNumber, postFiliale, xmlpscount, xmlmultiple);
 
                 Console.WriteLine(xml);
+
+
+                soapEnvelopeXml.LoadXml(xml);
             }
             catch(Exception ex)
             {
-                //logTextToFile("> XML error!");
+                //logTextToFile(" > XML error!");
                 logTextToFile("> XML Fehler!");
                 logTextToFile(ex.ToString());
                 logTextToFile(ex.Message.ToString(), true);
@@ -695,7 +782,7 @@ senderNumber, postFiliale);
                         {
                             //logTextToFile("Critical adress-error!");
                             logTextToFile("> Kritischer Adressfehler!");
-                            logTextToFile(soapResult, true);
+                            logTextToFile(soapResult, true, true);
                         }
                         else if (soapResult.Contains("Weak validation"))
                         {
@@ -751,7 +838,7 @@ senderNumber, postFiliale);
                             string text = reader.ReadToEnd();
                             //logTextToFile("> Error while connecting to DHL-API!");
                             logTextToFile("> Fehler bei der Verbindung mit der DHL-API!");
-                            logTextToFile(text, true);
+                            logTextToFile(text, true, true);
                         }
                     }
                 }
@@ -760,7 +847,19 @@ senderNumber, postFiliale);
                     //logTextToFile("> Error while connecting to DHL-API!");
                     logTextToFile("> Fehler bei der Verbindung mit der DHL-API!");
                     logTextToFile(ex1.ToString());
-                    logTextToFile(ex1.Message.ToString(), true);
+
+                    apiConnectTries++;
+                    //If there is an error while connecting to the api, try again 3 times
+                    if (apiConnectTries <= 3)
+                    {
+                        logTextToFile(ex1.Message.ToString(), true);
+                        System.Threading.Thread.Sleep(5000);
+                        sendSoapRequest();
+                    }
+                    else
+                    {
+                        logTextToFile(ex1.Message.ToString(), true, true);
+                    }
                 }
             }
             catch (Exception ex)
@@ -768,14 +867,18 @@ senderNumber, postFiliale);
                 //logTextToFile("> Error while connecting to DHL-API!");
                 logTextToFile("> Fehler bei der Verbindung mit der DHL-API!");
                 logTextToFile(ex.ToString());
-                logTextToFile(ex.Message.ToString(), true);
 
                 apiConnectTries++;
                 //If there is an error while connecting to the api, try again 3 times
                 if (apiConnectTries <= 3)
                 {
+                    logTextToFile(ex.Message.ToString(), true);
                     System.Threading.Thread.Sleep(5000);
                     sendSoapRequest();
+                }
+                else
+                {
+                    logTextToFile(ex.Message.ToString(), true, true);
                 }
             }
             
@@ -921,6 +1024,10 @@ senderNumber, postFiliale);
         }
         private static void logTextToFile(String log, Boolean nl)
         {
+            logTextToFile(log, nl, false);
+        }
+        private static void logTextToFile(String log, Boolean nl, Boolean termin)
+        {
             //Write to database
             try
             {
@@ -934,6 +1041,14 @@ senderNumber, postFiliale);
                 conn.Open();
                 OdbcCommand comm = new OdbcCommand(sql, conn);
                 comm.ExecuteNonQuery();
+                if (termin)
+                {
+                    sql = sqlinsertnewtermin;
+                    sql = sql.Replace("%ordernumber%", orderNumber).Replace("%log%", log).Replace("%time%", DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss"));
+                    Console.WriteLine(sql);
+                    comm = new OdbcCommand(sql, conn);
+                    comm.ExecuteNonQuery();
+                }
             }
             catch (Exception ex)
             {
