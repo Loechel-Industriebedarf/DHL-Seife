@@ -736,9 +736,7 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
             catch(Exception ex)
             {
                 //logTextToFile(" > XML error!");
-                logTextToFile("> XML Fehler!");
-                logTextToFile(ex.ToString());
-                logTextToFile(ex.Message.ToString(), true);
+                logTextToFile("> XML Fehler!" + ex.ToString(), true, true);
             }
 
             
@@ -843,34 +841,34 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
                 catch (Exception ex1)
                 {
                     apiConnectTries++;
-                    //If there is an error while connecting to the api, try again 3 times
-                    if (apiConnectTries <= 3)
+                    //If there is an error while connecting to the api, try again 5 times
+                    if (apiConnectTries <= 5)
                     {
                         //logTextToFile("> Error while connecting to DHL-API!");
-                        logTextToFile("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex1.Message.ToString(), true, false);
+                        logTextToFile("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 5 Sekunden!\r\n" + ex1.ToString(), true, false);
                         System.Threading.Thread.Sleep(5000);
                         sendSoapRequest();
                     }
                     else
                     {
-                        logTextToFile("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex1.Message.ToString(), true, true);
+                        logTextToFile("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex1.ToString(), true, true);
                     }
                 }
             }
             catch (Exception ex)
             {
                 apiConnectTries++;
-                //If there is an error while connecting to the api, try again 3 times
-                if (apiConnectTries <= 3)
+                //If there is an error while connecting to the api, try again 5 times
+                if (apiConnectTries <= 5)
                 {
                     //logTextToFile("> Error while connecting to DHL-API!");
-                    logTextToFile("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex.Message.ToString(), true, false);
+                    logTextToFile("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 5 Sekunden!\r\n" + ex.ToString(), true, false);
                     System.Threading.Thread.Sleep(5000);
                     sendSoapRequest();
                 }
                 else
                 {
-                    logTextToFile("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex.Message.ToString(), true, true);
+                    logTextToFile("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex.ToString(), true, true);
                 }
             }
             
@@ -1023,7 +1021,8 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
             //Write to database
             try
             {
-                string sql = sqlinsertnewmemo + " + '" + log;
+                log = log.Replace("'", "´"); //Replace fixes sql errors, if the log contains '
+                string sql = sqlinsertnewmemo + " + '" + log; 
                 if (nl)
                 {
                     sql += "\r\n";
@@ -1044,7 +1043,7 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
             }
             catch (Exception ex)
             {
-
+                Console.WriteLine(ex.ToString());
             }
 
             //Write to log file
