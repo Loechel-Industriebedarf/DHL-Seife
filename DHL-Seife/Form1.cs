@@ -847,6 +847,7 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
                         //logTextToFile("> Error while connecting to DHL-API!");
                         logTextToFile("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 5 Sekunden!\r\n" + ex1.ToString(), true, false);
                         System.Threading.Thread.Sleep(5000);
+                        doXMLMagic();
                         sendSoapRequest();
                     }
                     else
@@ -864,6 +865,7 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
                     //logTextToFile("> Error while connecting to DHL-API!");
                     logTextToFile("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 5 Sekunden!\r\n" + ex.ToString(), true, false);
                     System.Threading.Thread.Sleep(5000);
+                    doXMLMagic();
                     sendSoapRequest();
                 }
                 else
