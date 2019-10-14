@@ -53,7 +53,7 @@ namespace DHL_Seife
         private void writeLogToFile(string log, bool nl)
         {
             try { 
-                using (StreamWriter sw = File.AppendText(sett.logfile))
+                using (StreamWriter sw = File.AppendText(sett.Logfile))
                 {
                     if (firstrun)
                     {
@@ -90,20 +90,20 @@ namespace DHL_Seife
             try
             {
                 log = log.Replace("'", "´"); //Replace fixes sql errors, if the log contains '
-                string sql = sett.sqlinsertnewmemo + " + '" + log;
+                string sql = sett.SqlInsertNewMemo + " + '" + log;
                 if (nl)
                 {
                     sql += "\r\n";
                 }
-                sql += "\r\n' WHERE BelegNr = '" + sett.orderNumber + "'";
-                OdbcConnection conn = new OdbcConnection(sett.connectionString);
+                sql += "\r\n' WHERE BelegNr = '" + sett.OrderNumber + "'";
+                OdbcConnection conn = new OdbcConnection(sett.ConnectionString);
                 conn.Open();
                 OdbcCommand comm = new OdbcCommand(sql, conn);
                 comm.ExecuteNonQuery();
                 if (termin)
                 {
-                    sql = sett.sqlinsertnewtermin;
-                    sql = sql.Replace("%ordernumber%", sett.orderNumber).Replace("%log%", log).Replace("%time%", DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss"));
+                    sql = sett.SqlInsertNewTermin;
+                    sql = sql.Replace("%ordernumber%", sett.OrderNumber).Replace("%log%", log).Replace("%time%", DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss"));
                     Console.WriteLine(sql);
                     comm = new OdbcCommand(sql, conn);
                     comm.ExecuteNonQuery();

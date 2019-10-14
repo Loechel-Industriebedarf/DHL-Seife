@@ -16,18 +16,18 @@ namespace DHL_Seife
 {
     public partial class Form1 : Form
     {
-        private static SettingsReader sett = new SettingsReader();
-        private static LogWriter log = new LogWriter(sett);
-        private static SQLHelper sqlh = new SQLHelper(sett, log);
-        private static XMLHelper xmlh = new XMLHelper(sett, log, sqlh);
-        private static SOAPHelper soaph = new SOAPHelper(sett, log, sqlh, xmlh);
+        private static SettingsReader Sett = new SettingsReader();
+        private static LogWriter Log = new LogWriter(Sett);
+        private static SQLHelper SqlH = new SQLHelper(Sett, Log);
+        private static XMLHelper XmlH = new XMLHelper(Sett, Log, SqlH);
+        private static SOAPHelper SoapH = new SOAPHelper(Sett, Log, SqlH, XmlH);
 
 
 
         public Form1()
         {
             //Our users tend to run the program twice, per "accident"...
-            checkDoubleRun();
+            CheckDoubleRun();
 
             //The order number can be transmitted via command line parameter
             string[] args = Environment.GetCommandLineArgs();
@@ -36,17 +36,17 @@ namespace DHL_Seife
             try
             {
                 if (!String.IsNullOrEmpty(args[1])) {
-                    sett.orderNumber = args[1];
-                    log.writeLog("> " + args[1], true);
+                    Sett.OrderNumber = args[1];
+                    Log.writeLog("> " + args[1], true);
                 }
             }
             //Program gui was started
             catch(Exception ex)
             {
                 //log.writeLog("> The program was started manually.");
-                log.writeLog("> Das Programm wurde manuell gestartet.");
-                log.writeLog(ex.ToString());
-                log.writeLog(ex.Message.ToString(), true);
+                Log.writeLog("> Das Programm wurde manuell gestartet.");
+                Log.writeLog(ex.ToString());
+                Log.writeLog(ex.Message.ToString(), true);
             }
             
 
@@ -54,11 +54,11 @@ namespace DHL_Seife
 
 
             //If the program was started via a parameter, skip the whole gui thing
-            if (!String.IsNullOrEmpty(sett.orderNumber))
+            if (!String.IsNullOrEmpty(Sett.OrderNumber))
             {
-                sqlh.doSQLMagic();
-                xmlh.doXMLMagic();
-                soaph.sendSoapRequest();
+                SqlH.DoSQLMagic();
+                XmlH.DoXMLMagic();
+                SoapH.SendSoapRequest();
 
                 Application.Exit();
                 Environment.Exit(1);
@@ -67,14 +67,14 @@ namespace DHL_Seife
             {
                 printManualShippingLabel.Visible = true;
             }
-            writeToGui();
+            WriteToGui();
         }
 
 
         /// <summary>
         /// Checks, how much seconds passed since the last run. If it's less than 10, don't run the program
         /// </summary>
-        private void checkDoubleRun()
+        private void CheckDoubleRun()
         {
             DateTime now = DateTime.Now;
             DateTime lastrun = Properties.Settings.Default.lastRun;
@@ -90,7 +90,7 @@ namespace DHL_Seife
             else
             {
                 //logTextToFile("> Less than 3 seconds passed! Double run!");
-                log.writeLog("> Doppelte Ausführung! Bitte 3 Sekunden warten.");
+                Log.writeLog("> Doppelte Ausführung! Bitte 3 Sekunden warten.");
                 Application.Exit();
                 Environment.Exit(1);
             }
@@ -133,18 +133,18 @@ namespace DHL_Seife
         /// <summary>
         /// Inserts the different variables into the gui.
         /// </summary>
-        private void writeToGui()
+        private void WriteToGui()
         {
-            sett.orderNumber = sqlh.xmlournumber;
-            textBoxOrdernumber.Text = sqlh.xmlournumber;
-            textBoxRecepient.Text = sqlh.xmlrecipient;
-            textBoxStreet.Text = sqlh.xmlstreet;
-            textBoxStreetNumber.Text = sqlh.xmlstreetnumber;
-            textBoxPLZ.Text = sqlh.xmlplz;
-            textBoxCity.Text = sqlh.xmlcity;
-            textBoxCountry.Text = sqlh.xmlcountry;
-            textBoxWeight.Text = sqlh.xmlweight;
-            textBoxMail.Text = sqlh.xmlmail;
+            Sett.OrderNumber = SqlH.XmlOurNumber;
+            textBoxOrdernumber.Text = SqlH.XmlOurNumber;
+            textBoxRecepient.Text = SqlH.XmlRecipient;
+            textBoxStreet.Text = SqlH.XmlStreet;
+            textBoxStreetNumber.Text = SqlH.XmlStreetnumber;
+            textBoxPLZ.Text = SqlH.XmlPlz;
+            textBoxCity.Text = SqlH.XmlCity;
+            textBoxCountry.Text = SqlH.XmlCountry;
+            textBoxWeight.Text = SqlH.XmlWeight;
+            textBoxMail.Text = SqlH.XmlMail;
         }
 
 
@@ -153,18 +153,18 @@ namespace DHL_Seife
         /// Primary button to create a shipping label.
         /// If no order number was transmitted (via parameter), the button acts as "get data from Enventa"-button.
         /// </summary>
-        private void printShippingLabel_Click(object sender, EventArgs e)
+        private void PrintShippingLabel_Click(object sender, EventArgs e)
         {
-            if (String.IsNullOrEmpty(sqlh.xmlournumber))
+            if (String.IsNullOrEmpty(SqlH.XmlOurNumber))
             {
-                sqlh.doSQLMagic();
-                writeToGui();
+                SqlH.DoSQLMagic();
+                WriteToGui();
                 printManualShippingLabel.Visible = false;
             }
             else
             {
-                xmlh.doXMLMagic();
-                soaph.sendSoapRequest();
+                XmlH.DoXMLMagic();
+                SoapH.SendSoapRequest();
                 Application.Exit();
             }
         }
@@ -173,60 +173,60 @@ namespace DHL_Seife
         /// <summary>
         /// This button only appears, if no data from Enventa was read. It starts the label-printing.
         /// </summary>
-        private void printManualShippingLabel_Click(object sender, EventArgs e)
+        private void PrintManualShippingLabel_Click(object sender, EventArgs e)
         {
-            xmlh.doXMLMagic();
-            soaph.sendSoapRequest();
+            XmlH.DoXMLMagic();
+            SoapH.SendSoapRequest();
             Application.Exit();
         }
 
         /// <summary>
         /// Disable reading stuff from enventa database, when no order number is given.
         /// </summary>
-        private void textBoxOrdernumber_TextChanged(object sender, EventArgs e)
+        private void TextBoxOrdernumber_TextChanged(object sender, EventArgs e)
         {
-            sett.orderNumber = textBoxOrdernumber.Text;
-            if (String.IsNullOrEmpty(sett.orderNumber)) { printShippingLabel.Enabled = false; } else { printShippingLabel.Enabled = true; }
+            Sett.OrderNumber = textBoxOrdernumber.Text;
+            if (String.IsNullOrEmpty(Sett.OrderNumber)) { printShippingLabel.Enabled = false; } else { printShippingLabel.Enabled = true; }
         }
 
-        private void textBoxRecepient_TextChanged(object sender, EventArgs e)
+        private void TextBoxRecepient_TextChanged(object sender, EventArgs e)
         {
-            sqlh.xmlrecipient = textBoxRecepient.Text;
+            SqlH.XmlRecipient = textBoxRecepient.Text;
         }
 
-        private void textBoxStreet_TextChanged(object sender, EventArgs e)
+        private void TextBoxStreet_TextChanged(object sender, EventArgs e)
         {
-            sqlh.xmlstreet = textBoxStreet.Text;
+            SqlH.XmlStreet = textBoxStreet.Text;
         }
 
-        private void textBoxStreetNumber_TextChanged(object sender, EventArgs e)
+        private void TextBoxStreetNumber_TextChanged(object sender, EventArgs e)
         {
-            sqlh.xmlstreetnumber = textBoxStreetNumber.Text;
+            SqlH.XmlStreetnumber = textBoxStreetNumber.Text;
         }
 
-        private void textBoxPLZ_TextChanged(object sender, EventArgs e)
+        private void TextBoxPLZ_TextChanged(object sender, EventArgs e)
         {
-            sqlh.xmlplz = textBoxPLZ.Text;
+            SqlH.XmlPlz = textBoxPLZ.Text;
         }
 
-        private void textBoxCity_TextChanged(object sender, EventArgs e)
+        private void TextBoxCity_TextChanged(object sender, EventArgs e)
         {
-            sqlh.xmlcity = textBoxCity.Text;
+            SqlH.XmlCity = textBoxCity.Text;
         }
 
-        private void textBoxCountry_TextChanged(object sender, EventArgs e)
+        private void TextBoxCountry_TextChanged(object sender, EventArgs e)
         {
-            sqlh.xmlcountry = textBoxCountry.Text;
+            SqlH.XmlCountry = textBoxCountry.Text;
         }
 
-        private void textBoxWeight_TextChanged(object sender, EventArgs e)
+        private void TextBoxWeight_TextChanged(object sender, EventArgs e)
         {
-            sqlh.xmlweight = textBoxWeight.Text;
+            SqlH.XmlWeight = textBoxWeight.Text;
         }
 
-        private void textBoxMail_TextChanged(object sender, EventArgs e)
+        private void TextBoxMail_TextChanged(object sender, EventArgs e)
         {
-            sqlh.xmlmail = textBoxMail.Text;
+            SqlH.XmlMail = textBoxMail.Text;
         }
 
         private void Main_Load(object sender, EventArgs e)
@@ -234,7 +234,7 @@ namespace DHL_Seife
 
         }
 
-        private void label9_Click(object sender, EventArgs e)
+        private void Label9_Click(object sender, EventArgs e)
         {
 
         }

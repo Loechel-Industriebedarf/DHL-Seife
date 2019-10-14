@@ -16,10 +16,10 @@ namespace DHL_Seife.prog
         /// </summary>
         public PrintHelper(SettingsReader sett, LogWriter log, string labelName)
         {
-            printLabel(sett, log, labelName);
+            PrintLabel(sett, log, labelName);
         }
 
-        private static void printLabel(SettingsReader sett, LogWriter log, string labelName)
+        private static void PrintLabel(SettingsReader sett, LogWriter log, string labelName)
         {
             try
             {
@@ -30,7 +30,7 @@ namespace DHL_Seife.prog
                 {
                     PdfDocument pdfdocument = new PdfDocument();
                     pdfdocument.LoadFromFile(filepath);
-                    pdfdocument.PrinterName = sett.printerName;
+                    pdfdocument.PrinterName = sett.PrinterName;
                     pdfdocument.PrintDocument.PrinterSettings.Copies = 1;
                     pdfdocument.PrintDocument.Print();
                     pdfdocument.Dispose();

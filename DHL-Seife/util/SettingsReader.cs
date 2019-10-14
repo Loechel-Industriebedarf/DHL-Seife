@@ -9,30 +9,30 @@ namespace DHL_Seife.util
 {
     public class SettingsReader
     {
-        public string connectionString { get; set; } //Connection String for Database
-        public string rowidshipmentnumber { get; set; } //Row ID for insert
-        public string rowidcarrier { get; set; } //Row ID for insert
-        public string printerName { get; set; } //Name of the printer to print on later
-        public string dhlsoapconnection { get; set; } //Connection string for the soap request
-        public string api_user { get; set; }//Username to connect to the api
-        public string api_password { get; set; } //Password to connect to the api
-        public string xmlaccountnumber { get; set; } //DHL customer id / dhl business id
-        public string xmlaccountnumberint { get; set; } //DHL customer id / dhl business id international
-        public string xmlpass { get; set; } //DHL api password  / dhl business password
-        public string xmluser { get; set; } //DHL api username / dhl business username
-        public string sqlshipmentnumber { get; set; } //Insert String to insert the shipment number to the database
-        public string sql_carrier_shipmentnumber { get; set; } //Insert String to insert the carrier number to the database
-        public string sqlinsertnewmemo { get; set; } //Insert String to insert memo to the database
-        public string sqlinsertnewtermin { get; set; } //Insert String to insert termin to the database
-        public string logfile { get; set; } //Log file
+        public string ConnectionString { get; set; } //Connection String for Database
+        public string RowIdShipmentnumber { get; set; } //Row ID for insert
+        public string RowIdCarrier { get; set; } //Row ID for insert
+        public string PrinterName { get; set; } //Name of the printer to print on later
+        public string DHLSoapConnection { get; set; } //Connection string for the soap request
+        public string ApiUser { get; set; }//Username to connect to the api
+        public string ApiPassword { get; set; } //Password to connect to the api
+        public string XmlAccountnumber { get; set; } //DHL customer id / dhl business id
+        public string XmlAccountnumberInt { get; set; } //DHL customer id / dhl business id international
+        public string XmlPass { get; set; } //DHL api password  / dhl business password
+        public string XmlUser { get; set; } //DHL api username / dhl business username
+        public string SqlShipmentnumber { get; set; } //Insert String to insert the shipment number to the database
+        public string SqlCarrierShipmentnumber { get; set; } //Insert String to insert the carrier number to the database
+        public string SqlInsertNewMemo { get; set; } //Insert String to insert memo to the database
+        public string SqlInsertNewTermin { get; set; } //Insert String to insert termin to the database
+        public string Logfile { get; set; } //Log file
 
-        public string orderNumber{ get; set; } //The number of the order
+        public string OrderNumber{ get; set; } //The number of the order
 
 
 
         public SettingsReader()
         {
-            readSettings();
+            ReadSettings();
         }
 
 
@@ -41,10 +41,10 @@ namespace DHL_Seife.util
         /// <summary>
         /// Reads all settings from xml file and saves them to variables.
         /// </summary>
-        private void readSettings()
+        private void ReadSettings()
         {
             XDocument doc = XDocument.Load("var/settings.xml");
-            logfile = "log.log"; //TODO: Put in settings.xml
+            Logfile = "log.log"; //TODO: Put in settings.xml
 
             var dbconnection = doc.Descendants("dbconnection");
             var dbrowidshipment = doc.Descendants("rowidshipment");
@@ -61,21 +61,21 @@ namespace DHL_Seife.util
             var insertcarriertodb = doc.Descendants("insertcarriertodb");
             var insertnewmemotodb = doc.Descendants("insertnewmemotodb");
             var insertnewtermin = doc.Descendants("insertnewtermin");
-            foreach (var foo in dbconnection) { connectionString = foo.Value; }
-            foreach (var foo in dbrowidshipment) { rowidshipmentnumber = foo.Value; }
-            foreach (var foo in dbrowidcarrier) { rowidcarrier = foo.Value; }
-            foreach (var foo in printer) { printerName = foo.Value; }
-            foreach (var foo in dhlsoap) { dhlsoapconnection = foo.Value; }
-            foreach (var foo in api_username) { api_user = foo.Value; }
-            foreach (var foo in api_pass) { api_password = foo.Value; }
-            foreach (var foo in dhl_id) { xmlaccountnumber = foo.Value; }
-            foreach (var foo in dhl_id_int) { xmlaccountnumberint = foo.Value; }
-            foreach (var foo in dhl_pass) { xmlpass = foo.Value; }
-            foreach (var foo in dhl_username) { xmluser = foo.Value; }
-            foreach (var foo in insertshipmenttodb) { sqlshipmentnumber = foo.Value; }
-            foreach (var foo in insertcarriertodb) { sql_carrier_shipmentnumber = foo.Value; }
-            foreach (var foo in insertnewmemotodb) { sqlinsertnewmemo = foo.Value; }
-            foreach (var foo in insertnewtermin) { sqlinsertnewtermin = foo.Value; }
+            foreach (var foo in dbconnection) { ConnectionString = foo.Value; }
+            foreach (var foo in dbrowidshipment) { RowIdShipmentnumber = foo.Value; }
+            foreach (var foo in dbrowidcarrier) { RowIdCarrier = foo.Value; }
+            foreach (var foo in printer) { PrinterName = foo.Value; }
+            foreach (var foo in dhlsoap) { DHLSoapConnection = foo.Value; }
+            foreach (var foo in api_username) { ApiUser = foo.Value; }
+            foreach (var foo in api_pass) { ApiPassword = foo.Value; }
+            foreach (var foo in dhl_id) { XmlAccountnumber = foo.Value; }
+            foreach (var foo in dhl_id_int) { XmlAccountnumberInt = foo.Value; }
+            foreach (var foo in dhl_pass) { XmlPass = foo.Value; }
+            foreach (var foo in dhl_username) { XmlUser = foo.Value; }
+            foreach (var foo in insertshipmenttodb) { SqlShipmentnumber = foo.Value; }
+            foreach (var foo in insertcarriertodb) { SqlCarrierShipmentnumber = foo.Value; }
+            foreach (var foo in insertnewmemotodb) { SqlInsertNewMemo = foo.Value; }
+            foreach (var foo in insertnewtermin) { SqlInsertNewTermin = foo.Value; }
         }
     }
 }

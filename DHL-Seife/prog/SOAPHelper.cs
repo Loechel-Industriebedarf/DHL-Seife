@@ -20,6 +20,8 @@ namespace DHL_Seife.prog
         private XMLHelper xmlh;
         private static HttpWebRequest webRequest;
 
+
+
         public SOAPHelper(SettingsReader settingsBuffer, LogWriter lw, SQLHelper sql,  XMLHelper xml)
         {
             sett = settingsBuffer;
@@ -33,7 +35,7 @@ namespace DHL_Seife.prog
         /// Next, it reads the xml answer and opens the labelUrl in the default web-browser.
         /// </summary>
         static int apiConnectTries = 0; //If the connection to the api fails, it should try again.
-        public void sendSoapRequest()
+        public void SendSoapRequest()
         {
             webRequest = CreateWebRequest();
 
@@ -41,7 +43,7 @@ namespace DHL_Seife.prog
             {
                 using (Stream stream = webRequest.GetRequestStream())
                 {
-                    xmlh.soapEnvelopeXml.Save(stream);
+                    xmlh.SoapEnvelopeXml.Save(stream);
                 }
             }
             catch (Exception ex)
@@ -65,7 +67,7 @@ namespace DHL_Seife.prog
                         if (soapResult.Contains("Hard validation"))
                         {
                             //logTextToFile("Critical adress-error!");
-                            log.writeLog("> Kritischer Adressfehler!\r\n" + soapResult + "\r\n\r\n" + xmlh.xml, true, true);
+                            log.writeLog("> Kritischer Adressfehler!\r\n" + soapResult + "\r\n\r\n" + xmlh.Xml, true, true);
                         }
                         else if (soapResult.Contains("Weak validation"))
                         {
@@ -86,7 +88,7 @@ namespace DHL_Seife.prog
                             try
                             {
                                 WebClient Client = new WebClient();
-                                labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + sqlh.xmlrecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
+                                labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + sqlh.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
                                 Client.DownloadFile(labelUrl, @labelName);
                             }
                             catch (Exception ex)
@@ -102,7 +104,7 @@ namespace DHL_Seife.prog
                         foreach (XmlNode xn in xnList)
                         {
                             string shipmentnumber = xn.InnerText;
-                            writeShipmentNumber(shipmentnumber);
+                            WriteShipmentNumber(shipmentnumber);
                         }
                     }
                 }
@@ -110,12 +112,12 @@ namespace DHL_Seife.prog
             catch (WebException ex)
             {
                 //Log the error message of the WebException
-                anotherApiConnectionTryHttp(ex);
+                AnotherApiConnectionTryHttp(ex);
             }
             catch (Exception ex)
             {
                 //If there is no WebException, log the "normal" exception
-                anotherApiConnectionTry(ex);
+                AnotherApiConnectionTry(ex);
             }
 
         }
@@ -126,13 +128,13 @@ namespace DHL_Seife.prog
         /// </summary>
         public HttpWebRequest CreateWebRequest()
         {
-            String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("iso-8859-1").GetBytes(sett.api_user + ":" + sett.api_password));
+            String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("iso-8859-1").GetBytes(sett.ApiUser + ":" + sett.ApiPassword));
 
             //SOAP webrequest
             HttpWebRequest webRequest = null;
             try
             {
-                webRequest = (HttpWebRequest)WebRequest.Create(@sett.dhlsoapconnection);
+                webRequest = (HttpWebRequest)WebRequest.Create(@sett.DHLSoapConnection);
                 webRequest.Headers.Add("Authorization", "Basic " + encoded);
                 webRequest.Headers.Add("SOAPAction: urn:createShipmentOrder");
                 webRequest.ContentType = "text/xml;charset=\"utf-8\"";
@@ -152,7 +154,7 @@ namespace DHL_Seife.prog
         /// <summary>
         /// If we can't get a connection to the dhl api, try again.
         /// </summary>
-        private void anotherApiConnectionTryHttp(WebException ex)
+        private void AnotherApiConnectionTryHttp(WebException ex)
         {
             try
             {
@@ -169,24 +171,24 @@ namespace DHL_Seife.prog
                         {
                             string text = reader.ReadToEnd();
                             //logTextToFile("> Error while connecting to DHL-API!");
-                            log.writeLog("> Fehlerhafte Datenübermittlung an DHL!\r\n" + text + "\r\n\r\n" + xmlh.xml, true, false);
+                            log.writeLog("> Fehlerhafte Datenübermittlung an DHL!\r\n" + text + "\r\n\r\n" + xmlh.Xml, true, false);
                         }
 
                         //logTextToFile("> Error while connecting to DHL-API!");
                         log.writeLog("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
                         System.Threading.Thread.Sleep(5000);
-                        xmlh.doXMLMagic();
-                        sendSoapRequest();
+                        xmlh.DoXMLMagic();
+                        SendSoapRequest();
                     }
                     else
                     {
-                        log.writeLog("> Fehlerhafte Datenübermittlung an DHL!\r\n" + ex.ToString() + "\r\n\r\n" + xmlh.xml, true, true);
+                        log.writeLog("> Fehlerhafte Datenübermittlung an DHL!\r\n" + ex.ToString() + "\r\n\r\n" + xmlh.Xml, true, true);
                     }
                 }
             }
             catch (Exception ex1)
             {
-                anotherApiConnectionTry(ex1);
+                AnotherApiConnectionTry(ex1);
             }
         }
 
@@ -194,7 +196,7 @@ namespace DHL_Seife.prog
         /// <summary>
         /// If we can't get a connection to the dhl api, try again.
         /// </summary>
-        private void anotherApiConnectionTry(Exception ex)
+        private void AnotherApiConnectionTry(Exception ex)
         {
             apiConnectTries++;
             //If there is an error while connecting to the api, try again 10 times
@@ -203,8 +205,8 @@ namespace DHL_Seife.prog
                 //logTextToFile("> Error while connecting to DHL-API!");
                 log.writeLog("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
                 System.Threading.Thread.Sleep(3000);
-                xmlh.doXMLMagic();
-                sendSoapRequest();
+                xmlh.DoXMLMagic();
+                SendSoapRequest();
             }
             else
             {
@@ -221,19 +223,19 @@ namespace DHL_Seife.prog
         /// <summary>
         /// Writes shipment-number to the database.
         /// </summary>
-        private void writeShipmentNumber(string shipmentnumber)
+        private void WriteShipmentNumber(string shipmentnumber)
         {
-            string sql = sett.sqlshipmentnumber;
-            sql = sql.Replace("%rowidshipmentnumber%", sett.rowidshipmentnumber);
-            sql = sql.Replace("%rowid%", sqlh.rowid);
+            string sql = sett.SqlShipmentnumber;
+            sql = sql.Replace("%rowidshipmentnumber%", sett.RowIdShipmentnumber);
+            sql = sql.Replace("%rowid%", sqlh.RowId);
             sql = sql.Replace("%shipmentnumber%", shipmentnumber);
-            string sql_carrier = sett.sql_carrier_shipmentnumber;
-            sql_carrier = sql_carrier.Replace("%rowidcarrier%", sett.rowidcarrier);
-            sql_carrier = sql_carrier.Replace("%rowid%", sqlh.rowid);
+            string sql_carrier = sett.SqlCarrierShipmentnumber;
+            sql_carrier = sql_carrier.Replace("%rowidcarrier%", sett.RowIdCarrier);
+            sql_carrier = sql_carrier.Replace("%rowid%", sqlh.RowId);
 
             try
             {
-                OdbcConnection conn = new OdbcConnection(sett.connectionString);
+                OdbcConnection conn = new OdbcConnection(sett.ConnectionString);
                 conn.Open();
                 OdbcCommand comm = new OdbcCommand(sql, conn);
                 OdbcCommand comm_carrier = new OdbcCommand(sql_carrier, conn);

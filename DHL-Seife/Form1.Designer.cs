@@ -61,7 +61,7 @@
             this.printShippingLabel.TabIndex = 0;
             this.printShippingLabel.Text = "Daten aus Enventa auslesen (dafür bitte Belegnummer eintragen)";
             this.printShippingLabel.UseVisualStyleBackColor = true;
-            this.printShippingLabel.Click += new System.EventHandler(this.printShippingLabel_Click);
+            this.printShippingLabel.Click += new System.EventHandler(this.PrintShippingLabel_Click);
             // 
             // textBoxOrdernumber
             // 
@@ -69,7 +69,7 @@
             this.textBoxOrdernumber.Name = "textBoxOrdernumber";
             this.textBoxOrdernumber.Size = new System.Drawing.Size(279, 20);
             this.textBoxOrdernumber.TabIndex = 1;
-            this.textBoxOrdernumber.TextChanged += new System.EventHandler(this.textBoxOrdernumber_TextChanged);
+            this.textBoxOrdernumber.TextChanged += new System.EventHandler(this.TextBoxOrdernumber_TextChanged);
             // 
             // label1
             // 
@@ -95,7 +95,7 @@
             this.textBoxRecepient.Name = "textBoxRecepient";
             this.textBoxRecepient.Size = new System.Drawing.Size(279, 20);
             this.textBoxRecepient.TabIndex = 4;
-            this.textBoxRecepient.TextChanged += new System.EventHandler(this.textBoxRecepient_TextChanged);
+            this.textBoxRecepient.TextChanged += new System.EventHandler(this.TextBoxRecepient_TextChanged);
             // 
             // textBoxStreet
             // 
@@ -103,7 +103,7 @@
             this.textBoxStreet.Name = "textBoxStreet";
             this.textBoxStreet.Size = new System.Drawing.Size(279, 20);
             this.textBoxStreet.TabIndex = 5;
-            this.textBoxStreet.TextChanged += new System.EventHandler(this.textBoxStreet_TextChanged);
+            this.textBoxStreet.TextChanged += new System.EventHandler(this.TextBoxStreet_TextChanged);
             // 
             // textBoxStreetNumber
             // 
@@ -111,7 +111,7 @@
             this.textBoxStreetNumber.Name = "textBoxStreetNumber";
             this.textBoxStreetNumber.Size = new System.Drawing.Size(279, 20);
             this.textBoxStreetNumber.TabIndex = 6;
-            this.textBoxStreetNumber.TextChanged += new System.EventHandler(this.textBoxStreetNumber_TextChanged);
+            this.textBoxStreetNumber.TextChanged += new System.EventHandler(this.TextBoxStreetNumber_TextChanged);
             // 
             // textBoxPLZ
             // 
@@ -119,7 +119,7 @@
             this.textBoxPLZ.Name = "textBoxPLZ";
             this.textBoxPLZ.Size = new System.Drawing.Size(279, 20);
             this.textBoxPLZ.TabIndex = 7;
-            this.textBoxPLZ.TextChanged += new System.EventHandler(this.textBoxPLZ_TextChanged);
+            this.textBoxPLZ.TextChanged += new System.EventHandler(this.TextBoxPLZ_TextChanged);
             // 
             // textBoxCity
             // 
@@ -127,7 +127,7 @@
             this.textBoxCity.Name = "textBoxCity";
             this.textBoxCity.Size = new System.Drawing.Size(279, 20);
             this.textBoxCity.TabIndex = 8;
-            this.textBoxCity.TextChanged += new System.EventHandler(this.textBoxCity_TextChanged);
+            this.textBoxCity.TextChanged += new System.EventHandler(this.TextBoxCity_TextChanged);
             // 
             // textBoxCountry
             // 
@@ -135,7 +135,7 @@
             this.textBoxCountry.Name = "textBoxCountry";
             this.textBoxCountry.Size = new System.Drawing.Size(279, 20);
             this.textBoxCountry.TabIndex = 9;
-            this.textBoxCountry.TextChanged += new System.EventHandler(this.textBoxCountry_TextChanged);
+            this.textBoxCountry.TextChanged += new System.EventHandler(this.TextBoxCountry_TextChanged);
             // 
             // textBoxMail
             // 
@@ -143,7 +143,7 @@
             this.textBoxMail.Name = "textBoxMail";
             this.textBoxMail.Size = new System.Drawing.Size(279, 20);
             this.textBoxMail.TabIndex = 10;
-            this.textBoxMail.TextChanged += new System.EventHandler(this.textBoxMail_TextChanged);
+            this.textBoxMail.TextChanged += new System.EventHandler(this.TextBoxMail_TextChanged);
             // 
             // textBoxWeight
             // 
@@ -151,7 +151,7 @@
             this.textBoxWeight.Name = "textBoxWeight";
             this.textBoxWeight.Size = new System.Drawing.Size(279, 20);
             this.textBoxWeight.TabIndex = 11;
-            this.textBoxWeight.TextChanged += new System.EventHandler(this.textBoxWeight_TextChanged);
+            this.textBoxWeight.TextChanged += new System.EventHandler(this.TextBoxWeight_TextChanged);
             // 
             // label3
             // 
@@ -215,7 +215,7 @@
             this.label9.Size = new System.Drawing.Size(107, 13);
             this.label9.TabIndex = 18;
             this.label9.Text = "E-Mail (Darf leer sein)";
-            this.label9.Click += new System.EventHandler(this.label9_Click);
+            this.label9.Click += new System.EventHandler(this.Label9_Click);
             // 
             // printManualShippingLabel
             // 
@@ -226,7 +226,7 @@
             this.printManualShippingLabel.Text = "Versandlabel mit manueller Eingabe drucken";
             this.printManualShippingLabel.UseVisualStyleBackColor = true;
             this.printManualShippingLabel.Visible = false;
-            this.printManualShippingLabel.Click += new System.EventHandler(this.printManualShippingLabel_Click);
+            this.printManualShippingLabel.Click += new System.EventHandler(this.PrintManualShippingLabel_Click);
             // 
             // label10
             // 

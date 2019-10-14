@@ -18,8 +18,8 @@ namespace DHL_Seife.prog
         private SQLHelper sqlh;
         
 
-        public string xml = ""; //XML to send to dhl
-        public XmlDocument soapEnvelopeXml = new XmlDocument();
+        public string Xml = ""; //XML to send to dhl
+        public XmlDocument SoapEnvelopeXml = new XmlDocument();
 
         public XMLHelper(SettingsReader settingsBuffer, LogWriter lw, SQLHelper sql)
         {
@@ -32,30 +32,30 @@ namespace DHL_Seife.prog
         /// Create a xml-string from the inputs the user made erlier.
         /// This xml will be sent as soap request to the dhl server.
         /// </summary>
-        public void doXMLMagic()
+        public void DoXMLMagic()
         {
             //E-Mail is not a needed thing for the dhl-xml
             String newxmlmail = "";
             String newxmlmailopen = "";
             String newxmlmailclose = "";
-            if (!String.IsNullOrEmpty(sqlh.xmlmail) && sqlh.xmlmail.Contains("@") && !sqlh.xmlmail.Contains("amazon"))
+            if (!String.IsNullOrEmpty(sqlh.XmlMail) && sqlh.XmlMail.Contains("@") && !sqlh.XmlMail.Contains("amazon"))
             {
                 newxmlmailopen = "<recipientEmailAddress>";
                 newxmlmailclose = "</recipientEmailAddress>";
-                newxmlmail = "<recipientEmailAddress>" + sqlh.xmlmail + "</recipientEmailAddress>";
+                newxmlmail = "<recipientEmailAddress>" + sqlh.XmlMail + "</recipientEmailAddress>";
             }
 
             //DHL wants decimal values with dots, not commas
-            if (sqlh.xmlweight.Contains(','))
+            if (sqlh.XmlWeight.Contains(','))
             {
-                sqlh.xmlweight = sqlh.xmlweight.Replace(",", ".");
+                sqlh.XmlWeight = sqlh.XmlWeight.Replace(",", ".");
             }
 
             //If the country is not Germany, send an international parcel
-            if (!sqlh.xmlcountry.ToLower().Equals("deutschland") && !sqlh.xmlcountry.ToLower().Equals("de"))
+            if (!sqlh.XmlCountry.ToLower().Equals("deutschland") && !sqlh.XmlCountry.ToLower().Equals("de"))
             {
-                sqlh.xmlparceltype = "V53WPAK";  //international parcel
-                sett.xmlaccountnumber = sett.xmlaccountnumberint; //international account number
+                sqlh.XmlParcelType = "V53WPAK";  //international parcel
+                sett.XmlAccountnumber = sett.XmlAccountnumberInt; //international account number
             }
 
             //If the street name contains "Packstation", we deliver to a packing station
@@ -63,59 +63,59 @@ namespace DHL_Seife.prog
             string packstationEnd = "";
             string packstationNumber = "";
             string postFiliale = "";
-            if (sqlh.xmlstreet.ToLower().Contains("dhl-packstation"))
+            if (sqlh.XmlStreet.ToLower().Contains("dhl-packstation"))
             {
-                sqlh.xmlstreet = sqlh.xmlstreet.Replace("dhl-", "");
+                sqlh.XmlStreet = sqlh.XmlStreet.Replace("dhl-", "");
             }
-            else if (sqlh.xmlstreet.ToLower().Contains("dhl packstation"))
+            else if (sqlh.XmlStreet.ToLower().Contains("dhl packstation"))
             {
-                sqlh.xmlstreet = sqlh.xmlstreet.Replace("dhl ", "");
+                sqlh.XmlStreet = sqlh.XmlStreet.Replace("dhl ", "");
             }
-            if (sqlh.xmlstreet.ToLower().Contains("packstation"))
+            if (sqlh.XmlStreet.ToLower().Contains("packstation"))
             {
                 packstationStart = "<Packstation>" +
                     "<cis:postNumber>";
                 packstationEnd = "</cis:postNumber>" +
                   "</Packstation>";
-                if (!String.IsNullOrEmpty(sqlh.xmlrecipient02))
+                if (!String.IsNullOrEmpty(sqlh.XmlRecipient02))
                 {
-                    packstationNumber = Regex.Replace(sqlh.xmlrecipient02, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
+                    packstationNumber = Regex.Replace(sqlh.XmlRecipient02, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
                 }
                 else
                 {
-                    packstationNumber = Regex.Replace(sqlh.xmlrecipient03, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
+                    packstationNumber = Regex.Replace(sqlh.XmlRecipient03, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
                 }
             }
-            if (sqlh.xmlstreet.ToLower().Contains("postfiliale"))
+            if (sqlh.XmlStreet.ToLower().Contains("postfiliale"))
             {
                 postFiliale = "<Communication>" +
-                    "<cis:email>" + sqlh.xmlcommunicationmail + "</cis:email>" +
+                    "<cis:email>" + sqlh.XmlCommunicationMail + "</cis:email>" +
                     "</Communication>" +
                     "<Postfiliale>" +
-                    "<cis:postfilialNumber>" + sqlh.xmlstreetnumber +
+                    "<cis:postfilialNumber>" + sqlh.XmlStreetnumber +
                     "</cis:postfilialNumber>" +
                   "</Postfiliale>";
             }
-            sqlh.xmlrecipient = sqlh.xmlrecipient + " " + sqlh.xmlrecipient02 + " " + sqlh.xmlrecipient03; //Combines the recipients for unneccessary use of multiple fields
+            sqlh.XmlRecipient = sqlh.XmlRecipient + " " + sqlh.XmlRecipient02 + " " + sqlh.XmlRecipient03; //Combines the recipients for unneccessary use of multiple fields
 
 
             //These values have a max length; Cut them, if they are too long
             //If recipient(01) is too long, write the rest of it to recipient02. If recipient02 is too long, write the rest to recipient03
-            if (sqlh.xmlrecipient.Length > 35) { sqlh.xmlrecipient02 = sqlh.xmlrecipient.Substring(35, sqlh.xmlrecipient.Length - 35) + " " + sqlh.xmlrecipient02; sqlh.xmlrecipient = sqlh.xmlrecipient.Substring(0, 35); }
-            if (sqlh.xmlrecipient02.Length > 35) { sqlh.xmlrecipient03 = sqlh.xmlrecipient02.Substring(35, sqlh.xmlrecipient02.Length - 35) + " " + sqlh.xmlrecipient03; sqlh.xmlrecipient02 = sqlh.xmlrecipient02.Substring(0, 35); }
-            if (sqlh.xmlrecipient03.Length > 35) { sqlh.xmlrecipient03 = sqlh.xmlrecipient03.Substring(0, 35); }
-            if (sqlh.xmlstreet.Length > 35) { sqlh.xmlstreet = sqlh.xmlstreet.Substring(0, 35); }
-            if (sqlh.xmlstreetnumber.Length > 5) { sqlh.xmlstreetnumber = sqlh.xmlstreetnumber.Substring(0, 5); }
-            if (sqlh.xmlplz.Length > 10) { sqlh.xmlplz = sqlh.xmlplz.Substring(0, 10); }
-            if (sqlh.xmlcity.Length > 35) { sqlh.xmlcity = sqlh.xmlcity.Substring(0, 35); }
-            if (sqlh.xmlcountry.Length > 30) { sqlh.xmlcountry = sqlh.xmlcountry.Substring(0, 30); }
+            if (sqlh.XmlRecipient.Length > 35) { sqlh.XmlRecipient02 = sqlh.XmlRecipient.Substring(35, sqlh.XmlRecipient.Length - 35) + " " + sqlh.XmlRecipient02; sqlh.XmlRecipient = sqlh.XmlRecipient.Substring(0, 35); }
+            if (sqlh.XmlRecipient02.Length > 35) { sqlh.XmlRecipient03 = sqlh.XmlRecipient02.Substring(35, sqlh.XmlRecipient02.Length - 35) + " " + sqlh.XmlRecipient03; sqlh.XmlRecipient02 = sqlh.XmlRecipient02.Substring(0, 35); }
+            if (sqlh.XmlRecipient03.Length > 35) { sqlh.XmlRecipient03 = sqlh.XmlRecipient03.Substring(0, 35); }
+            if (sqlh.XmlStreet.Length > 35) { sqlh.XmlStreet = sqlh.XmlStreet.Substring(0, 35); }
+            if (sqlh.XmlStreetnumber.Length > 5) { sqlh.XmlStreetnumber = sqlh.XmlStreetnumber.Substring(0, 5); }
+            if (sqlh.XmlPlz.Length > 10) { sqlh.XmlPlz = sqlh.XmlPlz.Substring(0, 10); }
+            if (sqlh.XmlCity.Length > 35) { sqlh.XmlCity = sqlh.XmlCity.Substring(0, 35); }
+            if (sqlh.XmlCountry.Length > 30) { sqlh.XmlCountry = sqlh.XmlCountry.Substring(0, 30); }
             if (newxmlmail.Length > 70) { newxmlmail = newxmlmail.Substring(0, 70); }
             try
             {
-                double weight = Convert.ToDouble(sqlh.xmlweight.Replace(".", ","));
-                if (weight > 30) { sqlh.xmlweight = "30"; }
-                else if (weight <= 0.01) { sqlh.xmlweight = "4"; }
-                else if (weight < 0.1) { sqlh.xmlweight = "0.1"; }
+                double weight = Convert.ToDouble(sqlh.XmlWeight.Replace(".", ","));
+                if (weight > 30) { sqlh.XmlWeight = "30"; }
+                else if (weight <= 0.01) { sqlh.XmlWeight = "4"; }
+                else if (weight < 0.1) { sqlh.XmlWeight = "0.1"; }
             }
             catch (Exception ex)
             {
@@ -132,7 +132,7 @@ namespace DHL_Seife.prog
                 string senderZip = "";
                 string senderCity = "";
                 string senderNumber = "";
-                if (sqlh.xmlordertype.Equals("10"))
+                if (sqlh.XmlOrderType.Equals("10"))
                 {
                     senderName = "Mercateo Deutschland AG";
                     senderStreetName = "Museumsgasse";
@@ -156,14 +156,14 @@ namespace DHL_Seife.prog
 
                 //I need to clean this up. blargh.
                 String xmlmultiple = "";
-                if (Convert.ToDouble(sqlh.xmlpscount) > 1)
+                if (Convert.ToDouble(sqlh.XmlPsCount) > 1)
                 {
-                    sqlh.xmlweight = sqlh.xmlweightarray[0].ToString().Replace(",", ".");
+                    sqlh.XmlWeight = sqlh.XmlWeightArray[0].ToString().Replace(",", ".");
 
-                    for (int i = 1; i < Convert.ToDouble(sqlh.xmlpscount); i++)
+                    for (int i = 1; i < Convert.ToDouble(sqlh.XmlPsCount); i++)
                     {
-                        String weightbuffer = sqlh.xmlweightarray[i].ToString().Replace(",", ".");
-                        String ournumberbuffer = sqlh.xmlournumber + " - Paket " + i + " von " + Convert.ToDouble(sqlh.xmlpscount);
+                        String weightbuffer = sqlh.XmlWeightArray[i].ToString().Replace(",", ".");
+                        String ournumberbuffer = sqlh.XmlOurNumber + " - Paket " + i + " von " + Convert.ToDouble(sqlh.XmlPsCount);
 
                         xmlmultiple = xmlmultiple + String.Format(@"<ShipmentOrder>
                         <sequenceNumber>{28}</sequenceNumber>
@@ -215,19 +215,19 @@ namespace DHL_Seife.prog
                               </Communication>
                            </Receiver>
                         </Shipment>
-                     </ShipmentOrder>", sett.xmluser, sqlh.xmlshippmentdate, weightbuffer, sqlh.xmlmail, sqlh.xmlrecipient, sqlh.xmlstreet,
-sqlh.xmlstreetnumber, sqlh.xmlplz, sqlh.xmlcity, sqlh.xmlcountry, sett.xmlpass,
-sett.xmlaccountnumber, ournumberbuffer, sqlh.xmlparceltype, newxmlmailopen, newxmlmailclose,
-sqlh.xmlrecipient02, sqlh.xmlrecipient03, packstationStart, packstationEnd, packstationNumber,
+                     </ShipmentOrder>", sett.XmlUser, sqlh.XmlShippmentDate, weightbuffer, sqlh.XmlMail, sqlh.XmlRecipient, sqlh.XmlStreet,
+sqlh.XmlStreetnumber, sqlh.XmlPlz, sqlh.XmlCity, sqlh.XmlCountry, sett.XmlPass,
+sett.XmlAccountnumber, ournumberbuffer, sqlh.XmlParcelType, newxmlmailopen, newxmlmailclose,
+sqlh.XmlRecipient02, sqlh.XmlRecipient03, packstationStart, packstationEnd, packstationNumber,
 senderName, senderStreetName, senderStreetNumber, senderZip, senderCity,
-senderNumber, postFiliale, sqlh.xmlpscount);
+senderNumber, postFiliale, sqlh.XmlPsCount);
                     }
 
-                    sqlh.xmlournumber = sqlh.xmlournumber + " - Paket " + Convert.ToDouble(sqlh.xmlpscount) + " von " + Convert.ToDouble(sqlh.xmlpscount);
+                    sqlh.XmlOurNumber = sqlh.XmlOurNumber + " - Paket " + Convert.ToDouble(sqlh.XmlPsCount) + " von " + Convert.ToDouble(sqlh.XmlPsCount);
                 }
 
 
-                xml = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                Xml = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
                 <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:cis=""http://dhl.de/webservice/cisbase"" xmlns:bus=""http://dhl.de/webservices/businesscustomershipping"">
    <soapenv:Header>
       <cis:Authentification>
@@ -294,14 +294,14 @@ senderNumber, postFiliale, sqlh.xmlpscount);
          </ShipmentOrder>{29}
       </bus:CreateShipmentOrderRequest>
    </soapenv:Body>
-</soapenv:Envelope>", sett.xmluser, sqlh.xmlshippmentdate, sqlh.xmlweight, sqlh.xmlmail, sqlh.xmlrecipient, sqlh.xmlstreet,
-sqlh.xmlstreetnumber, sqlh.xmlplz, sqlh.xmlcity, sqlh.xmlcountry, sett.xmlpass,
-sett.xmlaccountnumber, sqlh.xmlournumber, sqlh.xmlparceltype, newxmlmailopen, newxmlmailclose,
-sqlh.xmlrecipient02, sqlh.xmlrecipient03, packstationStart, packstationEnd, packstationNumber,
+</soapenv:Envelope>", sett.XmlUser, sqlh.XmlShippmentDate, sqlh.XmlWeight, sqlh.XmlMail, sqlh.XmlRecipient, sqlh.XmlStreet,
+sqlh.XmlStreetnumber, sqlh.XmlPlz, sqlh.XmlCity, sqlh.XmlCountry, sett.XmlPass,
+sett.XmlAccountnumber, sqlh.XmlOurNumber, sqlh.XmlParcelType, newxmlmailopen, newxmlmailclose,
+sqlh.XmlRecipient02, sqlh.XmlRecipient03, packstationStart, packstationEnd, packstationNumber,
 senderName, senderStreetName, senderStreetNumber, senderZip, senderCity,
-senderNumber, postFiliale, sqlh.xmlpscount, xmlmultiple);
+senderNumber, postFiliale, sqlh.XmlPsCount, xmlmultiple);
 
-                soapEnvelopeXml.LoadXml(xml);
+                SoapEnvelopeXml.LoadXml(Xml);
             }
             catch (Exception ex)
             {
