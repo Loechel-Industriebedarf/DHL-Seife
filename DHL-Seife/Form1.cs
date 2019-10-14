@@ -9,17 +9,16 @@ using System.Xml.Linq;
 using System.Text.RegularExpressions;
 using Spire.Pdf;
 using System.Collections;
+using DHL_Seife.util;
 
 namespace DHL_Seife
 {
     public partial class Form1 : Form
     {
+        private static SettingsReader sett = new SettingsReader();
+
         private static HttpWebRequest webRequest;
         private static string orderNumber = "";
-        private static string xmluser = ""; //DHL api username / dhl business username
-        private static string xmlpass = ""; //DHL api password  / dhl business password
-        private static string xmlaccountnumber = ""; //DHL customer id / dhl business id
-        private static string xmlaccountnumberint = ""; //DHL customer id / dhl business id international
         private static string xmlournumber = orderNumber;
         private static string xmlshippmentdate = DateTime.Now.ToString("yyyy-MM-dd"); //YYYY-MM-DD
         private static string xmlweight = "1"; //In kg
@@ -35,20 +34,9 @@ namespace DHL_Seife
         private static string xmlparceltype = "V01PAK"; //Parcel type (Germany only or international)
         private static string xmlordertype = "1"; //Parcel type (Germany only or international)
         private static string rowid = ""; //Row ID for insert
-        private static string rowidshipmentnumber = ""; //Row ID for insert
-        private static string rowidcarrier = ""; //Row ID for insert
-        private static string connectionString; //Connection String for Database
         private static string logfile = "log.log"; //Log file
-        private static string printerName = ""; //Name of the printer to print on later
-        private static string dhlsoapconnection = ""; //Connection string for the soap request
-        private static string api_user = ""; //Username to connect to the api
-        private static string api_password = ""; //Password to connect to the api
         private static Boolean firstrun = true; //For the logging method. If it's not the first run, don't insert additional line breaks
-        private static string sqlshipmentnumber = ""; //Insert String to insert the shipment number to the database
-        private static string sql_carrier_shipmentnumber = ""; //Insert String to insert the carrier number to the database
         private static string xmlcommunicationmail = ""; //Mail that gets used for postfilals
-        private static string sqlinsertnewmemo = ""; //Insert String to insert memo to the database
-        private static string sqlinsertnewtermin = ""; //Insert String to insert termin to the database
         private static string xmlpscount = "1"; //Number of shipments in a package
         private static ArrayList xmlweightarray = new ArrayList(); //Number of shipments in a package
         private static string xml = ""; //XML to send to dhl
@@ -60,9 +48,6 @@ namespace DHL_Seife
         {
             //Our users tend to run the program twice, per "accident"...
             checkDoubleRun();
-
-            //Reads settings from xml file
-            readSettingsFromXML();
 
             //The order number can be transmitted via command line parameter
             string[] args = Environment.GetCommandLineArgs();
@@ -135,46 +120,6 @@ namespace DHL_Seife
 
 
         /// <summary>
-        /// Reads the settings from the file
-        /// </summary>
-        private void readSettingsFromXML()
-        {
-            XDocument doc = XDocument.Load("var/settings.xml");
-            var dbconnection = doc.Descendants("dbconnection");
-            var dbrowidshipment = doc.Descendants("rowidshipment");
-            var dbrowidcarrier = doc.Descendants("rowidcarrier");
-            var printer = doc.Descendants("printer");
-            var dhlsoap = doc.Descendants("dhlsoap");
-            var api_username = doc.Descendants("api_username");
-            var api_pass = doc.Descendants("api_password");
-            var dhl_id = doc.Descendants("dhl_id");
-            var dhl_id_int = doc.Descendants("dhl_id_int");
-            var dhl_pass = doc.Descendants("dhl_password");
-            var dhl_username = doc.Descendants("dhl_username");
-            var insertshipmenttodb = doc.Descendants("insertshipmenttodb");
-            var insertcarriertodb = doc.Descendants("insertcarriertodb");
-            var insertnewmemotodb = doc.Descendants("insertnewmemotodb");
-            var insertnewtermin = doc.Descendants("insertnewtermin");
-            foreach (var foo in dbconnection) { connectionString = foo.Value; }
-            foreach (var foo in dbrowidshipment) { rowidshipmentnumber = foo.Value; }
-            foreach (var foo in dbrowidcarrier) { rowidcarrier = foo.Value; }
-            foreach (var foo in printer) { printerName = foo.Value; }
-            foreach (var foo in dhlsoap) { dhlsoapconnection = foo.Value; }
-            foreach (var foo in api_username) { api_user = foo.Value; }
-            foreach (var foo in api_pass) { api_password = foo.Value; }
-            foreach (var foo in dhl_id) { xmlaccountnumber = foo.Value; }
-            foreach (var foo in dhl_id_int) { xmlaccountnumberint = foo.Value; }
-            foreach (var foo in dhl_pass) { xmlpass = foo.Value; }
-            foreach (var foo in dhl_username) { xmluser = foo.Value; }
-            foreach (var foo in insertshipmenttodb) { sqlshipmentnumber = foo.Value; }
-            foreach (var foo in insertcarriertodb) { sql_carrier_shipmentnumber = foo.Value; }
-            foreach (var foo in insertnewmemotodb) { sqlinsertnewmemo = foo.Value; }
-            foreach (var foo in insertnewtermin) { sqlinsertnewtermin = foo.Value; }
-        }
-
-
-
-        /// <summary>
         /// Inserts the different variables into the gui.
         /// </summary>
         private void writeToGui()
@@ -207,7 +152,7 @@ namespace DHL_Seife
 
             OdbcDataReader dr = null;
             try { 
-                OdbcConnection conn = new OdbcConnection(connectionString);
+                OdbcConnection conn = new OdbcConnection(sett.connectionString);
                 conn.Open();
                 OdbcCommand comm = new OdbcCommand(sql, conn);
                 dr = comm.ExecuteReader();
@@ -479,7 +424,7 @@ namespace DHL_Seife
             if (!xmlcountry.ToLower().Equals("deutschland") && !xmlcountry.ToLower().Equals("de"))
             {
                 xmlparceltype = "V53WPAK";  //international parcel
-                xmlaccountnumber = xmlaccountnumberint; //international account number
+                sett.xmlaccountnumber = sett.xmlaccountnumberint; //international account number
             }
 
             //If the street name contains "Packstation", we deliver to a packing station
@@ -643,9 +588,9 @@ namespace DHL_Seife
                               </Communication>
                            </Receiver>
                         </Shipment>
-                     </ShipmentOrder>", xmluser, xmlshippmentdate, weightbuffer, xmlmail, xmlrecipient, xmlstreet,
-xmlstreetnumber, xmlplz, xmlcity, xmlcountry, xmlpass,
-xmlaccountnumber, ournumberbuffer, xmlparceltype, newxmlmailopen, newxmlmailclose,
+                     </ShipmentOrder>", sett.xmluser, xmlshippmentdate, weightbuffer, xmlmail, xmlrecipient, xmlstreet,
+xmlstreetnumber, xmlplz, xmlcity, xmlcountry, sett.xmlpass,
+sett.xmlaccountnumber, ournumberbuffer, xmlparceltype, newxmlmailopen, newxmlmailclose,
 xmlrecipient02, xmlrecipient03, packstationStart, packstationEnd, packstationNumber,
 senderName, senderStreetName, senderStreetNumber, senderZip, senderCity,
 senderNumber, postFiliale, xmlpscount);
@@ -722,9 +667,9 @@ senderNumber, postFiliale, xmlpscount);
          </ShipmentOrder>{29}
       </bus:CreateShipmentOrderRequest>
    </soapenv:Body>
-</soapenv:Envelope>", xmluser, xmlshippmentdate, xmlweight, xmlmail, xmlrecipient, xmlstreet, 
-xmlstreetnumber, xmlplz, xmlcity, xmlcountry, xmlpass, 
-xmlaccountnumber, xmlournumber, xmlparceltype, newxmlmailopen, newxmlmailclose, 
+</soapenv:Envelope>", sett.xmluser, xmlshippmentdate, xmlweight, xmlmail, xmlrecipient, xmlstreet, 
+xmlstreetnumber, xmlplz, xmlcity, xmlcountry, sett.xmlpass, 
+sett.xmlaccountnumber, xmlournumber, xmlparceltype, newxmlmailopen, newxmlmailclose, 
 xmlrecipient02, xmlrecipient03, packstationStart, packstationEnd, packstationNumber, 
 senderName, senderStreetName, senderStreetNumber, senderZip, senderCity, 
 senderNumber, postFiliale, xmlpscount, xmlmultiple);
@@ -914,7 +859,7 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
                 {
                     PdfDocument pdfdocument = new PdfDocument();
                     pdfdocument.LoadFromFile(filepath);
-                    pdfdocument.PrinterName = printerName;
+                    pdfdocument.PrinterName = sett.printerName;
                     pdfdocument.PrintDocument.PrinterSettings.Copies = 1;
                     pdfdocument.PrintDocument.Print();
                     pdfdocument.Dispose();
@@ -946,17 +891,17 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
         /// </summary>
         private static void writeShipmentNumber(string shipmentnumber)
         {
-            string sql = sqlshipmentnumber;
-            sql = sql.Replace("%rowidshipmentnumber%", rowidshipmentnumber);
+            string sql = sett.sqlshipmentnumber;
+            sql = sql.Replace("%rowidshipmentnumber%", sett.rowidshipmentnumber);
             sql = sql.Replace("%rowid%", rowid);
             sql = sql.Replace("%shipmentnumber%", shipmentnumber);
-            string sql_carrier = sql_carrier_shipmentnumber;
-            sql_carrier = sql_carrier.Replace("%rowidcarrier%", rowidcarrier);
+            string sql_carrier = sett.sql_carrier_shipmentnumber;
+            sql_carrier = sql_carrier.Replace("%rowidcarrier%", sett.rowidcarrier);
             sql_carrier = sql_carrier.Replace("%rowid%", rowid);
 
             try
             {
-                OdbcConnection conn = new OdbcConnection(connectionString);
+                OdbcConnection conn = new OdbcConnection(sett.connectionString);
                 conn.Open();
                 OdbcCommand comm = new OdbcCommand(sql, conn);
                 OdbcCommand comm_carrier = new OdbcCommand(sql_carrier, conn);
@@ -977,13 +922,13 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
         /// </summary>
         public static HttpWebRequest CreateWebRequest()
         {
-            String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("iso-8859-1").GetBytes(api_user + ":" + api_password));
+            String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("iso-8859-1").GetBytes(sett.api_user + ":" + sett.api_password));
 
             //SOAP webrequest
             HttpWebRequest webRequest = null;
             try
             {
-                webRequest = (HttpWebRequest)WebRequest.Create(@dhlsoapconnection);
+                webRequest = (HttpWebRequest)WebRequest.Create(@sett.dhlsoapconnection);
                 webRequest.Headers.Add("Authorization", "Basic " + encoded);
                 webRequest.Headers.Add("SOAPAction: urn:createShipmentOrder");
                 webRequest.ContentType = "text/xml;charset=\"utf-8\"";
@@ -1048,19 +993,19 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
             try
             {
                 log = log.Replace("'", "´"); //Replace fixes sql errors, if the log contains '
-                string sql = sqlinsertnewmemo + " + '" + log; 
+                string sql = sett.sqlinsertnewmemo + " + '" + log; 
                 if (nl)
                 {
                     sql += "\r\n";
                 }
                 sql += "\r\n' WHERE BelegNr = '" + orderNumber + "'";
-                OdbcConnection conn = new OdbcConnection(connectionString);
+                OdbcConnection conn = new OdbcConnection(sett.connectionString);
                 conn.Open();
                 OdbcCommand comm = new OdbcCommand(sql, conn);
                 comm.ExecuteNonQuery();
                 if (termin)
                 {
-                    sql = sqlinsertnewtermin;
+                    sql = sett.sqlinsertnewtermin;
                     sql = sql.Replace("%ordernumber%", orderNumber).Replace("%log%", log).Replace("%time%", DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss"));
                     Console.WriteLine(sql);
                     comm = new OdbcCommand(sql, conn);
