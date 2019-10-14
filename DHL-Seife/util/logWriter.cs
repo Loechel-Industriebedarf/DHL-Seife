@@ -11,10 +11,8 @@ namespace DHL_Seife
 {
     class LogWriter
     { 
-        public String orderNumber = "";
-
         private SettingsReader sett;
-        private Boolean firstrun = true; //If it's not the first run, don't insert additional line breaks
+        private Boolean firstrun = true; //If it's the first run, add an aditional line break to the text-log
 
 
 
@@ -26,7 +24,12 @@ namespace DHL_Seife
 
 
 
-
+        /// <summary>
+        /// Handels the log writing
+        /// </summary>
+        /// <param name="log">The log text, that should be written to the file.</param>
+        /// <param name="nl">If true: Insert a new line after the logtext.</param>
+        /// <param name="termin">If true: Add a new termin ("Wiedervorlage") for the admin user.</param>
         public void writeLog(String log)
         {
             writeLog(log, false, false);
@@ -37,6 +40,52 @@ namespace DHL_Seife
         }
         public void writeLog(String log, Boolean nl, Boolean termin)
         {
+            writeLogToDatabase(log, nl, termin);
+
+            writeLogToFile(log, nl);
+        }
+
+        /// <summary>
+        /// Writes the log to a file.
+        /// </summary>
+        /// <param name="log">The log text, that should be written to the file.</param>
+        /// <param name="nl">If true: Insert a new line after the logtext. If false: Do nothing.</param>
+        private void writeLogToFile(string log, bool nl)
+        {
+            try { 
+                using (StreamWriter sw = File.AppendText(sett.logfile))
+                {
+                    if (firstrun)
+                    {
+                        sw.WriteLine();
+                        sw.WriteLine();
+                        sw.WriteLine();
+                        sw.WriteLine("> " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"));
+                        firstrun = false;
+                    }
+
+                    sw.WriteLine(log);
+
+                    if (nl)
+                    {
+                        sw.WriteLine();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Writes the log to the orders sql.
+        /// </summary>
+        /// <param name="log">The log text, that should be written to the file.</param>
+        /// <param name="nl">If true: Insert a new line after the logtext.</param>
+        /// <param name="termin">If true: Add a new termin ("Wiedervorlage") for the admin user.</param>
+        private void writeLogToDatabase(string log, bool nl, bool termin)
+        {
             //Write to database
             try
             {
@@ -46,7 +95,7 @@ namespace DHL_Seife
                 {
                     sql += "\r\n";
                 }
-                sql += "\r\n' WHERE BelegNr = '" + orderNumber + "'";
+                sql += "\r\n' WHERE BelegNr = '" + sett.orderNumber + "'";
                 OdbcConnection conn = new OdbcConnection(sett.connectionString);
                 conn.Open();
                 OdbcCommand comm = new OdbcCommand(sql, conn);
@@ -54,7 +103,7 @@ namespace DHL_Seife
                 if (termin)
                 {
                     sql = sett.sqlinsertnewtermin;
-                    sql = sql.Replace("%ordernumber%", orderNumber).Replace("%log%", log).Replace("%time%", DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss"));
+                    sql = sql.Replace("%ordernumber%", sett.orderNumber).Replace("%log%", log).Replace("%time%", DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss"));
                     Console.WriteLine(sql);
                     comm = new OdbcCommand(sql, conn);
                     comm.ExecuteNonQuery();
@@ -64,25 +113,6 @@ namespace DHL_Seife
             {
                 Console.WriteLine(ex.ToString());
             }
-
-            //Write to log file
-            using (StreamWriter sw = File.AppendText(sett.logfile))
-            {
-                if (firstrun)
-                {
-                    sw.WriteLine();
-                    sw.WriteLine();
-                    sw.WriteLine();
-                    sw.WriteLine("> " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"));
-                    firstrun = false;
-                }
-                sw.WriteLine(log);
-                if (nl)
-                {
-                    sw.WriteLine();
-                }
-            }
         }
-
     }
 }

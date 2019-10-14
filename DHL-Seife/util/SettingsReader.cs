@@ -26,6 +26,8 @@ namespace DHL_Seife.util
         public string sqlinsertnewtermin { get; set; } //Insert String to insert termin to the database
         public string logfile { get; set; } //Log file
 
+        public string orderNumber{ get; set; } //The number of the order
+
 
 
         public SettingsReader()
@@ -36,7 +38,9 @@ namespace DHL_Seife.util
 
 
 
-
+        /// <summary>
+        /// Reads all settings from xml file and saves them to variables.
+        /// </summary>
         private void readSettings()
         {
             XDocument doc = XDocument.Load("var/settings.xml");

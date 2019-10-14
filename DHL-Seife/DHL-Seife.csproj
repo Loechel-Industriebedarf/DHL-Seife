@@ -71,6 +71,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="prog\PrintHelper.cs" />
+    <Compile Include="prog\SOAPHelper.cs" />
+    <Compile Include="prog\SQLHelper.cs" />
+    <Compile Include="prog\XMLHelper.cs" />
     <Compile Include="util\LogWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Form1.cs">
