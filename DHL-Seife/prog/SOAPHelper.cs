@@ -14,42 +14,51 @@ namespace DHL_Seife.prog
 {
     class SOAPHelper
     {
-        private SettingsReader sett;
-        private LogWriter log;
-        private SQLHelper sqlh;
-        private XMLHelper xmlh;
-        private static HttpWebRequest webRequest;
+        private SettingsReader Sett;
+        private LogWriter Log;
+        private SQLHelper SqlH;
+        private XMLHelper XmlH;
+        private static HttpWebRequest WebRequest;
+
+        static int apiConnectTries = 0; //If the connection to the api fails, it should try again and increment this counter.
 
 
-
+        /// <summary>
+        /// This class creates an xml string from the sql inputs, that got read earlier.
+        /// </summary>
+        /// <param name="settingsBuffer">An SettingsReader object, that contains all settings.</param>
+        /// <param name="lw">An LogWriter object, to write logs, if exceptions occur.</param>
+        /// <param name="sql">An SQLHelper object, to write logs, with all the data we need (name, street, weight etc.).</param>
+        /// <param name="xml">An XMLHelper object, with the xml data, that should be sent to the server.</param>
         public SOAPHelper(SettingsReader settingsBuffer, LogWriter lw, SQLHelper sql,  XMLHelper xml)
         {
-            sett = settingsBuffer;
-            log = lw;
-            sqlh = sql;
-            xmlh = xml;
+            Sett = settingsBuffer;
+            Log = lw;
+            SqlH = sql;
+            XmlH = xml;
         }
+
 
         /// <summary>
         /// Sends a soap request to the dhl-api and receives an answer in xml-format.
-        /// Next, it reads the xml answer and opens the labelUrl in the default web-browser.
+        /// Next, it reads the xml answer, downloads the label and prints it.
         /// </summary>
-        static int apiConnectTries = 0; //If the connection to the api fails, it should try again.
+        /// 
+        /// TODO: Do tons of refactoring...
         public void SendSoapRequest()
         {
-            webRequest = CreateWebRequest();
+            WebRequest = CreateWebRequest();
 
             try
             {
-                using (Stream stream = webRequest.GetRequestStream())
+                using (Stream stream = WebRequest.GetRequestStream())
                 {
-                    xmlh.SoapEnvelopeXml.Save(stream);
+                    XmlH.SoapEnvelopeXml.Save(stream);
                 }
             }
             catch (Exception ex)
             {
-                log.writeLog(ex.ToString());
-                log.writeLog(ex.Message.ToString(), true);
+                Log.writeLog(ex.ToString(), true);
             }
 
 
@@ -57,23 +66,26 @@ namespace DHL_Seife.prog
             try
             {
                 // Get a soap response
-                using (WebResponse response = webRequest.GetResponse())
+                using (WebResponse response = WebRequest.GetResponse())
                 {
                     using (StreamReader rd = new StreamReader(response.GetResponseStream()))
                     {
                         string soapResult = rd.ReadToEnd();
 
                         //Check, if a hard validation error occurs. If yes: log it.
+                        //If a hard validation error occurs, no label is printed usually.
                         if (soapResult.Contains("Hard validation"))
                         {
                             //logTextToFile("Critical adress-error!");
-                            log.writeLog("> Kritischer Adressfehler!\r\n" + soapResult + "\r\n\r\n" + xmlh.Xml, true, true);
+                            Log.writeLog("> Kritischer Adressfehler!\r\n" + soapResult + "\r\n\r\n" + XmlH.Xml, true, true);
                         }
+                        //Weak validation errors normally occur, when there is a "Leitcodenachentgelt" error from DHL
+                        //Labels can be printed, but are a bit more expansive then.
                         else if (soapResult.Contains("Weak validation"))
                         {
                             //logTextToFile("You'll have to pay 'Leitcodenachentgelt' for this order!");
-                            log.writeLog("> Leitcodenachentgelt muss für diesen Auftrag bezahlt werden!");
-                            log.writeLog(soapResult, true);
+                            Log.writeLog("> Leitcodenachentgelt muss für diesen Auftrag bezahlt werden!");
+                            Log.writeLog(soapResult, true);
                         }
 
                         XmlDocument xmldoc = new XmlDocument();
@@ -88,16 +100,15 @@ namespace DHL_Seife.prog
                             try
                             {
                                 WebClient Client = new WebClient();
-                                labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + sqlh.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
+                                labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
                                 Client.DownloadFile(labelUrl, @labelName);
                             }
                             catch (Exception ex)
                             {
-                                log.writeLog(ex.ToString(), true);
-                                log.writeLog(ex.Message.ToString(), true);
+                                Log.writeLog(ex.ToString(), true);
                             }
                             //Print label
-                            PrintHelper print = new PrintHelper(sett, log, labelName);
+                            PrintHelper print = new PrintHelper(Sett, Log, labelName);
                         }
 
                         xnList = xmldoc.GetElementsByTagName("cis:shipmentNumber");
@@ -128,13 +139,13 @@ namespace DHL_Seife.prog
         /// </summary>
         public HttpWebRequest CreateWebRequest()
         {
-            String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("iso-8859-1").GetBytes(sett.ApiUser + ":" + sett.ApiPassword));
+            String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("iso-8859-1").GetBytes(Sett.ApiUser + ":" + Sett.ApiPassword));
 
             //SOAP webrequest
             HttpWebRequest webRequest = null;
             try
             {
-                webRequest = (HttpWebRequest)WebRequest.Create(@sett.DHLSoapConnection);
+                webRequest = (HttpWebRequest)System.Net.WebRequest.Create(Sett.DHLSoapConnection);
                 webRequest.Headers.Add("Authorization", "Basic " + encoded);
                 webRequest.Headers.Add("SOAPAction: urn:createShipmentOrder");
                 webRequest.ContentType = "text/xml;charset=\"utf-8\"";
@@ -144,16 +155,16 @@ namespace DHL_Seife.prog
             }
             catch (Exception ex)
             {
-                log.writeLog(ex.ToString(), true);
-                log.writeLog(ex.Message.ToString(), true);
+                Log.writeLog(ex.ToString(), true);
             }
             return webRequest;
         }
 
 
         /// <summary>
-        /// If we can't get a connection to the dhl api, try again.
+        /// If we can't get a connection to the dhl api, log the error message and try again.
         /// </summary>
+        /// <param name="ex">The WebException that should be logged, before the program tries to connect again.</param>
         private void AnotherApiConnectionTryHttp(WebException ex)
         {
             try
@@ -171,18 +182,18 @@ namespace DHL_Seife.prog
                         {
                             string text = reader.ReadToEnd();
                             //logTextToFile("> Error while connecting to DHL-API!");
-                            log.writeLog("> Fehlerhafte Datenübermittlung an DHL!\r\n" + text + "\r\n\r\n" + xmlh.Xml, true, false);
+                            Log.writeLog("> Fehlerhafte Datenübermittlung an DHL!\r\n" + text + "\r\n\r\n" + XmlH.Xml, true, false);
                         }
 
                         //logTextToFile("> Error while connecting to DHL-API!");
-                        log.writeLog("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
+                        Log.writeLog("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
                         System.Threading.Thread.Sleep(5000);
-                        xmlh.DoXMLMagic();
+                        XmlH.DoXMLMagic();
                         SendSoapRequest();
                     }
                     else
                     {
-                        log.writeLog("> Fehlerhafte Datenübermittlung an DHL!\r\n" + ex.ToString() + "\r\n\r\n" + xmlh.Xml, true, true);
+                        Log.writeLog("> Fehlerhafte Datenübermittlung an DHL!\r\n" + ex.ToString() + "\r\n\r\n" + XmlH.Xml, true, true);
                     }
                 }
             }
@@ -196,6 +207,7 @@ namespace DHL_Seife.prog
         /// <summary>
         /// If we can't get a connection to the dhl api, try again.
         /// </summary>
+        /// <param name="ex">The Exception that should be logged, before the program tries to connect again.</param>
         private void AnotherApiConnectionTry(Exception ex)
         {
             apiConnectTries++;
@@ -203,19 +215,19 @@ namespace DHL_Seife.prog
             if (apiConnectTries <= 10)
             {
                 //logTextToFile("> Error while connecting to DHL-API!");
-                log.writeLog("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
+                Log.writeLog("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
                 System.Threading.Thread.Sleep(3000);
-                xmlh.DoXMLMagic();
+                XmlH.DoXMLMagic();
                 SendSoapRequest();
             }
             else
             {
-                log.writeLog("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex.ToString(), true, true);
+                Log.writeLog("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex.ToString(), true, true);
             }
         }
 
 
-       
+
 
 
 
@@ -223,19 +235,20 @@ namespace DHL_Seife.prog
         /// <summary>
         /// Writes shipment-number to the database.
         /// </summary>
+        /// <param name="shipmentnumber">The shipment number as a string, that should be inserted into the database.</param>
         private void WriteShipmentNumber(string shipmentnumber)
         {
-            string sql = sett.SqlShipmentnumber;
-            sql = sql.Replace("%rowidshipmentnumber%", sett.RowIdShipmentnumber);
-            sql = sql.Replace("%rowid%", sqlh.RowId);
+            string sql = Sett.SqlShipmentnumber;
+            sql = sql.Replace("%rowidshipmentnumber%", Sett.RowIdShipmentnumber);
+            sql = sql.Replace("%rowid%", SqlH.RowId);
             sql = sql.Replace("%shipmentnumber%", shipmentnumber);
-            string sql_carrier = sett.SqlCarrierShipmentnumber;
-            sql_carrier = sql_carrier.Replace("%rowidcarrier%", sett.RowIdCarrier);
-            sql_carrier = sql_carrier.Replace("%rowid%", sqlh.RowId);
+            string sql_carrier = Sett.SqlCarrierShipmentnumber;
+            sql_carrier = sql_carrier.Replace("%rowidcarrier%", Sett.RowIdCarrier);
+            sql_carrier = sql_carrier.Replace("%rowid%", SqlH.RowId);
 
             try
             {
-                OdbcConnection conn = new OdbcConnection(sett.ConnectionString);
+                OdbcConnection conn = new OdbcConnection(Sett.ConnectionString);
                 conn.Open();
                 OdbcCommand comm = new OdbcCommand(sql, conn);
                 OdbcCommand comm_carrier = new OdbcCommand(sql_carrier, conn);
@@ -244,8 +257,7 @@ namespace DHL_Seife.prog
             }
             catch (Exception ex)
             {
-                log.writeLog(ex.ToString(), true);
-                log.writeLog(ex.Message.ToString(), true);
+                Log.writeLog(ex.ToString(), true);
             }
 
         }

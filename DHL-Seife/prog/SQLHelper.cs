@@ -12,8 +12,8 @@ namespace DHL_Seife.prog
 {
     class SQLHelper
     {
-        private SettingsReader sett;
-        private LogWriter log;
+        private SettingsReader Sett;
+        private LogWriter Log;
 
         public string XmlWeight = "1"; //In kg
         public string XmlPsCount = "1"; //Number of shipments in a package
@@ -34,36 +34,44 @@ namespace DHL_Seife.prog
         public string XmlShippmentDate = DateTime.Now.ToString("yyyy-MM-dd"); //YYYY-MM-DD
         public string RowId = ""; //Row ID for insert 
 
+        /// <summary>
+        /// This class handles data from a sql database.
+        /// </summary>
+        /// <param name="settingsBuffer">An SettingsReader object, that contains all settings.</param>
+        /// <param name="lw">An LogWriter object, to write logs, if exceptions occur.</param>
         public SQLHelper(SettingsReader settingsBuffer, LogWriter lw)
         {
-            sett = settingsBuffer;
-            log = lw;     
+            Sett = settingsBuffer;
+            Log = lw;     
         }
 
 
+
+        /// <summary>
+        /// Reads all relevant values (name, street, country, packaging weight etc.) from a sql database and saves them to variables.
+        /// </summary>
         public void DoSQLMagic()
         {
-            XmlOurNumber = sett.OrderNumber;
+            XmlOurNumber = Sett.OrderNumber;
 
             string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
                 "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, dbo.AUFTRAGSPOS.ARTIKELNR, " +
-                "GEWICHT, (select count(*) from dbo.VERSANDGUT m2 where m2.BELEGNR = '" + sett.OrderNumber + "') as PSCount " +
+                "GEWICHT, (select count(*) from dbo.VERSANDGUT m2 where m2.BELEGNR = '" + Sett.OrderNumber + "') as PSCount " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
                 "LEFT JOIN dbo.VERSANDGUT ON dbo.VERSANDGUT.BELEGNR = dbo.AUFTRAGSPOS.BELEGNR " +
-                "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + sett.OrderNumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + sett.OrderNumber + "'";
+                "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + Sett.OrderNumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + Sett.OrderNumber + "'";
 
             OdbcDataReader dr = null;
             try
             {
-                OdbcConnection conn = new OdbcConnection(sett.ConnectionString);
+                OdbcConnection conn = new OdbcConnection(Sett.ConnectionString);
                 conn.Open();
                 OdbcCommand comm = new OdbcCommand(sql, conn);
                 dr = comm.ExecuteReader();
             }
             catch (Exception ex)
             {
-                log.writeLog(ex.ToString());
-                log.writeLog(ex.Message.ToString(), true);
+                Log.writeLog(ex.ToString(), true);
             }
 
             XmlWeight = "0";
@@ -176,17 +184,16 @@ namespace DHL_Seife.prog
                     catch (Exception ex)
                     {
                         //logTextToFile("> Article weight for "+ dr["ARTIKELNR"] + " missing!");
-                        log.writeLog("> Artikelgewicht für " + dr["ARTIKELNR"] + " fehlt!");
-                        log.writeLog(ex.ToString());
-                        log.writeLog(ex.Message.ToString(), true);
+                        Log.writeLog("> Artikelgewicht für " + dr["ARTIKELNR"] + " fehlt!");
+                        Log.writeLog(ex.ToString(), true);
                     }
 
                 }
             }
             catch(Exception ex)
             {
-                log.writeLog("> Unbekannter Fehler!");
-                log.writeLog(ex.ToString(), true);
+                Log.writeLog("> Unbekannter Fehler!");
+                Log.writeLog(ex.ToString(), true);
             }
 
             //If the weight is to small, set it to zero
@@ -215,6 +222,10 @@ namespace DHL_Seife.prog
         /// <summary>
         /// Figures out, if the input street contains a street number and returns the street name and number seperatly
         /// </summary>
+        /// <param name="dr">An OdbcDataReader object.</param>
+        /// <param name="streetDef">A string, that tells the program if it should look for RSTREET or LSTREET.</param>
+        /// 
+        /// TODO: Why don't I just send streetdefinition, instead of two variables?
         private void GetStreetAndStreetnumber(OdbcDataReader dr, string streetDef)
         {
             string streetDefinition = dr[streetDef].ToString().Trim();
@@ -303,8 +314,7 @@ namespace DHL_Seife.prog
             {
                 XmlStreet = RemoveSpecialCharacters(streetDefinition);
                 XmlStreetnumber = "0";
-                log.writeLog(ex.ToString());
-                log.writeLog(ex.Message.ToString(), true);
+                Log.writeLog(ex.ToString(), true);
             }
 
             //People don't like to write the word "street" completely
@@ -315,6 +325,10 @@ namespace DHL_Seife.prog
         /// <summary>
         /// This function removes all special characters from a string.
         /// </summary>
+        /// <param name="str">The string that should be edited.</param>
+        /// <returns>
+        /// The inputted string without special characters.
+        /// </returns>
         public string RemoveSpecialCharacters(string str)
         {
             return Regex.Replace(str, @"[^a-zA-Z0-9äÄöÖüÜß\/\-_.]+", " ", RegexOptions.Compiled);

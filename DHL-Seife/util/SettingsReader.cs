@@ -39,7 +39,7 @@ namespace DHL_Seife.util
 
 
         /// <summary>
-        /// Reads all settings from xml file and saves them to variables.
+        /// Reads all settings from the xml settings-file and saves them to variables.
         /// </summary>
         private void ReadSettings()
         {

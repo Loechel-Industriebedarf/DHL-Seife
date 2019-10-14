@@ -12,13 +12,23 @@ namespace DHL_Seife.prog
     {
 
         /// <summary>
-        /// Prints the shipping label. The printers name is saved in a txt file.
+        /// This class sends the labels to the printer.
         /// </summary>
-        public PrintHelper(SettingsReader sett, LogWriter log, string labelName)
+        /// <param name="settingsBuffer">An SettingsReader object, that contains all settings.</param>
+        /// <param name="lw">An LogWriter object, to write logs, if exceptions occur.</param>
+        /// <param name="labelName">File name of the label that should be printed.</param>
+        public PrintHelper(SettingsReader settingsBuffer, LogWriter lw, string labelName)
         {
-            PrintLabel(sett, log, labelName);
+            PrintLabel(settingsBuffer, lw, labelName);
         }
 
+        /// <summary>
+        /// Prints the labels. Simple as that.
+        /// Uses Spire.pdf to realise the printing.
+        /// </summary>
+        /// <param name="settingsBuffer">An SettingsReader object, that contains all settings.</param>
+        /// <param name="lw">An LogWriter object, to write logs, if exceptions occur.</param>
+        /// <param name="labelName">File name of the label that should be printed.</param>
         private static void PrintLabel(SettingsReader sett, LogWriter log, string labelName)
         {
             try
@@ -34,21 +44,18 @@ namespace DHL_Seife.prog
                     pdfdocument.PrintDocument.PrinterSettings.Copies = 1;
                     pdfdocument.PrintDocument.Print();
                     pdfdocument.Dispose();
-
                 }
                 catch (Exception ex)
                 {
-                    log.writeLog(ex.ToString());
-                    log.writeLog(ex.Message.ToString(), true);
+                    log.writeLog(ex.ToString(), true);
                 }
 
-                //logTextToFile("> " + labelName + " successfully printed!");
-                log.writeLog("> " + labelName + " wurde erfolgreich gedruckt!\r\n", true);
+                //logTextToFile("> " + labelName + " was successfully printed!");
+                log.writeLog("> " + labelName + " wurde erfolgreich gedruckt!", true);
             }
             catch (Exception ex)
             {
-                log.writeLog(ex.ToString());
-                log.writeLog(ex.Message.ToString(), true);
+                log.writeLog(ex.ToString().ToString(), true);
             }
         }
     }

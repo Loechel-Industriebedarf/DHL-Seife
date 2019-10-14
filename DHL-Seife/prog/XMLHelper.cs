@@ -13,49 +13,57 @@ namespace DHL_Seife.prog
 {
     class XMLHelper
     {
-        private SettingsReader sett;
-        private LogWriter log;
-        private SQLHelper sqlh;
+        private SettingsReader Sett;
+        private LogWriter Log;
+        private SQLHelper SqlH;
         
 
         public string Xml = ""; //XML to send to dhl
         public XmlDocument SoapEnvelopeXml = new XmlDocument();
 
+        /// <summary>
+        /// This class creates an xml string from the sql inputs, that got read earlier.
+        /// </summary>
+        /// <param name="settingsBuffer">An SettingsReader object, that contains all settings.</param>
+        /// <param name="lw">An LogWriter object, to write logs, if exceptions occur.</param>
+        /// <param name="sql">An SQLHelper object, to write logs, with all the data we need (name, street, weight etc.).</param>
         public XMLHelper(SettingsReader settingsBuffer, LogWriter lw, SQLHelper sql)
         {
-            sett = settingsBuffer;
-            log = lw;
-            sqlh = sql;
+            Sett = settingsBuffer;
+            Log = lw;
+            SqlH = sql;
         }
 
         /// <summary>
         /// Create a xml-string from the inputs the user made erlier.
         /// This xml will be sent as soap request to the dhl server.
         /// </summary>
+        /// 
+        /// TODO: Do tons of refactoring...
         public void DoXMLMagic()
         {
             //E-Mail is not a needed thing for the dhl-xml
             String newxmlmail = "";
             String newxmlmailopen = "";
             String newxmlmailclose = "";
-            if (!String.IsNullOrEmpty(sqlh.XmlMail) && sqlh.XmlMail.Contains("@") && !sqlh.XmlMail.Contains("amazon"))
+            if (!String.IsNullOrEmpty(SqlH.XmlMail) && SqlH.XmlMail.Contains("@") && !SqlH.XmlMail.Contains("amazon"))
             {
                 newxmlmailopen = "<recipientEmailAddress>";
                 newxmlmailclose = "</recipientEmailAddress>";
-                newxmlmail = "<recipientEmailAddress>" + sqlh.XmlMail + "</recipientEmailAddress>";
+                newxmlmail = "<recipientEmailAddress>" + SqlH.XmlMail + "</recipientEmailAddress>";
             }
 
             //DHL wants decimal values with dots, not commas
-            if (sqlh.XmlWeight.Contains(','))
+            if (SqlH.XmlWeight.Contains(','))
             {
-                sqlh.XmlWeight = sqlh.XmlWeight.Replace(",", ".");
+                SqlH.XmlWeight = SqlH.XmlWeight.Replace(",", ".");
             }
 
             //If the country is not Germany, send an international parcel
-            if (!sqlh.XmlCountry.ToLower().Equals("deutschland") && !sqlh.XmlCountry.ToLower().Equals("de"))
+            if (!SqlH.XmlCountry.ToLower().Equals("deutschland") && !SqlH.XmlCountry.ToLower().Equals("de"))
             {
-                sqlh.XmlParcelType = "V53WPAK";  //international parcel
-                sett.XmlAccountnumber = sett.XmlAccountnumberInt; //international account number
+                SqlH.XmlParcelType = "V53WPAK";  //international parcel
+                Sett.XmlAccountnumber = Sett.XmlAccountnumberInt; //international account number
             }
 
             //If the street name contains "Packstation", we deliver to a packing station
@@ -63,64 +71,63 @@ namespace DHL_Seife.prog
             string packstationEnd = "";
             string packstationNumber = "";
             string postFiliale = "";
-            if (sqlh.XmlStreet.ToLower().Contains("dhl-packstation"))
+            if (SqlH.XmlStreet.ToLower().Contains("dhl-packstation"))
             {
-                sqlh.XmlStreet = sqlh.XmlStreet.Replace("dhl-", "");
+                SqlH.XmlStreet = SqlH.XmlStreet.Replace("dhl-", "");
             }
-            else if (sqlh.XmlStreet.ToLower().Contains("dhl packstation"))
+            else if (SqlH.XmlStreet.ToLower().Contains("dhl packstation"))
             {
-                sqlh.XmlStreet = sqlh.XmlStreet.Replace("dhl ", "");
+                SqlH.XmlStreet = SqlH.XmlStreet.Replace("dhl ", "");
             }
-            if (sqlh.XmlStreet.ToLower().Contains("packstation"))
+            if (SqlH.XmlStreet.ToLower().Contains("packstation"))
             {
                 packstationStart = "<Packstation>" +
                     "<cis:postNumber>";
                 packstationEnd = "</cis:postNumber>" +
                   "</Packstation>";
-                if (!String.IsNullOrEmpty(sqlh.XmlRecipient02))
+                if (!String.IsNullOrEmpty(SqlH.XmlRecipient02))
                 {
-                    packstationNumber = Regex.Replace(sqlh.XmlRecipient02, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
+                    packstationNumber = Regex.Replace(SqlH.XmlRecipient02, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
                 }
                 else
                 {
-                    packstationNumber = Regex.Replace(sqlh.XmlRecipient03, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
+                    packstationNumber = Regex.Replace(SqlH.XmlRecipient03, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
                 }
             }
-            if (sqlh.XmlStreet.ToLower().Contains("postfiliale"))
+            if (SqlH.XmlStreet.ToLower().Contains("postfiliale"))
             {
                 postFiliale = "<Communication>" +
-                    "<cis:email>" + sqlh.XmlCommunicationMail + "</cis:email>" +
+                    "<cis:email>" + SqlH.XmlCommunicationMail + "</cis:email>" +
                     "</Communication>" +
                     "<Postfiliale>" +
-                    "<cis:postfilialNumber>" + sqlh.XmlStreetnumber +
+                    "<cis:postfilialNumber>" + SqlH.XmlStreetnumber +
                     "</cis:postfilialNumber>" +
                   "</Postfiliale>";
             }
-            sqlh.XmlRecipient = sqlh.XmlRecipient + " " + sqlh.XmlRecipient02 + " " + sqlh.XmlRecipient03; //Combines the recipients for unneccessary use of multiple fields
+            SqlH.XmlRecipient = SqlH.XmlRecipient + " " + SqlH.XmlRecipient02 + " " + SqlH.XmlRecipient03; //Combines the recipients for unneccessary use of multiple fields
 
 
             //These values have a max length; Cut them, if they are too long
             //If recipient(01) is too long, write the rest of it to recipient02. If recipient02 is too long, write the rest to recipient03
-            if (sqlh.XmlRecipient.Length > 35) { sqlh.XmlRecipient02 = sqlh.XmlRecipient.Substring(35, sqlh.XmlRecipient.Length - 35) + " " + sqlh.XmlRecipient02; sqlh.XmlRecipient = sqlh.XmlRecipient.Substring(0, 35); }
-            if (sqlh.XmlRecipient02.Length > 35) { sqlh.XmlRecipient03 = sqlh.XmlRecipient02.Substring(35, sqlh.XmlRecipient02.Length - 35) + " " + sqlh.XmlRecipient03; sqlh.XmlRecipient02 = sqlh.XmlRecipient02.Substring(0, 35); }
-            if (sqlh.XmlRecipient03.Length > 35) { sqlh.XmlRecipient03 = sqlh.XmlRecipient03.Substring(0, 35); }
-            if (sqlh.XmlStreet.Length > 35) { sqlh.XmlStreet = sqlh.XmlStreet.Substring(0, 35); }
-            if (sqlh.XmlStreetnumber.Length > 5) { sqlh.XmlStreetnumber = sqlh.XmlStreetnumber.Substring(0, 5); }
-            if (sqlh.XmlPlz.Length > 10) { sqlh.XmlPlz = sqlh.XmlPlz.Substring(0, 10); }
-            if (sqlh.XmlCity.Length > 35) { sqlh.XmlCity = sqlh.XmlCity.Substring(0, 35); }
-            if (sqlh.XmlCountry.Length > 30) { sqlh.XmlCountry = sqlh.XmlCountry.Substring(0, 30); }
+            if (SqlH.XmlRecipient.Length > 35) { SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(35, SqlH.XmlRecipient.Length - 35) + " " + SqlH.XmlRecipient02; SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, 35); }
+            if (SqlH.XmlRecipient02.Length > 35) { SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(35, SqlH.XmlRecipient02.Length - 35) + " " + SqlH.XmlRecipient03; SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, 35); }
+            if (SqlH.XmlRecipient03.Length > 35) { SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, 35); }
+            if (SqlH.XmlStreet.Length > 35) { SqlH.XmlStreet = SqlH.XmlStreet.Substring(0, 35); }
+            if (SqlH.XmlStreetnumber.Length > 5) { SqlH.XmlStreetnumber = SqlH.XmlStreetnumber.Substring(0, 5); }
+            if (SqlH.XmlPlz.Length > 10) { SqlH.XmlPlz = SqlH.XmlPlz.Substring(0, 10); }
+            if (SqlH.XmlCity.Length > 35) { SqlH.XmlCity = SqlH.XmlCity.Substring(0, 35); }
+            if (SqlH.XmlCountry.Length > 30) { SqlH.XmlCountry = SqlH.XmlCountry.Substring(0, 30); }
             if (newxmlmail.Length > 70) { newxmlmail = newxmlmail.Substring(0, 70); }
             try
             {
-                double weight = Convert.ToDouble(sqlh.XmlWeight.Replace(".", ","));
-                if (weight > 30) { sqlh.XmlWeight = "30"; }
-                else if (weight <= 0.01) { sqlh.XmlWeight = "4"; }
-                else if (weight < 0.1) { sqlh.XmlWeight = "0.1"; }
+                double weight = Convert.ToDouble(SqlH.XmlWeight.Replace(".", ","));
+                if (weight > 30) { SqlH.XmlWeight = "30"; }
+                else if (weight <= 0.01) { SqlH.XmlWeight = "4"; }
+                else if (weight < 0.1) { SqlH.XmlWeight = "0.1"; }
             }
             catch (Exception ex)
             {
-                log.writeLog(ex.ToString());
-                log.writeLog(ex.Message.ToString(), true);
+                Log.writeLog(ex.ToString(), true);
             }
 
   
@@ -132,7 +139,7 @@ namespace DHL_Seife.prog
                 string senderZip = "";
                 string senderCity = "";
                 string senderNumber = "";
-                if (sqlh.XmlOrderType.Equals("10"))
+                if (SqlH.XmlOrderType.Equals("10"))
                 {
                     senderName = "Mercateo Deutschland AG";
                     senderStreetName = "Museumsgasse";
@@ -156,14 +163,14 @@ namespace DHL_Seife.prog
 
                 //I need to clean this up. blargh.
                 String xmlmultiple = "";
-                if (Convert.ToDouble(sqlh.XmlPsCount) > 1)
+                if (Convert.ToDouble(SqlH.XmlPsCount) > 1)
                 {
-                    sqlh.XmlWeight = sqlh.XmlWeightArray[0].ToString().Replace(",", ".");
+                    SqlH.XmlWeight = SqlH.XmlWeightArray[0].ToString().Replace(",", ".");
 
-                    for (int i = 1; i < Convert.ToDouble(sqlh.XmlPsCount); i++)
+                    for (int i = 1; i < Convert.ToDouble(SqlH.XmlPsCount); i++)
                     {
-                        String weightbuffer = sqlh.XmlWeightArray[i].ToString().Replace(",", ".");
-                        String ournumberbuffer = sqlh.XmlOurNumber + " - Paket " + i + " von " + Convert.ToDouble(sqlh.XmlPsCount);
+                        String weightbuffer = SqlH.XmlWeightArray[i].ToString().Replace(",", ".");
+                        String ournumberbuffer = SqlH.XmlOurNumber + " - Paket " + i + " von " + Convert.ToDouble(SqlH.XmlPsCount);
 
                         xmlmultiple = xmlmultiple + String.Format(@"<ShipmentOrder>
                         <sequenceNumber>{28}</sequenceNumber>
@@ -215,15 +222,15 @@ namespace DHL_Seife.prog
                               </Communication>
                            </Receiver>
                         </Shipment>
-                     </ShipmentOrder>", sett.XmlUser, sqlh.XmlShippmentDate, weightbuffer, sqlh.XmlMail, sqlh.XmlRecipient, sqlh.XmlStreet,
-sqlh.XmlStreetnumber, sqlh.XmlPlz, sqlh.XmlCity, sqlh.XmlCountry, sett.XmlPass,
-sett.XmlAccountnumber, ournumberbuffer, sqlh.XmlParcelType, newxmlmailopen, newxmlmailclose,
-sqlh.XmlRecipient02, sqlh.XmlRecipient03, packstationStart, packstationEnd, packstationNumber,
+                     </ShipmentOrder>", Sett.XmlUser, SqlH.XmlShippmentDate, weightbuffer, SqlH.XmlMail, SqlH.XmlRecipient, SqlH.XmlStreet,
+SqlH.XmlStreetnumber, SqlH.XmlPlz, SqlH.XmlCity, SqlH.XmlCountry, Sett.XmlPass,
+Sett.XmlAccountnumber, ournumberbuffer, SqlH.XmlParcelType, newxmlmailopen, newxmlmailclose,
+SqlH.XmlRecipient02, SqlH.XmlRecipient03, packstationStart, packstationEnd, packstationNumber,
 senderName, senderStreetName, senderStreetNumber, senderZip, senderCity,
-senderNumber, postFiliale, sqlh.XmlPsCount);
+senderNumber, postFiliale, SqlH.XmlPsCount);
                     }
 
-                    sqlh.XmlOurNumber = sqlh.XmlOurNumber + " - Paket " + Convert.ToDouble(sqlh.XmlPsCount) + " von " + Convert.ToDouble(sqlh.XmlPsCount);
+                    SqlH.XmlOurNumber = SqlH.XmlOurNumber + " - Paket " + Convert.ToDouble(SqlH.XmlPsCount) + " von " + Convert.ToDouble(SqlH.XmlPsCount);
                 }
 
 
@@ -294,19 +301,19 @@ senderNumber, postFiliale, sqlh.XmlPsCount);
          </ShipmentOrder>{29}
       </bus:CreateShipmentOrderRequest>
    </soapenv:Body>
-</soapenv:Envelope>", sett.XmlUser, sqlh.XmlShippmentDate, sqlh.XmlWeight, sqlh.XmlMail, sqlh.XmlRecipient, sqlh.XmlStreet,
-sqlh.XmlStreetnumber, sqlh.XmlPlz, sqlh.XmlCity, sqlh.XmlCountry, sett.XmlPass,
-sett.XmlAccountnumber, sqlh.XmlOurNumber, sqlh.XmlParcelType, newxmlmailopen, newxmlmailclose,
-sqlh.XmlRecipient02, sqlh.XmlRecipient03, packstationStart, packstationEnd, packstationNumber,
+</soapenv:Envelope>", Sett.XmlUser, SqlH.XmlShippmentDate, SqlH.XmlWeight, SqlH.XmlMail, SqlH.XmlRecipient, SqlH.XmlStreet,
+SqlH.XmlStreetnumber, SqlH.XmlPlz, SqlH.XmlCity, SqlH.XmlCountry, Sett.XmlPass,
+Sett.XmlAccountnumber, SqlH.XmlOurNumber, SqlH.XmlParcelType, newxmlmailopen, newxmlmailclose,
+SqlH.XmlRecipient02, SqlH.XmlRecipient03, packstationStart, packstationEnd, packstationNumber,
 senderName, senderStreetName, senderStreetNumber, senderZip, senderCity,
-senderNumber, postFiliale, sqlh.XmlPsCount, xmlmultiple);
+senderNumber, postFiliale, SqlH.XmlPsCount, xmlmultiple);
 
                 SoapEnvelopeXml.LoadXml(Xml);
             }
             catch (Exception ex)
             {
                 //logTextToFile(" > XML error!");
-                log.writeLog("> XML Fehler!" + ex.ToString(), true, true);
+                Log.writeLog("> XML Fehler!" + ex.ToString(), true, true);
             }
 
         }

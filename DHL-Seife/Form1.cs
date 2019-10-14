@@ -23,7 +23,13 @@ namespace DHL_Seife
         private static SOAPHelper SoapH = new SOAPHelper(Sett, Log, SqlH, XmlH);
 
 
-
+        /// <summary>
+        /// Main method that gets started, when the program is... Started.
+        /// First it checks, if the user ran the program more than 3 seconds ago. We don't want that here.
+        /// Then it checks, if it was run manually or via command line parameters.
+        /// If it was run manually, display the gui.
+        /// If it wasn't run manually, take the order number from the args parameters, read the data from sql and send a xml request to dhl.
+        /// </summary>
         public Form1()
         {
             //Our users tend to run the program twice, per "accident"...
@@ -45,8 +51,7 @@ namespace DHL_Seife
             {
                 //log.writeLog("> The program was started manually.");
                 Log.writeLog("> Das Programm wurde manuell gestartet.");
-                Log.writeLog(ex.ToString());
-                Log.writeLog(ex.Message.ToString(), true);
+                Log.writeLog(ex.ToString(), true);
             }
             
 
@@ -72,7 +77,8 @@ namespace DHL_Seife
 
 
         /// <summary>
-        /// Checks, how much seconds passed since the last run. If it's less than 10, don't run the program
+        /// Checks, how much seconds passed since the last run. If it's less than 3, don't run the program.
+        /// Our users like to start the program multiple times "per accident". So this is a quick and stupid fix to not pay for multiple labels.
         /// </summary>
         private void CheckDoubleRun()
         {
@@ -153,6 +159,7 @@ namespace DHL_Seife
         /// Primary button to create a shipping label.
         /// If no order number was transmitted (via parameter), the button acts as "get data from Enventa"-button.
         /// </summary>
+        /// <param name="e">Reacts, when the PrintShippingLabel button was pressed.</param>
         private void PrintShippingLabel_Click(object sender, EventArgs e)
         {
             if (String.IsNullOrEmpty(SqlH.XmlOurNumber))
@@ -173,6 +180,7 @@ namespace DHL_Seife
         /// <summary>
         /// This button only appears, if no data from Enventa was read. It starts the label-printing.
         /// </summary>
+        /// <param name="e">Reacts, when the PrintShippingLabel button was pressed.</param>
         private void PrintManualShippingLabel_Click(object sender, EventArgs e)
         {
             XmlH.DoXMLMagic();
@@ -183,6 +191,7 @@ namespace DHL_Seife
         /// <summary>
         /// Disable reading stuff from enventa database, when no order number is given.
         /// </summary>
+        /// <param name="e">Reacts, when the text box with our order number was changed.</param>
         private void TextBoxOrdernumber_TextChanged(object sender, EventArgs e)
         {
             Sett.OrderNumber = textBoxOrdernumber.Text;
