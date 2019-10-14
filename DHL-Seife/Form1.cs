@@ -16,6 +16,7 @@ namespace DHL_Seife
     public partial class Form1 : Form
     {
         private static SettingsReader sett = new SettingsReader();
+        private static LogWriter log = new LogWriter(sett);
 
         private static HttpWebRequest webRequest;
         private static string orderNumber = "";
@@ -33,9 +34,7 @@ namespace DHL_Seife
         private static string xmlcountry = "Deutschland"; //recipient country
         private static string xmlparceltype = "V01PAK"; //Parcel type (Germany only or international)
         private static string xmlordertype = "1"; //Parcel type (Germany only or international)
-        private static string rowid = ""; //Row ID for insert
-        private static string logfile = "log.log"; //Log file
-        private static Boolean firstrun = true; //For the logging method. If it's not the first run, don't insert additional line breaks
+        private static string rowid = ""; //Row ID for insert 
         private static string xmlcommunicationmail = ""; //Mail that gets used for postfilals
         private static string xmlpscount = "1"; //Number of shipments in a package
         private static ArrayList xmlweightarray = new ArrayList(); //Number of shipments in a package
@@ -54,16 +53,22 @@ namespace DHL_Seife
             Boolean parameterstart = false;
             try
             {
-                if (!String.IsNullOrEmpty(args[1])) { orderNumber = args[1]; xmlournumber = args[1]; parameterstart = true; logTextToFile("> " + args[1], true); }
+                if (!String.IsNullOrEmpty(args[1])) {
+                    log.orderNumber = args[1];
+                    orderNumber = args[1];
+                    xmlournumber = args[1];
+                    parameterstart = true;
+                    log.writeLog("> " + args[1], true);
+                }
             }
             catch(Exception ex)
             {
                 orderNumber = "";
                 xmlournumber = "";
-                //logTextToFile("> The program was started manually.");
-                logTextToFile("> Das Programm wurde manuell gestartet.");
-                logTextToFile(ex.ToString());
-                logTextToFile(ex.Message.ToString(), true);
+                //log.writeLog("> The program was started manually.");
+                log.writeLog("> Das Programm wurde manuell gestartet.");
+                log.writeLog(ex.ToString());
+                log.writeLog(ex.Message.ToString(), true);
             }
             
 
@@ -109,7 +114,7 @@ namespace DHL_Seife
             else
             {
                 //logTextToFile("> Less than 3 seconds passed! Double run!");
-                logTextToFile("> Doppelte Ausführung! Bitte 3 Sekunden warten.");
+                log.writeLog("> Doppelte Ausführung! Bitte 3 Sekunden warten.");
                 Application.Exit();
                 Environment.Exit(1);
             }
@@ -159,8 +164,8 @@ namespace DHL_Seife
             }
             catch (Exception ex)
             {
-                logTextToFile(ex.ToString());
-                logTextToFile(ex.Message.ToString(), true);
+                log.writeLog(ex.ToString());
+                log.writeLog(ex.Message.ToString(), true);
             }
 
             xmlweight = "0";
@@ -267,9 +272,9 @@ namespace DHL_Seife
                 catch(Exception ex)
                 {
                     //logTextToFile("> Article weight for "+ dr["ARTIKELNR"] + " missing!");
-                    logTextToFile("> Artikelgewicht für "+ dr["ARTIKELNR"] + " fehlt!");
-                    logTextToFile(ex.ToString());
-                    logTextToFile(ex.Message.ToString(), true);
+                    log.writeLog("> Artikelgewicht für "+ dr["ARTIKELNR"] + " fehlt!");
+                    log.writeLog(ex.ToString());
+                    log.writeLog(ex.Message.ToString(), true);
                 }
 
             }
@@ -387,8 +392,8 @@ namespace DHL_Seife
             {
                 xmlstreet = removeSpecialCharacters(streetDefinition);
                 xmlstreetnumber = "0";
-                logTextToFile(ex.ToString());
-                logTextToFile(ex.Message.ToString(), true);
+                log.writeLog(ex.ToString());
+                log.writeLog(ex.Message.ToString(), true);
             }
 
             //People don't like to write the word "street" completely
@@ -488,8 +493,8 @@ namespace DHL_Seife
             }
             catch(Exception ex)
             {
-                logTextToFile(ex.ToString());
-                logTextToFile(ex.Message.ToString(), true);
+                log.writeLog(ex.ToString());
+                log.writeLog(ex.Message.ToString(), true);
             }
             
 
@@ -682,7 +687,7 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
             catch(Exception ex)
             {
                 //logTextToFile(" > XML error!");
-                logTextToFile("> XML Fehler!" + ex.ToString(), true, true);
+                log.writeLog("> XML Fehler!" + ex.ToString(), true, true);
             }
 
             
@@ -696,8 +701,8 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
             }
             catch(Exception ex)
             {
-                logTextToFile(ex.ToString());
-                logTextToFile(ex.Message.ToString(), true);
+                log.writeLog(ex.ToString());
+                log.writeLog(ex.Message.ToString(), true);
             }
             
         }
@@ -725,13 +730,13 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
                         if (soapResult.Contains("Hard validation"))
                         {
                             //logTextToFile("Critical adress-error!");
-                            logTextToFile("> Kritischer Adressfehler!\r\n" + soapResult, true, true);
+                            log.writeLog("> Kritischer Adressfehler!\r\n" + soapResult, true, true);
                         }
                         else if (soapResult.Contains("Weak validation"))
                         {
                             //logTextToFile("You'll have to pay 'Leitcodenachentgelt' for this order!");
-                            logTextToFile("> Leitcodenachentgelt muss für diesen Auftrag bezahlt werden!");
-                            logTextToFile(soapResult, true);
+                            log.writeLog("> Leitcodenachentgelt muss für diesen Auftrag bezahlt werden!");
+                            log.writeLog(soapResult, true);
                         }
 
                         XmlDocument xmldoc = new XmlDocument();
@@ -751,8 +756,8 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
                             }
                             catch (Exception ex)
                             {
-                                logTextToFile(ex.ToString(), true);
-                                logTextToFile(ex.Message.ToString(), true);
+                                log.writeLog(ex.ToString(), true);
+                                log.writeLog(ex.Message.ToString(), true);
                             }
                             //Print label
                             printLabel(labelName);
@@ -801,18 +806,18 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
                         {
                             string text = reader.ReadToEnd();
                             //logTextToFile("> Error while connecting to DHL-API!");
-                            logTextToFile("> Fehlerhafte Datenübermittlung an DHL!\r\n" + text + "\r\n\r\n" + xml, true, false);
+                            log.writeLog("> Fehlerhafte Datenübermittlung an DHL!\r\n" + text + "\r\n\r\n" + xml, true, false);
                         }
 
                         //logTextToFile("> Error while connecting to DHL-API!");
-                        logTextToFile("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
+                        log.writeLog("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
                         System.Threading.Thread.Sleep(5000);
                         doXMLMagic();
                         sendSoapRequest();
                     }
                     else
                     {
-                        logTextToFile("> Fehlerhafte Datenübermittlung an DHL!\r\n" + ex.ToString() + "\r\n\r\n" + xml, true, true);
+                        log.writeLog("> Fehlerhafte Datenübermittlung an DHL!\r\n" + ex.ToString() + "\r\n\r\n" + xml, true, true);
                     }
                 }
             }
@@ -833,14 +838,14 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
             if (apiConnectTries <= 10)
             {
                 //logTextToFile("> Error while connecting to DHL-API!");
-                logTextToFile("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
+                log.writeLog("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
                 System.Threading.Thread.Sleep(3000);
                 doXMLMagic();
                 sendSoapRequest();
             }
             else
             {
-                logTextToFile("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex.ToString(), true, true);
+                log.writeLog("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex.ToString(), true, true);
             }
         }
 
@@ -867,17 +872,17 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
                 }
                 catch(Exception ex)
                 {
-                    logTextToFile(ex.ToString());
-                    logTextToFile(ex.Message.ToString(), true);
+                    log.writeLog(ex.ToString());
+                    log.writeLog(ex.Message.ToString(), true);
                 }
 
                 //logTextToFile("> " + labelName + " successfully printed!");
-                logTextToFile("> " + labelName + " wurde erfolgreich gedruckt!", true);
+                log.writeLog("> " + labelName + " wurde erfolgreich gedruckt!\r\n", true);
             }
             catch (Exception ex)
             {
-                logTextToFile(ex.ToString());
-                logTextToFile(ex.Message.ToString(), true);
+                log.writeLog(ex.ToString());
+                log.writeLog(ex.Message.ToString(), true);
             }
 
             
@@ -910,8 +915,8 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
             }
             catch (Exception ex)
             {
-                logTextToFile(ex.ToString(), true);
-                logTextToFile(ex.Message.ToString(), true);
+                log.writeLog(ex.ToString(), true);
+                log.writeLog(ex.Message.ToString(), true);
             }
             
         }
@@ -938,8 +943,8 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
             }
             catch (Exception ex)
             {
-                logTextToFile(ex.ToString(), true);
-                logTextToFile(ex.Message.ToString(), true);
+                log.writeLog(ex.ToString(), true);
+                log.writeLog(ex.Message.ToString(), true);
             }
             return webRequest;
         }
@@ -954,6 +959,7 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
         {
             if (String.IsNullOrEmpty(orderNumber))
             {
+                log.orderNumber = orderNumber;
                 doSQLMagic(printShippingLabel);
                 writeToGui();
                 printManualShippingLabel.Visible = false;
@@ -976,65 +982,6 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
             Application.Exit();
         }
 
-        /// <summary>
-        /// Logs given text to file. If it's the first log of the programs run, add a empty line and the current date.
-        /// </summary>
-        private static void logTextToFile(String log)
-        {
-            logTextToFile(log, false);
-        }
-        private static void logTextToFile(String log, Boolean nl)
-        {
-            logTextToFile(log, nl, false);
-        }
-        private static void logTextToFile(String log, Boolean nl, Boolean termin)
-        {
-            //Write to database
-            try
-            {
-                log = log.Replace("'", "´"); //Replace fixes sql errors, if the log contains '
-                string sql = sett.sqlinsertnewmemo + " + '" + log; 
-                if (nl)
-                {
-                    sql += "\r\n";
-                }
-                sql += "\r\n' WHERE BelegNr = '" + orderNumber + "'";
-                OdbcConnection conn = new OdbcConnection(sett.connectionString);
-                conn.Open();
-                OdbcCommand comm = new OdbcCommand(sql, conn);
-                comm.ExecuteNonQuery();
-                if (termin)
-                {
-                    sql = sett.sqlinsertnewtermin;
-                    sql = sql.Replace("%ordernumber%", orderNumber).Replace("%log%", log).Replace("%time%", DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss"));
-                    Console.WriteLine(sql);
-                    comm = new OdbcCommand(sql, conn);
-                    comm.ExecuteNonQuery();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-
-            //Write to log file
-            using (StreamWriter sw = File.AppendText(logfile))
-            {
-                if (firstrun)
-                {
-                    sw.WriteLine();
-                    sw.WriteLine();
-                    sw.WriteLine();
-                    sw.WriteLine("> " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"));
-                    firstrun = false;
-                }
-                sw.WriteLine(log);
-                if (nl)
-                {
-                    sw.WriteLine();
-                }
-            }
-        }
 
         /// <summary>
         /// This function removes all special characters from a string.

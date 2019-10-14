@@ -24,15 +24,24 @@ namespace DHL_Seife.util
         public string sql_carrier_shipmentnumber { get; set; } //Insert String to insert the carrier number to the database
         public string sqlinsertnewmemo { get; set; } //Insert String to insert memo to the database
         public string sqlinsertnewtermin { get; set; } //Insert String to insert termin to the database
+        public string logfile { get; set; } //Log file
+
+
 
         public SettingsReader()
         {
             readSettings();
         }
 
+
+
+
+
         private void readSettings()
         {
             XDocument doc = XDocument.Load("var/settings.xml");
+            logfile = "log.log"; //TODO: Put in settings.xml
+
             var dbconnection = doc.Descendants("dbconnection");
             var dbrowidshipment = doc.Descendants("rowidshipment");
             var dbrowidcarrier = doc.Descendants("rowidcarrier");
