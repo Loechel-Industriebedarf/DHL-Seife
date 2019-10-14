@@ -51,6 +51,7 @@ namespace DHL_Seife
         private static string sqlinsertnewtermin = ""; //Insert String to insert termin to the database
         private static string xmlpscount = "1"; //Number of shipments in a package
         private static ArrayList xmlweightarray = new ArrayList(); //Number of shipments in a package
+        private static string xml = ""; //XML to send to dhl
 
 
 
@@ -654,7 +655,7 @@ senderNumber, postFiliale, xmlpscount);
                 }
                 
 
-                String xml = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                xml = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
                 <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:cis=""http://dhl.de/webservice/cisbase"" xmlns:bus=""http://dhl.de/webservices/businesscustomershipping"">
    <soapenv:Header>
       <cis:Authentification>
@@ -824,9 +825,30 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
             catch (WebException ex)
             {
                 //Log the error message of the WebException
-                try
+                anotherApiConnectionTryHttp(ex);
+            }
+            catch (Exception ex)
+            {
+                //If there is no WebException, log the "normal" exception
+                anotherApiConnectionTry(ex);
+            }
+            
+        }
+
+
+        /// <summary>
+        /// If we can't get a connection to the dhl api, try again.
+        /// </summary>
+        private static void anotherApiConnectionTryHttp(WebException ex)
+        {
+            try
+            {
+                using (WebResponse response = ex.Response)
                 {
-                    using (WebResponse response = ex.Response)
+
+                    apiConnectTries++;
+                    //If there is an error while connecting to the api, try again 3 times
+                    if (apiConnectTries <= 3)
                     {
                         HttpWebResponse httpResponse = (HttpWebResponse)response;
                         using (Stream data = response.GetResponseStream())
@@ -834,47 +856,49 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
                         {
                             string text = reader.ReadToEnd();
                             //logTextToFile("> Error while connecting to DHL-API!");
-                            logTextToFile("> Fehler bei der Verbindung mit der DHL-API!\r\n" + text, true, true);
+                            logTextToFile("> Fehlerhafte Datenübermittlung an DHL!\r\n" + text + "\r\n\r\n" + xml, true, false);
                         }
-                    }
-                }
-                catch (Exception ex1)
-                {
-                    apiConnectTries++;
-                    //If there is an error while connecting to the api, try again 5 times
-                    if (apiConnectTries <= 5)
-                    {
+
                         //logTextToFile("> Error while connecting to DHL-API!");
-                        logTextToFile("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 5 Sekunden!\r\n" + ex1.ToString(), true, false);
+                        logTextToFile("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
                         System.Threading.Thread.Sleep(5000);
                         doXMLMagic();
                         sendSoapRequest();
                     }
                     else
                     {
-                        logTextToFile("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex1.ToString(), true, true);
+                        logTextToFile("> Fehlerhafte Datenübermittlung an DHL!\r\n" + ex.ToString() + "\r\n\r\n" + xml, true, true);
                     }
                 }
             }
-            catch (Exception ex)
+            catch(Exception ex1)
             {
-                apiConnectTries++;
-                //If there is an error while connecting to the api, try again 5 times
-                if (apiConnectTries <= 5)
-                {
-                    //logTextToFile("> Error while connecting to DHL-API!");
-                    logTextToFile("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 5 Sekunden!\r\n" + ex.ToString(), true, false);
-                    System.Threading.Thread.Sleep(5000);
-                    doXMLMagic();
-                    sendSoapRequest();
-                }
-                else
-                {
-                    logTextToFile("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex.ToString(), true, true);
-                }
+                anotherApiConnectionTry(ex1);
             }
-            
         }
+
+
+        /// <summary>
+        /// If we can't get a connection to the dhl api, try again.
+        /// </summary>
+            private static void anotherApiConnectionTry(Exception ex)
+        {
+            apiConnectTries++;
+            //If there is an error while connecting to the api, try again 10 times
+            if (apiConnectTries <= 10)
+            {
+                //logTextToFile("> Error while connecting to DHL-API!");
+                logTextToFile("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
+                System.Threading.Thread.Sleep(3000);
+                doXMLMagic();
+                sendSoapRequest();
+            }
+            else
+            {
+                logTextToFile("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex.ToString(), true, true);
+            }
+        }
+
 
         /// <summary>
         /// Prints the shipping label. The printers name is saved in a txt file.
@@ -903,7 +927,7 @@ senderNumber, postFiliale, xmlpscount, xmlmultiple);
                 }
 
                 //logTextToFile("> " + labelName + " successfully printed!");
-                logTextToFile("> " + labelName + " wurde erfolgreich gedruckt!");
+                logTextToFile("> " + labelName + " wurde erfolgreich gedruckt!", true);
             }
             catch (Exception ex)
             {
