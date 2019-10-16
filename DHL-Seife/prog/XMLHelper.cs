@@ -169,7 +169,10 @@ namespace DHL_Seife.prog
 
                     for (int i = 1; i < Convert.ToDouble(SqlH.XmlPsCount); i++)
                     {
-                        String weightbuffer = SqlH.XmlWeightArray[i].ToString().Replace(",", ".");
+                        String weightbuffer = SqlH.XmlWeightArray[i].ToString();
+                        if (Convert.ToDouble(weightbuffer) > 30) { weightbuffer = "30"; }
+                        weightbuffer = weightbuffer.Replace(",", ".");
+
                         String ournumberbuffer = SqlH.XmlOurNumber + " - Paket " + i + " von " + Convert.ToDouble(SqlH.XmlPsCount);
 
                         xmlmultiple = xmlmultiple + String.Format(@"<ShipmentOrder>

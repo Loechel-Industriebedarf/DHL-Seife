@@ -182,11 +182,12 @@ namespace DHL_Seife.prog
                         {
                             string text = reader.ReadToEnd();
                             //logTextToFile("> Error while connecting to DHL-API!");
-                            Log.writeLog("> Fehlerhafte Datenübermittlung an DHL!\r\n" + text + "\r\n\r\n" + XmlH.Xml, true, false);
+                            Log.writeLog("> Fehlerhafte Datenübermittlung an DHL  - neuer Versuch in 5 Sekunden!!\r\n" + 
+                                text + "\r\n\r\n" + 
+                                XmlH.Xml + "\r\n\r\n" + 
+                                ex.ToString(), true, false);
                         }
 
-                        //logTextToFile("> Error while connecting to DHL-API!");
-                        Log.writeLog("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
                         System.Threading.Thread.Sleep(5000);
                         XmlH.DoXMLMagic();
                         SendSoapRequest();
