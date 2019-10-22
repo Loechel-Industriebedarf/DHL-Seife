@@ -295,6 +295,7 @@ Sett.senderNumber, postFiliale, SqlH.XmlPsCount, xmlmultiple);
                 // DPD wants weight in grams*10 - If you input "1", DPD thinks it is 10 grams. 
                 double dpdWeight = Math.Round(Convert.ToDouble(SqlH.XmlWeight) * 1000 / 10);
 
+                //Does the order contain multiple parcels?
                 String multipleParcels = "";
                 if (Convert.ToDouble(SqlH.XmlPsCount) > 1)
                 {
@@ -313,6 +314,18 @@ Sett.senderNumber, postFiliale, SqlH.XmlPsCount, xmlmultiple);
                            <weight>{3}</weight>
                         </parcels>", ourNumber11, Sett.OrderNumber, SqlH.XmlMail, weightbuffer);
                     }
+                }
+
+                //Should a notification be sent?
+                //Currently not working...
+                String dpdNotification = "";
+                if (!String.IsNullOrEmpty(SqlH.XmlMail) && SqlH.XmlMail.Contains("@") && !SqlH.XmlMail.Contains("amazon"))
+                {
+                    dpdNotification = String.Format(@"<notification>
+                        <channel>1</channel>
+                        <value>{0}</value>
+                        <language>DE</language>
+                    </notification>", SqlH.XmlMail);
                 }
 
 
@@ -360,6 +373,7 @@ xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/3.2"">
                     <email>{21}</email>
                 </recipient>
             </generalShipmentData>
+            
             <parcels>
                 <parcelLabelNumber>{3}</parcelLabelNumber>
                 <customerReferenceNumber1>{15}</customerReferenceNumber1>
@@ -377,7 +391,7 @@ xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/3.2"">
 Sett.senderStreetName, Sett.senderZip, Sett.senderCity, Sett.DPDCustomerNumber, SqlH.XmlRecipient,
 SqlH.XmlStreet, SqlH.XmlCountryCode, SqlH.XmlPlz, SqlH.XmlCity, Sett.OrderNumber,
 dpdWeight.ToString(), Sett.senderStreetNumber, SqlH.XmlStreetnumber, Sett.senderMail, Sett.senderNumber,
-SqlH.XmlMail, "", multipleParcels);
+SqlH.XmlMail, "", multipleParcels, dpdNotification);
                 SoapEnvelopeXml.LoadXml(@Xml);
             }
             catch(Exception ex)
