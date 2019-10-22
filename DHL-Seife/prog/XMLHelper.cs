@@ -292,6 +292,29 @@ Sett.senderNumber, postFiliale, SqlH.XmlPsCount, xmlmultiple);
 
                 //DPD wants numbers with 11 chars
                 String ourNumber11 = Sett.OrderNumber.PadLeft(11, '0');
+                // DPD wants weight in grams*10 - If you input "1", DPD thinks it is 10 grams. 
+                double dpdWeight = Math.Round(Convert.ToDouble(SqlH.XmlWeight) * 1000 / 10);
+
+                String multipleParcels = "";
+                if (Convert.ToDouble(SqlH.XmlPsCount) > 1)
+                {
+                    dpdWeight = Math.Round(Convert.ToDouble(SqlH.XmlWeightArray[0]) * 1000 / 10);
+
+                    for (int i = 1; i < Convert.ToDouble(SqlH.XmlPsCount); i++)
+                    {
+                        String weightbuffer = Math.Round(Convert.ToDouble(SqlH.XmlWeightArray[i]) * 1000 / 10).ToString();
+                        if (Convert.ToDouble(weightbuffer) > 3000) { weightbuffer = "3000"; }
+                        weightbuffer = weightbuffer.Replace(",", ".");
+
+                        multipleParcels = multipleParcels + String.Format(@"<parcels>
+                           <parcelLabelNumber>{0}</parcelLabelNumber>
+                           <customerReferenceNumber1>{1}</customerReferenceNumber1>
+                           <customerReferenceNumber2>{2}</customerReferenceNumber2>
+                           <weight>{3}</weight>
+                        </parcels>", ourNumber11, Sett.OrderNumber, SqlH.XmlMail, weightbuffer);
+                    }
+                }
+
 
                 Xml = String.Format(@"<?xml version=""1.0"" encoding=""UTF-8""?>
 <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ns=""http://dpd.com/common/service/types/Authentication/2.0"" 
@@ -318,31 +341,43 @@ xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/3.2"">
                 <sender>
                     <name1>{5}</name1>
                     <street>{6}</street>
+                    <houseNo>{17}</houseNo>
                     <country>DE</country>
                     <zipCode>{7}</zipCode>
                     <city>{8}</city>
                     <customerNumber>{9}</customerNumber>
+                    <phone>{20}</phone>
+                    <email>{19}</email>
                 </sender>
                 <recipient>
                     <name1>{10}</name1>
                     <street>{11}</street>
+                    <houseNo>{18}</houseNo>
                     <country>{12}</country>
                     <zipCode>{13}</zipCode>
                     <city>{14}</city>
+                    <phone>{22}</phone>
+                    <email>{21}</email>
                 </recipient>
             </generalShipmentData>
             <parcels>
                 <parcelLabelNumber>{3}</parcelLabelNumber>
+                <customerReferenceNumber1>{15}</customerReferenceNumber1>
+                <customerReferenceNumber2>{21}</customerReferenceNumber2>
+                <weight>{16}</weight>
             </parcels>
+            {23}
             <productAndServiceData>
                 <orderType>consignment</orderType>
-            </productAndServiceData>          
+            </productAndServiceData>  
         </order>       
     </ns1:storeOrders>    
 </soapenv:Body> 
 </soapenv:Envelope>", Sett.DPDId, Sett.DPDAuthToken, Sett.DPDDepotNumber, ourNumber11, Sett.OrderNumber, Sett.senderName,
-Sett.senderStreetName + Sett.senderStreetNumber, Sett.senderZip, Sett.senderCity, Sett.DPDCustomerNumber, SqlH.XmlRecipient,
-SqlH.XmlStreet + SqlH.XmlStreetnumber, SqlH.XmlCountryCode, SqlH.XmlPlz, SqlH.XmlCity);
+Sett.senderStreetName, Sett.senderZip, Sett.senderCity, Sett.DPDCustomerNumber, SqlH.XmlRecipient,
+SqlH.XmlStreet, SqlH.XmlCountryCode, SqlH.XmlPlz, SqlH.XmlCity, Sett.OrderNumber,
+dpdWeight.ToString(), Sett.senderStreetNumber, SqlH.XmlStreetnumber, Sett.senderMail, Sett.senderNumber,
+SqlH.XmlMail, "", multipleParcels);
                 SoapEnvelopeXml.LoadXml(@Xml);
             }
             catch(Exception ex)
@@ -390,6 +425,7 @@ SqlH.XmlStreet + SqlH.XmlStreetnumber, SqlH.XmlCountryCode, SqlH.XmlPlz, SqlH.Xm
             Sett.senderZip = "";
             Sett.senderCity = "";
             Sett.senderNumber = "";
+            Sett.senderMail = "";
             if (SqlH.XmlOrderType.Equals("10"))
             {
                 Sett.senderName = "Mercateo Deutschland AG";
@@ -397,6 +433,7 @@ SqlH.XmlStreet + SqlH.XmlStreetnumber, SqlH.XmlCountryCode, SqlH.XmlPlz, SqlH.Xm
                 Sett.senderStreetNumber = "4-5";
                 Sett.senderZip = "06366";
                 Sett.senderCity = "Köthen";
+                Sett.senderMail = "service@mercateo.com";
                 Sett.senderNumber = "+49 89 12 140 777";
             }
             else
@@ -406,6 +443,7 @@ SqlH.XmlStreet + SqlH.XmlStreetnumber, SqlH.XmlCountryCode, SqlH.XmlPlz, SqlH.Xm
                 Sett.senderStreetNumber = "2";
                 Sett.senderZip = "27232";
                 Sett.senderCity = "Sulingen";
+                Sett.senderMail = "info@loechel-industriebedarf.de";
                 Sett.senderNumber = "+49 4271 5727";
             }
         }

@@ -337,12 +337,12 @@ namespace DHL_Seife.prog
             catch (WebException ex)
             {
                 //Log the error message of the WebException
-                AnotherApiConnectionTryHttp(ex, , "DPD");
+                AnotherApiConnectionTryHttp(ex, "DPD");
             }
             catch (Exception ex)
             {
                 //If there is no WebException, log the "normal" exception
-                AnotherApiConnectionTry(ex, , "DPD");
+                AnotherApiConnectionTry(ex, "DPD");
             }
         }
 
@@ -400,8 +400,12 @@ namespace DHL_Seife.prog
                         Console.Write(soapResult);
 
                         WriteShipmentNumber(soapResultXml.GetElementsByTagName("parcelLabelNumber")[0].InnerXml);
-                        String labelName = SaveDPDLabel(soapResultXml.GetElementsByTagName("parcellabelsPDF")[0].InnerXml);
-                        PrintHelper print = new PrintHelper(Sett, Log, labelName);
+                        foreach(XmlElement dpdLabel in soapResultXml.GetElementsByTagName("parcellabelsPDF"))
+                        {
+                            String labelName = SaveDPDLabel(dpdLabel.InnerText);
+                            PrintHelper print = new PrintHelper(Sett, Log, labelName);
+                        }
+                        
 
                     }
                 }
@@ -430,7 +434,7 @@ namespace DHL_Seife.prog
         {
             try
             {
-                String labelName = "labels/test.pdf";
+                String labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
 
                 byte[] bytes = Convert.FromBase64String(base64BinaryStr);
 

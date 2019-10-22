@@ -34,6 +34,7 @@ namespace DHL_Seife.util
         public string senderZip { get; set; }
         public string senderCity { get; set; }
         public string senderNumber { get; set; }
+        public string senderMail { get; set; }
         public string newxmlmail { get; set; }
 
         //DPD specific
