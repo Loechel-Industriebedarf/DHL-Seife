@@ -38,9 +38,11 @@ namespace DHL_Seife.util
         public string newxmlmail { get; set; }
 
         //DPD specific
-        public string DPDId { get; set; } //Log file
-        public string DPDPassword { get; set; } //Log file
-        public string DPDCustomerNumber { get; set; } //Log file
+        public string DPDId { get; set; } //DPD id
+        public string DPDPassword { get; set; } //DPD password
+        public string DPDCustomerNumber { get; set; } //DPD customer number
+        public string DPDSoapAuth { get; set; } //Path to authservice
+        public string DPDSoapLabel { get; set; } //Path to storeOrders / label printing service
         public string DPDAuthToken{ get; set; } //The number of the order
         public string DPDDepotNumber{ get; set; } //The number of the order
 
@@ -81,6 +83,8 @@ namespace DHL_Seife.util
             var dpd_id = doc.Descendants("dpd_id");
             var dpd_password = doc.Descendants("dpd_password");
             var dpd_customer_number = doc.Descendants("dpd_customer_number");
+            var dpd_soap_auth = doc.Descendants("dpd_soap_auth");
+            var dpd_soap_label = doc.Descendants("dpd_soap_label");
             foreach (var foo in dbconnection) { ConnectionString = foo.Value; }
             foreach (var foo in dbrowidshipment) { RowIdShipmentnumber = foo.Value; }
             foreach (var foo in dbrowidcarrier) { RowIdCarrier = foo.Value; }
@@ -99,6 +103,8 @@ namespace DHL_Seife.util
             foreach (var foo in dpd_id) { DPDId = foo.Value; }
             foreach (var foo in dpd_password) { DPDPassword = foo.Value; }
             foreach (var foo in dpd_customer_number) { DPDCustomerNumber = foo.Value; }
+            foreach (var foo in dpd_soap_auth) { DPDSoapAuth = foo.Value; }
+            foreach (var foo in dpd_soap_label) { DPDSoapLabel = foo.Value; }
         }
     }
 }

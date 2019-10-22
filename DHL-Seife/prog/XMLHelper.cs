@@ -321,12 +321,14 @@ Sett.senderNumber, postFiliale, SqlH.XmlPsCount, xmlmultiple);
                 String dpdNotification = "";
                 if (!String.IsNullOrEmpty(SqlH.XmlMail) && SqlH.XmlMail.Contains("@") && !SqlH.XmlMail.Contains("amazon"))
                 {
-                    dpdNotification = String.Format(@"<notification>
+                    dpdNotification = String.Format(@"<proactiveNotification>
                         <channel>1</channel>
                         <value>{0}</value>
+                        <rule>16</rule>
                         <language>DE</language>
-                    </notification>", SqlH.XmlMail);
+                    </proactiveNotification>", SqlH.XmlMail);
                 }
+                dpdNotification = ""; //The code doesn't work correctly at the moment.
 
 
                 Xml = String.Format(@"<?xml version=""1.0"" encoding=""UTF-8""?>
@@ -383,6 +385,7 @@ xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/3.2"">
             {23}
             <productAndServiceData>
                 <orderType>consignment</orderType>
+                {24}
             </productAndServiceData>  
         </order>       
     </ns1:storeOrders>    

@@ -301,7 +301,7 @@ namespace DHL_Seife.prog
         {
             try
             {
-                HttpWebRequest request = CreateDPDWebRequest("https://public-ws-stage.dpd.com/services/LoginService/V2_0/?wsdll&function_name=getAuth");
+                HttpWebRequest request = CreateDPDWebRequest(Sett.DPDSoapAuth);
                 XmlDocument soapEnvelopeXml = new XmlDocument();
                 String xml = String.Format(@"<?xml version=""1.0"" encoding=""UTF-8""?>
             <SOAP-ENV:Envelope xmlns:SOAP-ENV=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ns1=""http://dpd.com/common/service/types/LoginService/2.0"">   
@@ -383,7 +383,7 @@ namespace DHL_Seife.prog
         {
             try
             {
-                HttpWebRequest request = CreateDPDWebRequest("https://public-ws-stage.dpd.com/services/ShipmentService/V3_2/?wsdlfunction_name=storeOrders");
+                HttpWebRequest request = CreateDPDWebRequest(Sett.DPDSoapLabel);
 
                 using (Stream stream = request.GetRequestStream())
                 {
@@ -428,13 +428,11 @@ namespace DHL_Seife.prog
         /// <summary>
         /// Saves the DPD label to file.
         /// </summary>
-        /// 
-        /// TODO DPD: Give actually useful filenames
         private String SaveDPDLabel(String base64BinaryStr)
         {
             try
             {
-                String labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
+                String labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-DPD-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
 
                 byte[] bytes = Convert.FromBase64String(base64BinaryStr);
 
