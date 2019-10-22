@@ -63,9 +63,9 @@ namespace DHL_Seife.util
         private void ReadSettings()
         {
             XDocument doc = XDocument.Load("var/settings.xml");
-            Logfile = "log.log"; //TODO: Put in settings.xml
 
             var dbconnection = doc.Descendants("dbconnection");
+            var logfile = doc.Descendants("logfile");
             var dbrowidshipment = doc.Descendants("rowidshipment");
             var dbrowidcarrier = doc.Descendants("rowidcarrier");
             var printer = doc.Descendants("printer");
@@ -86,6 +86,7 @@ namespace DHL_Seife.util
             var dpd_soap_auth = doc.Descendants("dpd_soap_auth");
             var dpd_soap_label = doc.Descendants("dpd_soap_label");
             foreach (var foo in dbconnection) { ConnectionString = foo.Value; }
+            foreach (var foo in logfile) { Logfile = foo.Value; }
             foreach (var foo in dbrowidshipment) { RowIdShipmentnumber = foo.Value; }
             foreach (var foo in dbrowidcarrier) { RowIdCarrier = foo.Value; }
             foreach (var foo in printer) { PrinterName = foo.Value; }
