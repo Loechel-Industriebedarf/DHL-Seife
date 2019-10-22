@@ -40,7 +40,7 @@ namespace DHL_Seife.prog
         /// </summary>
         /// 
         /// TODO: Do tons of refactoring...
-        public void DoXMLMagic()
+        public void DoDHLXMLMagic()
         {
             //E-Mail is not a needed thing for the dhl-xml
             String newxmlmail = "";
@@ -107,56 +107,12 @@ namespace DHL_Seife.prog
             SqlH.XmlRecipient = SqlH.XmlRecipient + " " + SqlH.XmlRecipient02 + " " + SqlH.XmlRecipient03; //Combines the recipients for unneccessary use of multiple fields
 
 
-            //These values have a max length; Cut them, if they are too long
-            //If recipient(01) is too long, write the rest of it to recipient02. If recipient02 is too long, write the rest to recipient03
-            if (SqlH.XmlRecipient.Length > 35) { SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(35, SqlH.XmlRecipient.Length - 35) + " " + SqlH.XmlRecipient02; SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, 35); }
-            if (SqlH.XmlRecipient02.Length > 35) { SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(35, SqlH.XmlRecipient02.Length - 35) + " " + SqlH.XmlRecipient03; SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, 35); }
-            if (SqlH.XmlRecipient03.Length > 35) { SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, 35); }
-            if (SqlH.XmlStreet.Length > 35) { SqlH.XmlStreet = SqlH.XmlStreet.Substring(0, 35); }
-            if (SqlH.XmlStreetnumber.Length > 5) { SqlH.XmlStreetnumber = SqlH.XmlStreetnumber.Substring(0, 5); }
-            if (SqlH.XmlPlz.Length > 10) { SqlH.XmlPlz = SqlH.XmlPlz.Substring(0, 10); }
-            if (SqlH.XmlCity.Length > 35) { SqlH.XmlCity = SqlH.XmlCity.Substring(0, 35); }
-            if (SqlH.XmlCountry.Length > 30) { SqlH.XmlCountry = SqlH.XmlCountry.Substring(0, 30); }
             if (newxmlmail.Length > 70) { newxmlmail = newxmlmail.Substring(0, 70); }
-            try
-            {
-                double weight = Convert.ToDouble(SqlH.XmlWeight.Replace(".", ","));
-                if (weight > 30) { SqlH.XmlWeight = "30"; }
-                else if (weight <= 0.01) { SqlH.XmlWeight = "4"; }
-                else if (weight < 0.1) { SqlH.XmlWeight = "0.1"; }
-            }
-            catch (Exception ex)
-            {
-                Log.writeLog(ex.ToString(), true);
-            }
+            RefactorInputs();
 
-  
             try
             {
-                string senderName = "";
-                string senderStreetName = "";
-                string senderStreetNumber = "";
-                string senderZip = "";
-                string senderCity = "";
-                string senderNumber = "";
-                if (SqlH.XmlOrderType.Equals("10"))
-                {
-                    senderName = "Mercateo Deutschland AG";
-                    senderStreetName = "Museumsgasse";
-                    senderStreetNumber = "4-5";
-                    senderZip = "06366";
-                    senderCity = "Köthen";
-                    senderNumber = "+49 89 12 140 777";
-                }
-                else
-                {
-                    senderName = "Löchel Industriebedarf";
-                    senderStreetName = "Hans-Hermann-Meyer-Strasse";
-                    senderStreetNumber = "2";
-                    senderZip = "27232";
-                    senderCity = "Sulingen";
-                    senderNumber = "+49 4271 5727";
-                }
+                
 
 
                 //Starts at 0, the string variables on the bottom are groups of five
@@ -229,8 +185,8 @@ namespace DHL_Seife.prog
 SqlH.XmlStreetnumber, SqlH.XmlPlz, SqlH.XmlCity, SqlH.XmlCountry, Sett.XmlPass,
 Sett.XmlAccountnumber, ournumberbuffer, SqlH.XmlParcelType, newxmlmailopen, newxmlmailclose,
 SqlH.XmlRecipient02, SqlH.XmlRecipient03, packstationStart, packstationEnd, packstationNumber,
-senderName, senderStreetName, senderStreetNumber, senderZip, senderCity,
-senderNumber, postFiliale, SqlH.XmlPsCount);
+Sett.senderName, Sett.senderStreetName, Sett.senderStreetNumber, Sett.senderZip, Sett.senderCity,
+Sett.senderNumber, postFiliale, SqlH.XmlPsCount);
                     }
 
                     SqlH.XmlOurNumber = SqlH.XmlOurNumber + " - Paket " + Convert.ToDouble(SqlH.XmlPsCount) + " von " + Convert.ToDouble(SqlH.XmlPsCount);
@@ -308,8 +264,8 @@ senderNumber, postFiliale, SqlH.XmlPsCount);
 SqlH.XmlStreetnumber, SqlH.XmlPlz, SqlH.XmlCity, SqlH.XmlCountry, Sett.XmlPass,
 Sett.XmlAccountnumber, SqlH.XmlOurNumber, SqlH.XmlParcelType, newxmlmailopen, newxmlmailclose,
 SqlH.XmlRecipient02, SqlH.XmlRecipient03, packstationStart, packstationEnd, packstationNumber,
-senderName, senderStreetName, senderStreetNumber, senderZip, senderCity,
-senderNumber, postFiliale, SqlH.XmlPsCount, xmlmultiple);
+Sett.senderName, Sett.senderStreetName, Sett.senderStreetNumber, Sett.senderZip, Sett.senderCity,
+Sett.senderNumber, postFiliale, SqlH.XmlPsCount, xmlmultiple);
 
                 SoapEnvelopeXml.LoadXml(Xml);
             }
@@ -319,6 +275,139 @@ senderNumber, postFiliale, SqlH.XmlPsCount, xmlmultiple);
                 Log.writeLog("> XML Fehler!" + ex.ToString(), true, true);
             }
 
+        }
+
+        
+
+
+        /// <summary>
+        /// Create a xml-string from the inputs the user made erlier.
+        /// This xml will be sent as soap request to the dpd server.
+        /// </summary>
+        public void DoDPDXMLMagic()
+        {
+            try
+            {
+                RefactorInputs();
+
+                //DPD wants numbers with 11 chars
+                String ourNumber11 = Sett.OrderNumber.PadLeft(11, '0');
+
+                Xml = String.Format(@"<?xml version=""1.0"" encoding=""UTF-8""?>
+<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ns=""http://dpd.com/common/service/types/Authentication/2.0"" 
+xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/3.2"">   
+<soapenv:Header>
+    <ns:authentication>
+        <delisId>{0}</delisId>
+        <authToken>{1}</authToken>
+        <messageLanguage>de_DE</messageLanguage>
+    </ns:authentication>
+</soapenv:Header>
+<soapenv:Body>
+    <ns1:storeOrders>
+        <printOptions>
+            <printerLanguage>PDF</printerLanguage>
+            <paperFormat>A6</paperFormat>
+        </printOptions>
+        <order>
+            <generalShipmentData>
+                <identificationNumber>{4}</identificationNumber>
+                <sendingDepot>{2}</sendingDepot>
+                <product>CL</product>
+                <mpsCompleteDelivery>0</mpsCompleteDelivery>
+                <sender>
+                    <name1>{5}</name1>
+                    <street>{6}</street>
+                    <country>DE</country>
+                    <zipCode>{7}</zipCode>
+                    <city>{8}</city>
+                    <customerNumber>{9}</customerNumber>
+                </sender>
+                <recipient>
+                    <name1>{10}</name1>
+                    <street>{11}</street>
+                    <country>{12}</country>
+                    <zipCode>{13}</zipCode>
+                    <city>{14}</city>
+                </recipient>
+            </generalShipmentData>
+            <parcels>
+                <parcelLabelNumber>{3}</parcelLabelNumber>
+            </parcels>
+            <productAndServiceData>
+                <orderType>consignment</orderType>
+            </productAndServiceData>          
+        </order>       
+    </ns1:storeOrders>    
+</soapenv:Body> 
+</soapenv:Envelope>", Sett.DPDId, Sett.DPDAuthToken, Sett.DPDDepotNumber, ourNumber11, Sett.OrderNumber, Sett.senderName,
+Sett.senderStreetName + Sett.senderStreetNumber, Sett.senderZip, Sett.senderCity, Sett.DPDCustomerNumber, SqlH.XmlRecipient,
+SqlH.XmlStreet + SqlH.XmlStreetnumber, SqlH.XmlCountryCode, SqlH.XmlPlz, SqlH.XmlCity);
+                SoapEnvelopeXml.LoadXml(@Xml);
+            }
+            catch(Exception ex)
+            {
+                Log.writeLog("> DPD-XML Fehler!\r\n" + Xml + "\r\n" + ex.ToString(), true, true);
+            }
+            
+        }
+
+
+
+
+        /// <summary>
+        /// Refactors some of the inputs, so we can use it correctly.
+        /// </summary>
+        private void RefactorInputs()
+        {
+            //These values have a max length; Cut them, if they are too long
+            //If recipient(01) is too long, write the rest of it to recipient02. If recipient02 is too long, write the rest to recipient03
+            if (SqlH.XmlRecipient.Length > 35) { SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(35, SqlH.XmlRecipient.Length - 35) + " " + SqlH.XmlRecipient02; SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, 35); }
+            if (SqlH.XmlRecipient02.Length > 35) { SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(35, SqlH.XmlRecipient02.Length - 35) + " " + SqlH.XmlRecipient03; SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, 35); }
+            if (SqlH.XmlRecipient03.Length > 35) { SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, 35); }
+            if (SqlH.XmlStreet.Length > 35) { SqlH.XmlStreet = SqlH.XmlStreet.Substring(0, 35); }
+            if (SqlH.XmlStreetnumber.Length > 5) { SqlH.XmlStreetnumber = SqlH.XmlStreetnumber.Substring(0, 5); }
+            if (SqlH.XmlPlz.Length > 10) { SqlH.XmlPlz = SqlH.XmlPlz.Substring(0, 10); }
+            if (SqlH.XmlCity.Length > 35) { SqlH.XmlCity = SqlH.XmlCity.Substring(0, 35); }
+            if (SqlH.XmlCountry.Length > 30) { SqlH.XmlCountry = SqlH.XmlCountry.Substring(0, 30); }
+            
+
+            try
+            {
+                double weight = Convert.ToDouble(SqlH.XmlWeight.Replace(".", ","));
+                if (weight > 30) { SqlH.XmlWeight = "30"; }
+                else if (weight <= 0.01) { SqlH.XmlWeight = "4"; }
+                else if (weight < 0.1) { SqlH.XmlWeight = "0.1"; }
+            }
+            catch (Exception ex)
+            {
+                Log.writeLog(ex.ToString(), true);
+            }
+
+            Sett.senderName = "";
+            Sett.senderStreetName = "";
+            Sett.senderStreetNumber = "";
+            Sett.senderZip = "";
+            Sett.senderCity = "";
+            Sett.senderNumber = "";
+            if (SqlH.XmlOrderType.Equals("10"))
+            {
+                Sett.senderName = "Mercateo Deutschland AG";
+                Sett.senderStreetName = "Museumsgasse";
+                Sett.senderStreetNumber = "4-5";
+                Sett.senderZip = "06366";
+                Sett.senderCity = "Köthen";
+                Sett.senderNumber = "+49 89 12 140 777";
+            }
+            else
+            {
+                Sett.senderName = "Löchel Industriebedarf";
+                Sett.senderStreetName = "Hans-Hermann-Meyer-Strasse";
+                Sett.senderStreetNumber = "2";
+                Sett.senderZip = "27232";
+                Sett.senderCity = "Sulingen";
+                Sett.senderNumber = "+49 4271 5727";
+            }
         }
 
     }

@@ -26,7 +26,23 @@ namespace DHL_Seife.util
         public string SqlInsertNewTermin { get; set; } //Insert String to insert termin to the database
         public string Logfile { get; set; } //Log file
 
-        public string OrderNumber{ get; set; } //The number of the order
+        public string OrderNumber { get; set; } //The number of the order
+
+        public string senderName { get; set; }
+        public string senderStreetName { get; set; }
+        public string senderStreetNumber { get; set; }
+        public string senderZip { get; set; }
+        public string senderCity { get; set; }
+        public string senderNumber { get; set; }
+        public string newxmlmail { get; set; }
+
+        //DPD specific
+        public string DPDId { get; set; } //Log file
+        public string DPDPassword { get; set; } //Log file
+        public string DPDCustomerNumber { get; set; } //Log file
+        public string DPDAuthToken{ get; set; } //The number of the order
+        public string DPDDepotNumber{ get; set; } //The number of the order
+
 
 
 
@@ -61,6 +77,9 @@ namespace DHL_Seife.util
             var insertcarriertodb = doc.Descendants("insertcarriertodb");
             var insertnewmemotodb = doc.Descendants("insertnewmemotodb");
             var insertnewtermin = doc.Descendants("insertnewtermin");
+            var dpd_id = doc.Descendants("dpd_id");
+            var dpd_password = doc.Descendants("dpd_password");
+            var dpd_customer_number = doc.Descendants("dpd_customer_number");
             foreach (var foo in dbconnection) { ConnectionString = foo.Value; }
             foreach (var foo in dbrowidshipment) { RowIdShipmentnumber = foo.Value; }
             foreach (var foo in dbrowidcarrier) { RowIdCarrier = foo.Value; }
@@ -76,6 +95,9 @@ namespace DHL_Seife.util
             foreach (var foo in insertcarriertodb) { SqlCarrierShipmentnumber = foo.Value; }
             foreach (var foo in insertnewmemotodb) { SqlInsertNewMemo = foo.Value; }
             foreach (var foo in insertnewtermin) { SqlInsertNewTermin = foo.Value; }
+            foreach (var foo in dpd_id) { DPDId = foo.Value; }
+            foreach (var foo in dpd_password) { DPDPassword = foo.Value; }
+            foreach (var foo in dpd_customer_number) { DPDCustomerNumber = foo.Value; }
         }
     }
 }

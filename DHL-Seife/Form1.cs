@@ -38,12 +38,19 @@ namespace DHL_Seife
             //The order number can be transmitted via command line parameter
             string[] args = Environment.GetCommandLineArgs();
 
+            //The program is able to send dhl and dpd orders via command line parameters
+            String orderType = "DHL";
+
             //Program was started via command line parameters
             try
             {
                 if (!String.IsNullOrEmpty(args[1])) {
                     Sett.OrderNumber = args[1];
                     Log.writeLog("> " + args[1], true);
+                }
+                if (!String.IsNullOrEmpty(args[2])) {
+                    orderType = args[2];
+                    Log.writeLog("> " + orderType, false);
                 }
             }
             //Program gui was started
@@ -61,9 +68,27 @@ namespace DHL_Seife
             //If the program was started via a parameter, skip the whole gui thing
             if (!String.IsNullOrEmpty(Sett.OrderNumber))
             {
-                SqlH.DoSQLMagic();
-                XmlH.DoXMLMagic();
-                SoapH.SendSoapRequest();
+                switch (orderType)
+                {
+                    case "DHL":
+                        SqlH.DoSQLMagic();
+                        XmlH.DoDHLXMLMagic();
+                        SoapH.SendDHLSoapRequest();
+                        break;
+
+                    case "DPD":
+                        SqlH.DoSQLMagic();
+                        SoapH.DPDAuth();
+                        XmlH.DoDPDXMLMagic();
+                        SoapH.SendDPDSoapRequest();
+                        break;
+
+                    default:
+                        SqlH.DoSQLMagic();
+                        XmlH.DoDHLXMLMagic();
+                        SoapH.SendDHLSoapRequest();
+                        break;
+                }
 
                 Application.Exit();
                 Environment.Exit(1);
@@ -170,8 +195,8 @@ namespace DHL_Seife
             }
             else
             {
-                XmlH.DoXMLMagic();
-                SoapH.SendSoapRequest();
+                XmlH.DoDHLXMLMagic();
+                SoapH.SendDHLSoapRequest();
                 Application.Exit();
             }
         }
@@ -183,8 +208,8 @@ namespace DHL_Seife
         /// <param name="e">Reacts, when the PrintShippingLabel button was pressed.</param>
         private void PrintManualShippingLabel_Click(object sender, EventArgs e)
         {
-            XmlH.DoXMLMagic();
-            SoapH.SendSoapRequest();
+            XmlH.DoDHLXMLMagic();
+            SoapH.SendDHLSoapRequest();
             Application.Exit();
         }
 

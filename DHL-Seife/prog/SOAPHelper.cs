@@ -45,7 +45,7 @@ namespace DHL_Seife.prog
         /// </summary>
         /// 
         /// TODO: Do tons of refactoring...
-        public void SendSoapRequest()
+        public void SendDHLSoapRequest()
         {
             WebRequest = CreateWebRequest();
 
@@ -167,6 +167,10 @@ namespace DHL_Seife.prog
         /// <param name="ex">The WebException that should be logged, before the program tries to connect again.</param>
         private void AnotherApiConnectionTryHttp(WebException ex)
         {
+            AnotherApiConnectionTryHttp(ex, "DHL");
+        }
+        private void AnotherApiConnectionTryHttp(WebException ex, String orderType)
+        {
             try
             {
                 using (WebResponse response = ex.Response)
@@ -182,19 +186,29 @@ namespace DHL_Seife.prog
                         {
                             string text = reader.ReadToEnd();
                             //logTextToFile("> Error while connecting to DHL-API!");
-                            Log.writeLog("> Fehlerhafte Datenübermittlung an DHL  - neuer Versuch in 5 Sekunden!!\r\n" + 
+                            Log.writeLog("> Fehlerhafte Datenübermittlung an DHL/DPD  - neuer Versuch in 5 Sekunden!!\r\n" + 
                                 text + "\r\n\r\n" + 
                                 XmlH.Xml + "\r\n\r\n" + 
                                 ex.ToString(), true, false);
                         }
 
                         System.Threading.Thread.Sleep(5000);
-                        XmlH.DoXMLMagic();
-                        SendSoapRequest();
+
+                        switch (orderType)
+                        {
+                            case "DHL":
+                                XmlH.DoDHLXMLMagic();
+                                SendDHLSoapRequest();
+                                break;
+                            case "DPD":
+                                XmlH.DoDPDXMLMagic();
+                                SendDPDSoapRequest();
+                                break;
+                        }
                     }
                     else
                     {
-                        Log.writeLog("> Fehlerhafte Datenübermittlung an DHL!\r\n" + ex.ToString() + "\r\n\r\n" + XmlH.Xml, true, true);
+                        Log.writeLog("> Fehlerhafte Datenübermittlung an DHL/DPD!\r\n" + ex.ToString() + "\r\n\r\n" + XmlH.Xml, true, true);
                     }
                 }
             }
@@ -211,19 +225,32 @@ namespace DHL_Seife.prog
         /// <param name="ex">The Exception that should be logged, before the program tries to connect again.</param>
         private void AnotherApiConnectionTry(Exception ex)
         {
+            AnotherApiConnectionTry(ex, "DHL");
+        }
+        private void AnotherApiConnectionTry(Exception ex, String orderType)
+        {
             apiConnectTries++;
             //If there is an error while connecting to the api, try again 10 times
             if (apiConnectTries <= 10)
             {
                 //logTextToFile("> Error while connecting to DHL-API!");
-                Log.writeLog("> Fehler bei der Verbindung mit der DHL-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
+                Log.writeLog("> Fehler bei der Verbindung mit der DHL/DPD-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
                 System.Threading.Thread.Sleep(3000);
-                XmlH.DoXMLMagic();
-                SendSoapRequest();
+                switch (orderType)
+                {
+                    case "DHL":
+                        XmlH.DoDHLXMLMagic();
+                        SendDHLSoapRequest();
+                        break;
+                    case "DPD":
+                        XmlH.DoDPDXMLMagic();
+                        SendDPDSoapRequest();
+                        break;
+                }    
             }
             else
             {
-                Log.writeLog("> Fehler bei der Verbindung mit der DHL-API!\r\n" + ex.ToString(), true, true);
+                Log.writeLog("> Fehler bei der Verbindung mit der DHL/DPD-API!\r\n" + ex.ToString(), true, true);
             }
         }
 
@@ -262,6 +289,165 @@ namespace DHL_Seife.prog
             }
 
         }
-        
+
+
+
+
+
+        /// <summary>
+        /// Gets an auth token from DPD. We'll need an auth token to send further requests.
+        /// </summary>
+        public void DPDAuth()
+        {
+            try
+            {
+                HttpWebRequest request = CreateDPDWebRequest("https://public-ws-stage.dpd.com/services/LoginService/V2_0/?wsdll&function_name=getAuth");
+                XmlDocument soapEnvelopeXml = new XmlDocument();
+                String xml = String.Format(@"<?xml version=""1.0"" encoding=""UTF-8""?>
+            <SOAP-ENV:Envelope xmlns:SOAP-ENV=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ns1=""http://dpd.com/common/service/types/LoginService/2.0"">   
+                <SOAP-ENV:Body>       
+                    <ns1:getAuth>           
+                        <delisId>{0}</delisId>           
+                        <password>{1}</password>           
+                        <messageLanguage>de_DE</messageLanguage>       
+                    </ns1:getAuth>   
+                </SOAP-ENV:Body>
+            </SOAP-ENV:Envelope>", Sett.DPDId, Sett.DPDPassword);
+                soapEnvelopeXml.LoadXml(@xml);
+
+                using (Stream stream = request.GetRequestStream())
+                {
+                    soapEnvelopeXml.Save(stream);
+                }
+
+                using (WebResponse response = request.GetResponse())
+                {
+                    using (StreamReader rd = new StreamReader(response.GetResponseStream()))
+                    {
+                        String soapResult = rd.ReadToEnd();
+                        XmlDocument soapResultXml = new XmlDocument();
+                        soapResultXml.LoadXml(soapResult);
+                        Console.Write(soapResult);
+
+                        Sett.DPDAuthToken = soapResultXml.GetElementsByTagName("authToken")[0].InnerXml;
+                        Sett.DPDDepotNumber = soapResultXml.GetElementsByTagName("depot")[0].InnerXml;
+                    }
+                }
+            }
+            catch (WebException ex)
+            {
+                //Log the error message of the WebException
+                AnotherApiConnectionTryHttp(ex, , "DPD");
+            }
+            catch (Exception ex)
+            {
+                //If there is no WebException, log the "normal" exception
+                AnotherApiConnectionTry(ex, , "DPD");
+            }
+        }
+
+
+
+
+
+        /// <summary>
+        /// The webrequest to get the authtoken.
+        /// </summary>
+        /// <param name="endPoint">The endpoint that should be used for the request (Auth, label creation etc.)</param>
+        private HttpWebRequest CreateDPDWebRequest(String endPoint)
+        {
+            try
+            {
+                HttpWebRequest webRequest = (HttpWebRequest)System.Net.WebRequest.Create(@endPoint);
+                webRequest.Headers.Add(@"SOAP:Action");
+                webRequest.ContentType = "text/xml;charset=\"utf-8\"";
+                webRequest.Accept = "text/xml";
+                webRequest.Method = "POST";
+                return webRequest;
+            }
+            catch(Exception ex)
+            {
+                Log.writeLog("> Fehler beim Verbindungsaufbau mit DPD!\r\n" + ex.ToString(), true, true);
+                return null;
+            }
+        }
+
+
+
+
+
+        /// <summary>
+        /// Sends the soap request to the dpd server.
+        /// </summary>
+        public void SendDPDSoapRequest()
+        {
+            try
+            {
+                HttpWebRequest request = CreateDPDWebRequest("https://public-ws-stage.dpd.com/services/ShipmentService/V3_2/?wsdlfunction_name=storeOrders");
+
+                using (Stream stream = request.GetRequestStream())
+                {
+                    XmlH.SoapEnvelopeXml.Save(stream);
+                }
+
+                using (WebResponse response = request.GetResponse())
+                {
+                    using (StreamReader rd = new StreamReader(response.GetResponseStream()))
+                    {
+                        String soapResult = rd.ReadToEnd();
+                        XmlDocument soapResultXml = new XmlDocument();
+                        soapResultXml.LoadXml(soapResult);
+                        Console.Write(soapResult);
+
+                        WriteShipmentNumber(soapResultXml.GetElementsByTagName("parcelLabelNumber")[0].InnerXml);
+                        String labelName = SaveDPDLabel(soapResultXml.GetElementsByTagName("parcellabelsPDF")[0].InnerXml);
+                        PrintHelper print = new PrintHelper(Sett, Log, labelName);
+
+                    }
+                }
+            }
+            catch (WebException ex)
+            {
+                //Log the error message of the WebException
+                AnotherApiConnectionTryHttp(ex, "DPD");
+            }
+            catch (Exception ex)
+            {
+                //If there is no WebException, log the "normal" exception
+                AnotherApiConnectionTry(ex, "DPD");
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// Saves the DPD label to file.
+        /// </summary>
+        /// 
+        /// TODO DPD: Give actually useful filenames
+        private String SaveDPDLabel(String base64BinaryStr)
+        {
+            try
+            {
+                String labelName = "labels/test.pdf";
+
+                byte[] bytes = Convert.FromBase64String(base64BinaryStr);
+
+                System.IO.FileStream stream =
+                new FileStream(@labelName, FileMode.Create);
+                System.IO.BinaryWriter writer = new BinaryWriter(stream);
+                writer.Write(bytes, 0, bytes.Length);
+                writer.Close();
+
+                return labelName;
+            }
+            catch (Exception ex)
+            {
+                Log.writeLog("> Fehler beim Abspeichern des DPD-Labels!\r\n" + ex.ToString(), true, true);
+
+                return null;
+            }
+        }
     }
 }

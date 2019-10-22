@@ -26,6 +26,7 @@ namespace DHL_Seife.prog
         public string XmlPlz = ""; //recipient plz
         public string XmlCity = ""; //recipient city
         public string XmlCountry = "Deutschland"; //recipient country
+        public string XmlCountryCode = "DE"; //recipient countrycode
         public string XmlMail = ""; //recipient mail
         public string XmlCommunicationMail = ""; //Mail that gets used for postfilals
         public string XmlOurNumber = "";
@@ -54,7 +55,7 @@ namespace DHL_Seife.prog
         {
             XmlOurNumber = Sett.OrderNumber;
 
-            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, " +
+            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, LLAENDERKZ, RLAENDERKZ, " +
                 "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, dbo.AUFTRAGSPOS.ARTIKELNR, " +
                 "GEWICHT, (select count(*) from dbo.VERSANDGUT m2 where m2.BELEGNR = '" + Sett.OrderNumber + "') as PSCount " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
@@ -145,6 +146,18 @@ namespace DHL_Seife.prog
                     if (String.IsNullOrEmpty(XmlCountry))
                     {
                         XmlCountry = "Deutschland";
+                    }
+
+                    //Read delivery countrycode; If it is emty, set it to "DE" (Germany)
+                    if (!String.IsNullOrEmpty(dr["LLAENDERKZ"].ToString())) { XmlCountryCode = dr["LLAENDERKZ"].ToString().Trim(); }
+                    else if (!String.IsNullOrEmpty(dr["RLAENDERKZ"].ToString().Trim()))
+                    {
+                        XmlCountryCode = dr["RLAENDERKZ"].ToString().Trim();
+                    }
+                    else { XmlCountryCode = "DE"; }
+                    if (String.IsNullOrEmpty(XmlCountry))
+                    {
+                        XmlCountryCode = "DE";
                     }
 
                     //If the "CODE1" field contains an @, it is an e-mail adress.
