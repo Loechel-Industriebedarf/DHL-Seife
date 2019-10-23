@@ -8,55 +8,55 @@ using System.Threading.Tasks;
 
 namespace DHL_Seife.prog
 {
-    class PrintHelper
-    {
+	class PrintHelper
+	{
 
-        /// <summary>
-        /// This class sends the labels to the printer.
-        /// </summary>
-        /// <param name="settingsBuffer">An SettingsReader object, that contains all settings.</param>
-        /// <param name="lw">An LogWriter object, to write logs, if exceptions occur.</param>
-        /// <param name="labelName">File name of the label that should be printed.</param>
-        public PrintHelper(SettingsReader settingsBuffer, LogWriter lw, string labelName)
-        {
-            PrintLabel(settingsBuffer, lw, labelName);
-        }
+		/// <summary>
+		/// This class sends the labels to the printer.
+		/// </summary>
+		/// <param name="settingsBuffer">An SettingsReader object, that contains all settings.</param>
+		/// <param name="lw">An LogWriter object, to write logs, if exceptions occur.</param>
+		/// <param name="labelName">File name of the label that should be printed.</param>
+		public PrintHelper(SettingsReader settingsBuffer, LogWriter lw, string labelName)
+		{
+			PrintLabel(settingsBuffer, lw, labelName);
+		}
 
-        /// <summary>
-        /// Prints the labels. Simple as that.
-        /// Uses Spire.pdf to realise the printing.
-        /// </summary>
-        /// <param name="settingsBuffer">An SettingsReader object, that contains all settings.</param>
-        /// <param name="lw">An LogWriter object, to write logs, if exceptions occur.</param>
-        /// <param name="labelName">File name of the label that should be printed.</param>
-        private static void PrintLabel(SettingsReader sett, LogWriter log, string labelName)
-        {
-            try
-            {
-                string filepath = labelName;
+		/// <summary>
+		/// Prints the labels. Simple as that.
+		/// Uses Spire.pdf to realise the printing.
+		/// </summary>
+		/// <param name="settingsBuffer">An SettingsReader object, that contains all settings.</param>
+		/// <param name="lw">An LogWriter object, to write logs, if exceptions occur.</param>
+		/// <param name="labelName">File name of the label that should be printed.</param>
+		private static void PrintLabel(SettingsReader sett, LogWriter log, string labelName)
+		{
+			try
+			{
+				string filepath = labelName;
 
-                // Print the file
-                try
-                {
-                    PdfDocument pdfdocument = new PdfDocument();
-                    pdfdocument.LoadFromFile(filepath);
-                    pdfdocument.PrinterName = sett.PrinterName;
-                    pdfdocument.PrintDocument.PrinterSettings.Copies = 1;
-                    pdfdocument.PrintDocument.Print();
-                    pdfdocument.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    log.writeLog(ex.ToString(), true);
-                }
+				// Print the file
+				try
+				{
+					PdfDocument pdfdocument = new PdfDocument();
+					pdfdocument.LoadFromFile(filepath);
+					pdfdocument.PrinterName = sett.PrinterName;
+					pdfdocument.PrintDocument.PrinterSettings.Copies = 1;
+					pdfdocument.PrintDocument.Print();
+					pdfdocument.Dispose();
+				}
+				catch (Exception ex)
+				{
+					log.writeLog(ex.ToString(), true);
+				}
 
-                //logTextToFile("> " + labelName + " was successfully printed!");
-                log.writeLog("> " + labelName + " wurde erfolgreich gedruckt!", true);
-            }
-            catch (Exception ex)
-            {
-                log.writeLog(ex.ToString().ToString(), true);
-            }
-        }
-    }
+				//logTextToFile("> " + labelName + " was successfully printed!");
+				log.writeLog("> " + labelName + " wurde erfolgreich gedruckt!", true);
+			}
+			catch (Exception ex)
+			{
+				log.writeLog(ex.ToString().ToString(), true);
+			}
+		}
+	}
 }
