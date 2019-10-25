@@ -386,7 +386,7 @@ xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/3.2"">
             <productAndServiceData>
                 <orderType>consignment</orderType>
                 {24}
-            </productAndServiceData>  
+            </productAndServiceData>
         </order>       
     </ns1:storeOrders>    
 </soapenv:Body> 

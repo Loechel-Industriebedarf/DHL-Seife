@@ -114,23 +114,34 @@ namespace DHL_Seife.prog
 					//Check, if zip code contains letters
 					if (Regex.Matches(XmlPlz, @"[a-zA-Z]").Count > 0)
 					{
-						//For zips like 5051DV
+						//For zips like 5051DV AND D-12345
 						if (!XmlPlz.ToLower().Contains(' '))
 						{
 							int i = 0;
 							//Check how many chars there are at the end of the zip
-							for (i = XmlPlz.Length - 1; i >= 0; i--)
+							for (i = -1; i >= 0; i--)
 							{
 								if (!char.IsDigit(XmlPlz[i]))
 								{
 									break;
 								}
 							}
-							//Substring starts at 1...; isDigit starts at 0
-							i--;
 
-							//DHL wants zips with numbers splitted: 5051DV -> 5051 DV
-							XmlPlz = XmlPlz.Substring(0, i) + " " + XmlPlz.Substring(i);
+							//User put a land code in front of the zip. For excample D-12345
+							if (i <= XmlPlz.Length / 2)
+							{
+								XmlPlz = Regex.Replace(XmlPlz, "[^0-9.]", "");
+							}
+							//For weird zips like 5051DV
+							else
+							{
+								//Substring starts at 1...; isDigit starts at 0
+								i--;
+
+								//DHL wants zips with numbers splitted: 5051DV -> 5051 DV
+								XmlPlz = XmlPlz.Substring(0, i) + " " + XmlPlz.Substring(i);
+							}
+
 						}
 					}
 
