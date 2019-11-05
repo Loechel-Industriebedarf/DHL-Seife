@@ -47,12 +47,12 @@ namespace DHL_Seife
 				if (!String.IsNullOrEmpty(args[1]))
 				{
 					Sett.OrderNumber = args[1];
-					Log.writeLog("> " + args[1], true);
+					Log.writeLog("> " + args[1]);
 				}
 				if (!String.IsNullOrEmpty(args[2]))
 				{
 					orderType = args[2];
-					Log.writeLog("> " + orderType, false);
+					Log.writeLog("> " + orderType, true);
 				}
 			}
 			//Program gui was started

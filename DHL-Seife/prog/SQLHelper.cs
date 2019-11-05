@@ -127,7 +127,7 @@ namespace DHL_Seife.prog
 								}
 							}
 
-							//User put a land code in front of the zip. For excample D-12345
+							//User put a land code in front of the zip. For example D-12345
 							if (i <= XmlPlz.Length / 2)
 							{
 								XmlPlz = Regex.Replace(XmlPlz, "[^0-9.]", "");

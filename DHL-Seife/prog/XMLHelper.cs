@@ -121,7 +121,8 @@ namespace DHL_Seife.prog
 				String xmlmultiple = "";
 				if (Convert.ToDouble(SqlH.XmlPsCount) > 1)
 				{
-					SqlH.XmlWeight = SqlH.XmlWeightArray[0].ToString().Replace(",", ".");
+					if (Convert.ToDouble(SqlH.XmlWeightArray[0].ToString()) > 30) { SqlH.XmlWeight = "30"; }
+					else { SqlH.XmlWeight = SqlH.XmlWeightArray[0].ToString().Replace(",", "."); }
 
 					for (int i = 1; i < Convert.ToDouble(SqlH.XmlPsCount); i++)
 					{
