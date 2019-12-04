@@ -33,25 +33,19 @@ namespace DHL_Seife.prog
 		{
 			try
 			{
+				// Print the file
 				string filepath = labelName;
 
-				// Print the file
-				try
-				{
-					PdfDocument pdfdocument = new PdfDocument();
-					pdfdocument.LoadFromFile(filepath);
-					pdfdocument.PrinterName = sett.PrinterName;
-					pdfdocument.PrintDocument.PrinterSettings.Copies = 1;
-					pdfdocument.PrintDocument.Print();
-					pdfdocument.Dispose();
-				}
-				catch (Exception ex)
-				{
-					log.writeLog(ex.ToString(), true);
-				}
+				PdfDocument pdfdocument = new PdfDocument();
+				pdfdocument.LoadFromFile(filepath);
+				pdfdocument.PrinterName = sett.PrinterName;
+				pdfdocument.PrintDocument.PrinterSettings.Copies = 1;
+				pdfdocument.PrintDocument.Print();
+				pdfdocument.Dispose();
 
 				//logTextToFile("> " + labelName + " was successfully printed!");
 				log.writeLog("> " + labelName + " wurde erfolgreich gedruckt!", true);
+
 			}
 			catch (Exception ex)
 			{
