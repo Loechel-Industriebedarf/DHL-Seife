@@ -37,6 +37,8 @@ namespace DHL_Seife.util
 		public string senderMail { get; set; }
 		public string newxmlmail { get; set; }
 
+		public string OrderType { get; set; } //DHL or DPD?
+
 		//DPD specific
 		public string DPDId { get; set; } //DPD id
 		public string DPDPassword { get; set; } //DPD password

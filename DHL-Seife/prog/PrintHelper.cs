@@ -49,7 +49,7 @@ namespace DHL_Seife.prog
 			}
 			catch (Exception ex)
 			{
-				log.writeLog(ex.ToString().ToString(), true);
+				log.writeLog(ex.ToString().ToString(), true, true);
 			}
 		}
 	}

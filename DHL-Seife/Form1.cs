@@ -39,7 +39,7 @@ namespace DHL_Seife
 			string[] args = Environment.GetCommandLineArgs();
 
 			//The program is able to send dhl and dpd orders via command line parameters
-			String orderType = "DHL";
+			Sett.OrderType = "DHL";
 
 			//Program was started via command line parameters
 			try
@@ -51,8 +51,8 @@ namespace DHL_Seife
 				}
 				if (!String.IsNullOrEmpty(args[2]))
 				{
-					orderType = args[2];
-					Log.writeLog("> " + orderType, true);
+					Sett.OrderType = args[2];
+					Log.writeLog("> " + Sett.OrderType, true);
 				}
 			}
 			//Program gui was started
@@ -70,7 +70,7 @@ namespace DHL_Seife
 			//If the program was started via a parameter, skip the whole gui thing
 			if (!String.IsNullOrEmpty(Sett.OrderNumber))
 			{
-				switch (orderType)
+				switch (Sett.OrderType)
 				{
 					case "DHL":
 						SqlH.DoSQLMagic();

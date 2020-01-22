@@ -273,6 +273,10 @@ namespace DHL_Seife.prog
 			string sql_carrier = Sett.SqlCarrierShipmentnumber;
 			sql_carrier = sql_carrier.Replace("%rowidcarrier%", Sett.RowIdCarrier);
 			sql_carrier = sql_carrier.Replace("%rowid%", SqlH.RowId);
+			if (Sett.OrderType.Contains("DPD"))
+			{
+				sql_carrier = sql_carrier.Replace("DHL", "DPD");
+			}
 
 			try
 			{
@@ -327,7 +331,6 @@ namespace DHL_Seife.prog
 						String soapResult = rd.ReadToEnd();
 						XmlDocument soapResultXml = new XmlDocument();
 						soapResultXml.LoadXml(soapResult);
-						Console.Write(soapResult);
 
 						Sett.DPDAuthToken = soapResultXml.GetElementsByTagName("authToken")[0].InnerXml;
 						Sett.DPDDepotNumber = soapResultXml.GetElementsByTagName("depot")[0].InnerXml;
@@ -395,16 +398,24 @@ namespace DHL_Seife.prog
 					using (StreamReader rd = new StreamReader(response.GetResponseStream()))
 					{
 						String soapResult = rd.ReadToEnd();
-						XmlDocument soapResultXml = new XmlDocument();
-						soapResultXml.LoadXml(soapResult);
-						Console.Write(soapResult);
-
-						WriteShipmentNumber(soapResultXml.GetElementsByTagName("parcelLabelNumber")[0].InnerXml);
-						foreach (XmlElement dpdLabel in soapResultXml.GetElementsByTagName("parcellabelsPDF"))
+						try
 						{
-							String labelName = SaveDPDLabel(dpdLabel.InnerText);
-							PrintHelper print = new PrintHelper(Sett, Log, labelName);
+							XmlDocument soapResultXml = new XmlDocument();
+							soapResultXml.LoadXml(soapResult);
+
+							WriteShipmentNumber(soapResultXml.GetElementsByTagName("parcelLabelNumber")[0].InnerXml);
+							foreach (XmlElement dpdLabel in soapResultXml.GetElementsByTagName("parcellabelsPDF"))
+							{
+								String labelName = SaveDPDLabel(dpdLabel.InnerText);
+								PrintHelper print = new PrintHelper(Sett, Log, labelName);
+							}
 						}
+						catch (Exception ex)
+						{
+							Log.writeLog(soapResult + ex.ToString(), true, true);
+
+						}
+
 
 
 					}
