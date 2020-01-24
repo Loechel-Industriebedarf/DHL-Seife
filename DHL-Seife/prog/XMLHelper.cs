@@ -151,7 +151,7 @@ namespace DHL_Seife.prog
                               <Name>
                                  <cis:name1>{21}</cis:name1>
 								 <cis:name2>{30}</cis:name2>
-								 <cis:name2>{31}</cis:name2>
+								 <cis:name3>{31}</cis:name3>
                               </Name>
                               <Address>
                                  <cis:streetName>{22}</cis:streetName>
@@ -230,7 +230,7 @@ Sett.senderName3);
                   <Name>
                      <cis:name1>{21}</cis:name1>
 					 <cis:name2>{30}</cis:name2>
-					 <cis:name2>{31}</cis:name2>
+					 <cis:name3>{31}</cis:name3>
                   </Name>
                   <Address>
                      <cis:streetName>{22}</cis:streetName>
@@ -456,7 +456,8 @@ SqlH.XmlMail, "", multipleParcels, dpdNotification);
 			if (SqlH.XmlOrderType.Equals("10"))
 			{
 				Sett.senderName = "Mercateo Deutschland AG";
-				Sett.senderName3 = "c/o Lager Löchel Industriebedarf";
+				Sett.senderName2 = "c/o Auslieferungslager";
+				Sett.senderName3 = "Löchel Industriebedarf";
 			}
 		}
 
