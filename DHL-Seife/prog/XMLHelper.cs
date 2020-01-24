@@ -104,16 +104,12 @@ namespace DHL_Seife.prog
 					"</cis:postfilialNumber>" +
 				  "</Postfiliale>";
 			}
-			SqlH.XmlRecipient = SqlH.XmlRecipient + " " + SqlH.XmlRecipient02 + " " + SqlH.XmlRecipient03; //Combines the recipients for unneccessary use of multiple fields
-
 
 			if (newxmlmail.Length > 70) { newxmlmail = newxmlmail.Substring(0, 70); }
 			RefactorInputs();
 
 			try
 			{
-
-
 
 				//Starts at 0, the string variables on the bottom are groups of five
 
@@ -427,10 +423,21 @@ SqlH.XmlRecipient02);
 			//These values have a max length; Cut them, if they are too long
 			//If recipient(01) is too long, write the rest of it to recipient02. If recipient02 is too long, write the rest to recipient03
 			int recLen = 35; //Max chars for Recipient 1, 2, 3, streetname and cityname
+			if (SqlH.XmlRecipient.Length > recLen)
+			{
+				SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(recLen, SqlH.XmlRecipient.Length - recLen) + " " + SqlH.XmlRecipient02;
+				SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, recLen);
+			}
+			if (SqlH.XmlRecipient02.Length > recLen)
+			{
+				SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(recLen, SqlH.XmlRecipient02.Length - recLen) + " " + SqlH.XmlRecipient03;
+				SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, recLen);
+			}
+			if (SqlH.XmlRecipient03.Length > recLen)
+			{
+				SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, recLen);
+			}
 
-			if (SqlH.XmlRecipient.Length > recLen) { SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(recLen, SqlH.XmlRecipient.Length - recLen) + " " + SqlH.XmlRecipient02; SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, recLen); }
-			if (SqlH.XmlRecipient02.Length > recLen) { SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(recLen, SqlH.XmlRecipient02.Length - recLen) + " " + SqlH.XmlRecipient03; SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, recLen); }
-			if (SqlH.XmlRecipient03.Length > recLen) { SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, recLen); }
 			if (SqlH.XmlStreet.Length > recLen) { SqlH.XmlStreet = SqlH.XmlStreet.Substring(0, recLen); }
 			if (SqlH.XmlStreetnumber.Length > 10) { SqlH.XmlStreetnumber = SqlH.XmlStreetnumber.Substring(0, 10); }
 			if (SqlH.XmlPlz.Length > 10) { SqlH.XmlPlz = SqlH.XmlPlz.Substring(0, 10); }
