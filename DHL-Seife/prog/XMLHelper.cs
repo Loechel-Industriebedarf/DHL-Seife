@@ -415,13 +415,13 @@ SqlH.XmlMail, "", multipleParcels, dpdNotification);
 		{
 			//These values have a max length; Cut them, if they are too long
 			//If recipient(01) is too long, write the rest of it to recipient02. If recipient02 is too long, write the rest to recipient03
-			if (SqlH.XmlRecipient.Length > 35) { SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(35, SqlH.XmlRecipient.Length - 35) + " " + SqlH.XmlRecipient02; SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, 35); }
-			if (SqlH.XmlRecipient02.Length > 35) { SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(35, SqlH.XmlRecipient02.Length - 35) + " " + SqlH.XmlRecipient03; SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, 35); }
-			if (SqlH.XmlRecipient03.Length > 35) { SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, 35); }
-			if (SqlH.XmlStreet.Length > 35) { SqlH.XmlStreet = SqlH.XmlStreet.Substring(0, 35); }
-			if (SqlH.XmlStreetnumber.Length > 5) { SqlH.XmlStreetnumber = SqlH.XmlStreetnumber.Substring(0, 5); }
-			if (SqlH.XmlPlz.Length > 10) { SqlH.XmlPlz = SqlH.XmlPlz.Substring(0, 10); }
-			if (SqlH.XmlCity.Length > 35) { SqlH.XmlCity = SqlH.XmlCity.Substring(0, 35); }
+			if (SqlH.XmlRecipient.Length > 50) { SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(50, SqlH.XmlRecipient.Length - 50) + " " + SqlH.XmlRecipient02; SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, 50); }
+			if (SqlH.XmlRecipient02.Length > 50) { SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(50, SqlH.XmlRecipient02.Length - 50) + " " + SqlH.XmlRecipient03; SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, 50); }
+			if (SqlH.XmlRecipient03.Length > 50) { SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, 50); }
+			if (SqlH.XmlStreet.Length > 50) { SqlH.XmlStreet = SqlH.XmlStreet.Substring(0, 50); }
+			if (SqlH.XmlStreetnumber.Length > 10) { SqlH.XmlStreetnumber = SqlH.XmlStreetnumber.Substring(0, 10); }
+			if (SqlH.XmlPlz.Length > 17) { SqlH.XmlPlz = SqlH.XmlPlz.Substring(0, 17); }
+			if (SqlH.XmlCity.Length > 50) { SqlH.XmlCity = SqlH.XmlCity.Substring(0, 50); }
 			if (SqlH.XmlCountry.Length > 30) { SqlH.XmlCountry = SqlH.XmlCountry.Substring(0, 30); }
 
 
@@ -437,32 +437,16 @@ SqlH.XmlMail, "", multipleParcels, dpdNotification);
 				Log.writeLog(ex.ToString(), true);
 			}
 
-			Sett.senderName = "";
-			Sett.senderStreetName = "";
-			Sett.senderStreetNumber = "";
-			Sett.senderZip = "";
-			Sett.senderCity = "";
-			Sett.senderNumber = "";
-			Sett.senderMail = "";
+			Sett.senderName = "Löchel Industriebedarf";
+			Sett.senderStreetName = "Hans-Hermann-Meyer-Strasse";
+			Sett.senderStreetNumber = "2";
+			Sett.senderZip = "27232";
+			Sett.senderCity = "Sulingen";
+			Sett.senderMail = "info@loechel-industriebedarf.de";
+			Sett.senderNumber = "+49 4271 5727";
 			if (SqlH.XmlOrderType.Equals("10"))
 			{
-				Sett.senderName = "Mercateo Deutschland AG";
-				Sett.senderStreetName = "Museumsgasse";
-				Sett.senderStreetNumber = "4-5";
-				Sett.senderZip = "06366";
-				Sett.senderCity = "Köthen";
-				Sett.senderMail = "service@mercateo.com";
-				Sett.senderNumber = "+49 89 12 140 777";
-			}
-			else
-			{
-				Sett.senderName = "Löchel Industriebedarf";
-				Sett.senderStreetName = "Hans-Hermann-Meyer-Strasse";
-				Sett.senderStreetNumber = "2";
-				Sett.senderZip = "27232";
-				Sett.senderCity = "Sulingen";
-				Sett.senderMail = "info@loechel-industriebedarf.de";
-				Sett.senderNumber = "+49 4271 5727";
+				Sett.senderName = "Mercateo Deutschland AG \r\nc/o Auslieferungslager Löchel Industriebedarf";
 			}
 		}
 
