@@ -415,15 +415,14 @@ SqlH.XmlMail, "", multipleParcels, dpdNotification);
 		{
 			//These values have a max length; Cut them, if they are too long
 			//If recipient(01) is too long, write the rest of it to recipient02. If recipient02 is too long, write the rest to recipient03
-			if (SqlH.XmlRecipient.Length > 50) { SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(50, SqlH.XmlRecipient.Length - 50) + " " + SqlH.XmlRecipient02; SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, 50); }
-			if (SqlH.XmlRecipient02.Length > 50) { SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(50, SqlH.XmlRecipient02.Length - 50) + " " + SqlH.XmlRecipient03; SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, 50); }
-			if (SqlH.XmlRecipient03.Length > 50) { SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, 50); }
-			if (SqlH.XmlStreet.Length > 50) { SqlH.XmlStreet = SqlH.XmlStreet.Substring(0, 50); }
-			if (SqlH.XmlStreetnumber.Length > 10) { SqlH.XmlStreetnumber = SqlH.XmlStreetnumber.Substring(0, 10); }
-			if (SqlH.XmlPlz.Length > 17) { SqlH.XmlPlz = SqlH.XmlPlz.Substring(0, 17); }
-			if (SqlH.XmlCity.Length > 50) { SqlH.XmlCity = SqlH.XmlCity.Substring(0, 50); }
+			if (SqlH.XmlRecipient.Length > 35) { SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(35, SqlH.XmlRecipient.Length - 35) + " " + SqlH.XmlRecipient02; SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, 35); }
+			if (SqlH.XmlRecipient02.Length > 35) { SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(35, SqlH.XmlRecipient02.Length - 35) + " " + SqlH.XmlRecipient03; SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, 35); }
+			if (SqlH.XmlRecipient03.Length > 35) { SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, 35); }
+			if (SqlH.XmlStreet.Length > 35) { SqlH.XmlStreet = SqlH.XmlStreet.Substring(0, 35); }
+			if (SqlH.XmlStreetnumber.Length > 5) { SqlH.XmlStreetnumber = SqlH.XmlStreetnumber.Substring(0, 5); }
+			if (SqlH.XmlPlz.Length > 10) { SqlH.XmlPlz = SqlH.XmlPlz.Substring(0, 10); }
+			if (SqlH.XmlCity.Length > 35) { SqlH.XmlCity = SqlH.XmlCity.Substring(0, 35); }
 			if (SqlH.XmlCountry.Length > 30) { SqlH.XmlCountry = SqlH.XmlCountry.Substring(0, 30); }
-
 
 			try
 			{
