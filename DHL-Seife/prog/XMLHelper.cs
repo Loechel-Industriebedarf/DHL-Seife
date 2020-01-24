@@ -364,6 +364,7 @@ xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/3.2"">
                 <mpsCompleteDelivery>0</mpsCompleteDelivery>
                 <sender>
                     <name1>{5}</name1>
+					<name2>{25}</name2>
                     <street>{6}</street>
                     <houseNo>{17}</houseNo>
                     <country>DE</country>
@@ -375,6 +376,7 @@ xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/3.2"">
                 </sender>
                 <recipient>
                     <name1>{10}</name1>
+					<name2>{26}</name2>
                     <street>{11}</street>
                     <houseNo>{18}</houseNo>
                     <country>{12}</country>
@@ -403,7 +405,8 @@ xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/3.2"">
 Sett.senderStreetName, Sett.senderZip, Sett.senderCity, Sett.DPDCustomerNumber, SqlH.XmlRecipient,
 SqlH.XmlStreet, SqlH.XmlCountryCode, SqlH.XmlPlz, SqlH.XmlCity, Sett.OrderNumber,
 dpdWeight.ToString(), Sett.senderStreetNumber, SqlH.XmlStreetnumber, Sett.senderMail, Sett.senderNumber,
-SqlH.XmlMail, "", multipleParcels, dpdNotification);
+SqlH.XmlMail, "", multipleParcels, dpdNotification, Sett.senderName3,
+SqlH.XmlRecipient02);
 				SoapEnvelopeXml.LoadXml(@Xml);
 			}
 			catch (Exception ex)
