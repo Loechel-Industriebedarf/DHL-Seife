@@ -29,6 +29,8 @@ namespace DHL_Seife.util
 		public string OrderNumber { get; set; } //The number of the order
 
 		public string senderName { get; set; }
+		public string senderName2 { get; set; }
+		public string senderName3 { get; set; }
 		public string senderStreetName { get; set; }
 		public string senderStreetNumber { get; set; }
 		public string senderZip { get; set; }

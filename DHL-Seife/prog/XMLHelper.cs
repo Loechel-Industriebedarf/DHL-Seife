@@ -150,6 +150,8 @@ namespace DHL_Seife.prog
                            <Shipper>
                               <Name>
                                  <cis:name1>{21}</cis:name1>
+								 <cis:name2>{30}</cis:name2>
+								 <cis:name2>{31}</cis:name2>
                               </Name>
                               <Address>
                                  <cis:streetName>{22}</cis:streetName>
@@ -166,10 +168,10 @@ namespace DHL_Seife.prog
                            </Shipper>
                            <Receiver>
                               <cis:name1>{4}</cis:name1>
-                              <cis:name2>{16}</cis:name2>
-                              <cis:name3>{17}</cis:name3>
                                 {18}{20}{19}{27}
                               <Address>
+								 <cis:name2>{16}</cis:name2>
+								 <cis:name3>{17}</cis:name3>
                                  <cis:streetName>{5}</cis:streetName>
                                  <cis:streetNumber>{6}</cis:streetNumber>
                                  <cis:zip>{7}</cis:zip>
@@ -187,7 +189,8 @@ SqlH.XmlStreetnumber, SqlH.XmlPlz, SqlH.XmlCity, SqlH.XmlCountry, Sett.XmlPass,
 Sett.XmlAccountnumber, ournumberbuffer, SqlH.XmlParcelType, newxmlmailopen, newxmlmailclose,
 SqlH.XmlRecipient02, SqlH.XmlRecipient03, packstationStart, packstationEnd, packstationNumber,
 Sett.senderName, Sett.senderStreetName, Sett.senderStreetNumber, Sett.senderZip, Sett.senderCity,
-Sett.senderNumber, postFiliale, SqlH.XmlPsCount);
+Sett.senderNumber, postFiliale, SqlH.XmlPsCount, xmlmultiple, Sett.senderName2,
+Sett.senderName3);
 					}
 
 					SqlH.XmlOurNumber = SqlH.XmlOurNumber + " - Paket " + Convert.ToDouble(SqlH.XmlPsCount) + " von " + Convert.ToDouble(SqlH.XmlPsCount);
@@ -205,7 +208,7 @@ Sett.senderNumber, postFiliale, SqlH.XmlPsCount);
    <soapenv:Body>
       <bus:CreateShipmentOrderRequest>
          <bus:Version>
-            <majorRelease>2</majorRelease>
+            <majorRelease>3</majorRelease>
             <minorRelease>0</minorRelease>
          </bus:Version>
          <ShipmentOrder>
@@ -226,6 +229,8 @@ Sett.senderNumber, postFiliale, SqlH.XmlPsCount);
                <Shipper>
                   <Name>
                      <cis:name1>{21}</cis:name1>
+					 <cis:name2>{30}</cis:name2>
+					 <cis:name2>{31}</cis:name2>
                   </Name>
                   <Address>
                      <cis:streetName>{22}</cis:streetName>
@@ -241,11 +246,11 @@ Sett.senderNumber, postFiliale, SqlH.XmlPsCount);
                   </Communication>
                </Shipper>
                <Receiver>
-                  <cis:name1>{4}</cis:name1>
-                  <cis:name2>{16}</cis:name2>
-                  <cis:name3>{17}</cis:name3>
+                  <cis:name1>{4}</cis:name1>    
                     {18}{20}{19}{27}
                   <Address>
+					 <cis:name2>{16}</cis:name2>
+					 <cis:name3>{17}</cis:name3>
                      <cis:streetName>{5}</cis:streetName>
                      <cis:streetNumber>{6}</cis:streetNumber>
                      <cis:zip>{7}</cis:zip>
@@ -266,9 +271,12 @@ SqlH.XmlStreetnumber, SqlH.XmlPlz, SqlH.XmlCity, SqlH.XmlCountry, Sett.XmlPass,
 Sett.XmlAccountnumber, SqlH.XmlOurNumber, SqlH.XmlParcelType, newxmlmailopen, newxmlmailclose,
 SqlH.XmlRecipient02, SqlH.XmlRecipient03, packstationStart, packstationEnd, packstationNumber,
 Sett.senderName, Sett.senderStreetName, Sett.senderStreetNumber, Sett.senderZip, Sett.senderCity,
-Sett.senderNumber, postFiliale, SqlH.XmlPsCount, xmlmultiple);
+Sett.senderNumber, postFiliale, SqlH.XmlPsCount, xmlmultiple, Sett.senderName2,
+Sett.senderName3);
 
 				SoapEnvelopeXml.LoadXml(Xml);
+
+				Console.WriteLine(Xml);
 			}
 			catch (Exception ex)
 			{
@@ -415,13 +423,15 @@ SqlH.XmlMail, "", multipleParcels, dpdNotification);
 		{
 			//These values have a max length; Cut them, if they are too long
 			//If recipient(01) is too long, write the rest of it to recipient02. If recipient02 is too long, write the rest to recipient03
-			if (SqlH.XmlRecipient.Length > 35) { SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(35, SqlH.XmlRecipient.Length - 35) + " " + SqlH.XmlRecipient02; SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, 35); }
-			if (SqlH.XmlRecipient02.Length > 35) { SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(35, SqlH.XmlRecipient02.Length - 35) + " " + SqlH.XmlRecipient03; SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, 35); }
-			if (SqlH.XmlRecipient03.Length > 35) { SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, 35); }
-			if (SqlH.XmlStreet.Length > 35) { SqlH.XmlStreet = SqlH.XmlStreet.Substring(0, 35); }
-			if (SqlH.XmlStreetnumber.Length > 5) { SqlH.XmlStreetnumber = SqlH.XmlStreetnumber.Substring(0, 5); }
+			int recLen = 35; //Max chars for Recipient 1, 2, 3, streetname and cityname
+
+			if (SqlH.XmlRecipient.Length > recLen) { SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(recLen, SqlH.XmlRecipient.Length - recLen) + " " + SqlH.XmlRecipient02; SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, recLen); }
+			if (SqlH.XmlRecipient02.Length > recLen) { SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(recLen, SqlH.XmlRecipient02.Length - recLen) + " " + SqlH.XmlRecipient03; SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, recLen); }
+			if (SqlH.XmlRecipient03.Length > recLen) { SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, recLen); }
+			if (SqlH.XmlStreet.Length > recLen) { SqlH.XmlStreet = SqlH.XmlStreet.Substring(0, recLen); }
+			if (SqlH.XmlStreetnumber.Length > 10) { SqlH.XmlStreetnumber = SqlH.XmlStreetnumber.Substring(0, 10); }
 			if (SqlH.XmlPlz.Length > 10) { SqlH.XmlPlz = SqlH.XmlPlz.Substring(0, 10); }
-			if (SqlH.XmlCity.Length > 35) { SqlH.XmlCity = SqlH.XmlCity.Substring(0, 35); }
+			if (SqlH.XmlCity.Length > recLen) { SqlH.XmlCity = SqlH.XmlCity.Substring(0, recLen); }
 			if (SqlH.XmlCountry.Length > 30) { SqlH.XmlCountry = SqlH.XmlCountry.Substring(0, 30); }
 
 			try
@@ -445,7 +455,8 @@ SqlH.XmlMail, "", multipleParcels, dpdNotification);
 			Sett.senderNumber = "+49 4271 5727";
 			if (SqlH.XmlOrderType.Equals("10"))
 			{
-				Sett.senderName = "Mercateo Deutschland AG \r\nc/o Auslieferungslager Löchel Industriebedarf";
+				Sett.senderName = "Mercateo Deutschland AG";
+				Sett.senderName3 = "c/o Lager Löchel Industriebedarf";
 			}
 		}
 
