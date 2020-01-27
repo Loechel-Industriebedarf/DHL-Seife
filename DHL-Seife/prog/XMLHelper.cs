@@ -423,20 +423,28 @@ SqlH.XmlRecipient02);
 			//These values have a max length; Cut them, if they are too long
 			//If recipient(01) is too long, write the rest of it to recipient02. If recipient02 is too long, write the rest to recipient03
 			int recLen = 35; //Max chars for Recipient 1, 2, 3, streetname and cityname
-			if (SqlH.XmlRecipient.Length > recLen)
+			try
 			{
-				SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(recLen, SqlH.XmlRecipient.Length - recLen) + " " + SqlH.XmlRecipient02;
-				SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, recLen);
+				if (SqlH.XmlRecipient.Length > recLen)
+				{
+					SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(SqlH.XmlRecipient.LastIndexOf(" ")) + " " + SqlH.XmlRecipient02;
+					SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, SqlH.XmlRecipient.LastIndexOf(" ") + 1);
+				}
+				if (SqlH.XmlRecipient02.Length > recLen)
+				{
+					SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(SqlH.XmlRecipient.LastIndexOf(" ")) + " " + SqlH.XmlRecipient03;
+					SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, SqlH.XmlRecipient02.LastIndexOf(" ") + 1);
+				}
+				if (SqlH.XmlRecipient03.Length > recLen)
+				{
+					SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, recLen);
+				}
 			}
-			if (SqlH.XmlRecipient02.Length > recLen)
+			catch (Exception ex)
 			{
-				SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(recLen, SqlH.XmlRecipient02.Length - recLen) + " " + SqlH.XmlRecipient03;
-				SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, recLen);
+				Log.writeLog("> Fehler beim Input-Refactoring der Empfängeradresse!\r\n" + ex.ToString(), true, true);
 			}
-			if (SqlH.XmlRecipient03.Length > recLen)
-			{
-				SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, recLen);
-			}
+
 
 			if (SqlH.XmlStreet.Length > recLen) { SqlH.XmlStreet = SqlH.XmlStreet.Substring(0, recLen); }
 			if (SqlH.XmlStreetnumber.Length > 10) { SqlH.XmlStreetnumber = SqlH.XmlStreetnumber.Substring(0, 10); }
