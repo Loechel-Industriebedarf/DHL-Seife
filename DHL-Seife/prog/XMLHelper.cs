@@ -242,8 +242,7 @@ Sett.senderName3);
                   </Communication>
                </Shipper>
                <Receiver>
-                  <cis:name1>{4}</cis:name1>    
-                    {18}{20}{19}{27}
+                  <cis:name1>{4}</cis:name1>       
                   <Address>
 					 <cis:name2>{16}</cis:name2>
 					 <cis:name3>{17}</cis:name3>
@@ -255,6 +254,7 @@ Sett.senderName3);
                         <cis:country>{9}</cis:country>
                      </cis:Origin>
                   </Address>
+				  {18}{20}{19}{27}
                   <Communication>
                   </Communication>
                </Receiver>
