@@ -425,19 +425,22 @@ SqlH.XmlRecipient02);
 			int recLen = 35; //Max chars for Recipient 1, 2, 3, streetname and cityname
 			try
 			{
+				int cutindex = 0;
 				if (SqlH.XmlRecipient.Length > recLen)
 				{
-					SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(SqlH.XmlRecipient.LastIndexOf(" ")) + " " + SqlH.XmlRecipient02;
-					SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, SqlH.XmlRecipient.LastIndexOf(" ") + 1);
+					cutindex = SqlH.XmlRecipient.LastIndexOf(" ");
+					SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(cutindex).Trim() + " " + SqlH.XmlRecipient02.Trim();
+					SqlH.XmlRecipient = SqlH.XmlRecipient.Substring(0, cutindex).Trim();
 				}
-				if (SqlH.XmlRecipient02.Length > recLen)
+				while (SqlH.XmlRecipient02.Length > recLen)
 				{
-					SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(SqlH.XmlRecipient.LastIndexOf(" ")) + " " + SqlH.XmlRecipient03;
-					SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, SqlH.XmlRecipient02.LastIndexOf(" ") + 1);
+					cutindex = SqlH.XmlRecipient02.LastIndexOf(" ");
+					SqlH.XmlRecipient03 = SqlH.XmlRecipient02.Substring(cutindex).Trim() + " " + SqlH.XmlRecipient03.Trim();
+					SqlH.XmlRecipient02 = SqlH.XmlRecipient02.Substring(0, cutindex).Trim();
 				}
 				if (SqlH.XmlRecipient03.Length > recLen)
 				{
-					SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, recLen);
+					SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, recLen).Trim();
 				}
 			}
 			catch (Exception ex)
