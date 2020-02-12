@@ -398,24 +398,32 @@ namespace DHL_Seife.prog
 					using (StreamReader rd = new StreamReader(response.GetResponseStream()))
 					{
 						String soapResult = rd.ReadToEnd();
-						try
-						{
-							XmlDocument soapResultXml = new XmlDocument();
-							soapResultXml.LoadXml(soapResult);
 
-							WriteShipmentNumber(soapResultXml.GetElementsByTagName("parcelLabelNumber")[0].InnerXml);
-							foreach (XmlElement dpdLabel in soapResultXml.GetElementsByTagName("parcellabelsPDF"))
+						Log.writeLog(soapResult, true, true);
+
+						if (soapResult.Contains("faults"))
+						{
+							Log.writeLog("> Kritischer Adressfehler!\r\n" + soapResult, true, true);
+						}
+						else
+						{
+							try
 							{
-								String labelName = SaveDPDLabel(dpdLabel.InnerText);
-								PrintHelper print = new PrintHelper(Sett, Log, labelName);
+								XmlDocument soapResultXml = new XmlDocument();
+								soapResultXml.LoadXml(soapResult);
+
+								WriteShipmentNumber(soapResultXml.GetElementsByTagName("parcelLabelNumber")[0].InnerXml);
+								foreach (XmlElement dpdLabel in soapResultXml.GetElementsByTagName("parcellabelsPDF"))
+								{
+									String labelName = SaveDPDLabel(dpdLabel.InnerText);
+									PrintHelper print = new PrintHelper(Sett, Log, labelName);
+								}
+							}
+							catch (Exception ex)
+							{
+								Log.writeLog(soapResult + ex.ToString(), true, true);
 							}
 						}
-						catch (Exception ex)
-						{
-							Log.writeLog(soapResult + ex.ToString(), true, true);
-
-						}
-
 
 
 					}

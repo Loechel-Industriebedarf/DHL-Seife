@@ -272,7 +272,6 @@ Sett.senderName3);
 
 				SoapEnvelopeXml.LoadXml(Xml);
 
-				Console.WriteLine(Xml);
 			}
 			catch (Exception ex)
 			{
@@ -403,7 +402,10 @@ SqlH.XmlStreet, SqlH.XmlCountryCode, SqlH.XmlPlz, SqlH.XmlCity, Sett.OrderNumber
 dpdWeight.ToString(), Sett.senderStreetNumber, SqlH.XmlStreetnumber, Sett.senderMail, Sett.senderNumber,
 SqlH.XmlMail, "", multipleParcels, dpdNotification, Sett.senderName3,
 SqlH.XmlRecipient02);
+
 				SoapEnvelopeXml.LoadXml(@Xml);
+
+
 			}
 			catch (Exception ex)
 			{
@@ -426,7 +428,7 @@ SqlH.XmlRecipient02);
 			try
 			{
 				int cutindex = 0;
-				if (SqlH.XmlRecipient.Length > recLen)
+				while (SqlH.XmlRecipient.Length > recLen)
 				{
 					cutindex = SqlH.XmlRecipient.LastIndexOf(" ");
 					SqlH.XmlRecipient02 = SqlH.XmlRecipient.Substring(cutindex).Trim() + " " + SqlH.XmlRecipient02.Trim();
@@ -442,6 +444,8 @@ SqlH.XmlRecipient02);
 				{
 					SqlH.XmlRecipient03 = SqlH.XmlRecipient03.Substring(0, recLen).Trim();
 				}
+
+				Log.writeLog(SqlH.XmlRecipient);
 			}
 			catch (Exception ex)
 			{
