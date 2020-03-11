@@ -350,6 +350,7 @@ namespace DHL_Seife.prog
 			}
 
 			//People don't like to write the word "street" completely
+			//Didn't really make a diffence, so it is not used anymore
 			// xmlstreet = xmlstreet.Replace("str.", "straße");
 			// xmlstreet = xmlstreet.Replace("Str.", "Straße");
 		}

@@ -159,7 +159,8 @@ namespace DHL_Seife.prog
                                  </cis:Origin>
                               </Address>
                               <Communication>
-                              <cis:phone>{26}</cis:phone>
+								<cis:email>{3}</cis:email>
+								<cis:phone>{26}</cis:phone>
                               </Communication>
                            </Shipper>
                            <Receiver>
@@ -238,7 +239,8 @@ Sett.senderName3);
                      </cis:Origin>
                   </Address>
                   <Communication>
-                  <cis:phone>{26}</cis:phone>
+					<cis:email>{3}</cis:email>
+					<cis:phone>{26}</cis:phone>
                   </Communication>
                </Shipper>
                <Receiver>
