@@ -253,11 +253,12 @@ namespace DHL_Seife.prog
 		/// TODO: Why don't I just send streetdefinition, instead of two variables?
 		private void GetStreetAndStreetnumber(OdbcDataReader dr, string streetDef)
 		{
-			string streetDefinition = dr[streetDef].ToString().Trim();
+			string streetDefinition = dr[streetDef].ToString().Trim(); //String that contains the street name + street number
 			XmlStreetnumber = "";
 			XmlStreet = "";
-			int lastindex = streetDefinition.LastIndexOf(" ");
-			int lastindexdot = streetDefinition.LastIndexOf(".");
+			int lastindex = streetDefinition.LastIndexOf(" "); //Last space in the string
+			int firstindex = streetDefinition.IndexOf(" "); //First space in the string
+			int lastindexdot = streetDefinition.LastIndexOf("."); //Last dot in the string
 			int indexlength = streetDefinition.Length;
 
 			try
@@ -267,6 +268,12 @@ namespace DHL_Seife.prog
 				{
 					XmlStreet = streetDefinition;
 					XmlStreetnumber = "0";
+				}
+				//The user puts his street number BEFORE the actual street (12a Teststreet)
+				else if (char.IsDigit(streetDefinition[0]))
+				{
+					XmlStreet = streetDefinition.Substring(firstindex + 1).ToString();
+					XmlStreetnumber = streetDefinition.Substring(0, firstindex + 1);
 				}
 				//The user didn't put a space before the street number (Teststr.123)
 				//AND user didn't put a dot at the end of the adress line (Teststreet 1. | for weird people that write their adress like that...)
