@@ -10,6 +10,8 @@ namespace DHL_Seife.prog
 {
 	class PrintHelper
 	{
+		static int printTries = 0; //If the document fails to print, try it again x times.
+
 
 		/// <summary>
 		/// This class sends the labels to the printer.
@@ -50,6 +52,13 @@ namespace DHL_Seife.prog
 			catch (Exception ex)
 			{
 				log.writeLog(ex.ToString().ToString(), true, true);
+
+				if(printTries < 3)
+				{
+					printTries++;
+					System.Threading.Thread.Sleep(3000); //Wait for three seconds
+					PrintLabel(sett, log, labelName); //Try to print again
+				}
 			}
 		}
 	}
