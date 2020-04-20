@@ -51,13 +51,16 @@ namespace DHL_Seife.prog
 			}
 			catch (Exception ex)
 			{
-				log.writeLog(ex.ToString().ToString(), true, true);
+				log.writeLog(ex.ToString().ToString(), true, false);
 
-				if(printTries < 3)
+				if(printTries < 5)
 				{
 					printTries++;
-					System.Threading.Thread.Sleep(3000); //Wait for three seconds
+					System.Threading.Thread.Sleep(5000); //Wait for three seconds
 					PrintLabel(sett, log, labelName); //Try to print again
+				}
+				else{
+					log.writeLog(ex.ToString().ToString(), true, true);
 				}
 			}
 		}
