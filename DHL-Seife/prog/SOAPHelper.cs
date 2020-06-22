@@ -399,8 +399,6 @@ namespace DHL_Seife.prog
 					{
 						String soapResult = rd.ReadToEnd();
 
-						Log.writeLog(soapResult, true, true);
-
 						if (soapResult.Contains("faults"))
 						{
 							Log.writeLog("> Kritischer Adressfehler!\r\n" + soapResult, true, true);
