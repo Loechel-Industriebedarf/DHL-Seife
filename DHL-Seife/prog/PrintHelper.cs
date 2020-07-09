@@ -40,9 +40,9 @@ namespace DHL_Seife.prog
 
 				PdfDocument pdfdocument = new PdfDocument();
 				pdfdocument.LoadFromFile(filepath);
-				pdfdocument.PrinterName = sett.PrinterName;
-				pdfdocument.PrintDocument.PrinterSettings.Copies = 1;
-				pdfdocument.PrintDocument.Print();
+                pdfdocument.PrintSettings.PrinterName = sett.PrinterName;
+                pdfdocument.PrintSettings.Copies = 1;
+                pdfdocument.Print();
 				pdfdocument.Dispose();
 
                 //logTextToFile("> " + labelName + " was successfully printed!");
