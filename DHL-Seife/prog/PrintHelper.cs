@@ -45,8 +45,8 @@ namespace DHL_Seife.prog
 				pdfdocument.PrintDocument.Print();
 				pdfdocument.Dispose();
 
-				//logTextToFile("> " + labelName + " was successfully printed!");
-				log.writeLog("> " + labelName + " wurde erfolgreich gedruckt!", true);
+                //logTextToFile("> " + labelName + " was successfully printed!");
+                log.writeLog("> " + DateTimeOffset.Now.ToString("dd.MM.yyyy HH:mm:ss") + " - " + labelName + " wurde erfolgreich gedruckt!", true);
 
 			}
 			catch (Exception ex)
@@ -56,7 +56,7 @@ namespace DHL_Seife.prog
 				if(printTries < 5)
 				{
 					printTries++;
-					System.Threading.Thread.Sleep(5000); //Wait for three seconds
+					System.Threading.Thread.Sleep(5000); //Wait for five seconds
 					PrintLabel(sett, log, labelName); //Try to print again
 				}
 				else{

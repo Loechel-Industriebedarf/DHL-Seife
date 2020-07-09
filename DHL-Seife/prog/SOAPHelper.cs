@@ -102,13 +102,17 @@ namespace DHL_Seife.prog
 								WebClient Client = new WebClient();
 								labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
 								Client.DownloadFile(labelUrl, @labelName);
-							}
+
+                                Log.writeLog("> " + DateTimeOffset.Now.ToString("dd.MM.yyyy HH:mm:ss") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
+
+                                //Print label
+                                PrintHelper print = new PrintHelper(Sett, Log, labelName);        
+                            }
 							catch (Exception ex)
 							{
 								Log.writeLog(ex.ToString(), true);
 							}
-							//Print label
-							PrintHelper print = new PrintHelper(Sett, Log, labelName);
+							
 						}
 
 						xnList = xmldoc.GetElementsByTagName("cis:shipmentNumber");
