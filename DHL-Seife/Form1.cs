@@ -44,14 +44,26 @@ namespace DHL_Seife
 			//Program was started via command line parameters
 			try
 			{
+                //Order number
 				if (!String.IsNullOrEmpty(args[1]))
 				{
 					Sett.OrderNumber = args[1];
 					Log.writeLog("> " + args[1]);
 				}
-				if (!String.IsNullOrEmpty(args[2]))
+                //Name of the user that executed the program
+                //If it wasn't the standard user (KVO), an alternative printer should be used
+                if (!String.IsNullOrEmpty(args[2]))
+                {
+                    if (!args[2].Contains("KVO"))
+                    {
+                        Sett.PrinterName = Sett.PrinterName2;
+                    }
+                    Log.writeLog("> " + args[2] + " - " + Sett.PrinterName, false);
+                }
+                //Order type (DHL or DPD)
+                if (!String.IsNullOrEmpty(args[3]))
 				{
-					Sett.OrderType = args[2];
+					Sett.OrderType = args[3];
 					Log.writeLog("> " + Sett.OrderType, true);
 				}
 			}

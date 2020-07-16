@@ -13,7 +13,8 @@ namespace DHL_Seife.util
 		public string RowIdShipmentnumber { get; set; } //Row ID for insert
 		public string RowIdCarrier { get; set; } //Row ID for insert
 		public string PrinterName { get; set; } //Name of the printer to print on later
-		public string DHLSoapConnection { get; set; } //Connection string for the soap request
+		public string PrinterName2 { get; set; } //Name of the printer to print on later
+        public string DHLSoapConnection { get; set; } //Connection string for the soap request
 		public string ApiUser { get; set; }//Username to connect to the api
 		public string ApiPassword { get; set; } //Password to connect to the api
 		public string XmlAccountnumber { get; set; } //DHL customer id / dhl business id
@@ -73,7 +74,8 @@ namespace DHL_Seife.util
 			var dbrowidshipment = doc.Descendants("rowidshipment");
 			var dbrowidcarrier = doc.Descendants("rowidcarrier");
 			var printer = doc.Descendants("printer");
-			var dhlsoap = doc.Descendants("dhlsoap");
+			var printer2 = doc.Descendants("printer2");
+            var dhlsoap = doc.Descendants("dhlsoap");
 			var api_username = doc.Descendants("api_username");
 			var api_pass = doc.Descendants("api_password");
 			var dhl_id = doc.Descendants("dhl_id");
@@ -94,6 +96,7 @@ namespace DHL_Seife.util
 			foreach (var foo in dbrowidshipment) { RowIdShipmentnumber = foo.Value; }
 			foreach (var foo in dbrowidcarrier) { RowIdCarrier = foo.Value; }
 			foreach (var foo in printer) { PrinterName = foo.Value; }
+			foreach (var foo in printer2) { PrinterName2 = foo.Value; }
 			foreach (var foo in dhlsoap) { DHLSoapConnection = foo.Value; }
 			foreach (var foo in api_username) { ApiUser = foo.Value; }
 			foreach (var foo in api_pass) { ApiPassword = foo.Value; }
