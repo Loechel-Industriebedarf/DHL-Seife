@@ -14,6 +14,7 @@ namespace DHL_Seife.util
 		public string RowIdCarrier { get; set; } //Row ID for insert
 		public string PrinterName { get; set; } //Name of the printer to print on later
 		public string PrinterName2 { get; set; } //Name of the printer to print on later
+        public string printLabels { get; set; } //If false: don't print; if true: print the labels after download
         public string DHLSoapConnection { get; set; } //Connection string for the soap request
 		public string ApiUser { get; set; }//Username to connect to the api
 		public string ApiPassword { get; set; } //Password to connect to the api
@@ -75,6 +76,7 @@ namespace DHL_Seife.util
 			var dbrowidcarrier = doc.Descendants("rowidcarrier");
 			var printer = doc.Descendants("printer");
 			var printer2 = doc.Descendants("printer2");
+			var printL = doc.Descendants("printLabels");
             var dhlsoap = doc.Descendants("dhlsoap");
 			var api_username = doc.Descendants("api_username");
 			var api_pass = doc.Descendants("api_password");
@@ -97,6 +99,7 @@ namespace DHL_Seife.util
 			foreach (var foo in dbrowidcarrier) { RowIdCarrier = foo.Value; }
 			foreach (var foo in printer) { PrinterName = foo.Value; }
 			foreach (var foo in printer2) { PrinterName2 = foo.Value; }
+			foreach (var foo in printL) { printLabels = foo.Value; }
 			foreach (var foo in dhlsoap) { DHLSoapConnection = foo.Value; }
 			foreach (var foo in api_username) { ApiUser = foo.Value; }
 			foreach (var foo in api_pass) { ApiPassword = foo.Value; }

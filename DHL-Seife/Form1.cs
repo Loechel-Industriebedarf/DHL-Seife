@@ -28,7 +28,8 @@ namespace DHL_Seife
 		/// First it checks, if the user ran the program more than 3 seconds ago. We don't want that here.
 		/// Then it checks, if it was run manually or via command line parameters.
 		/// If it was run manually, display the gui.
-		/// If it wasn't run manually, take the order number from the args parameters, read the data from sql and send a xml request to dhl.
+		/// If it wasn't run manually, take the order number, username and shipping service provider from the args parameters, 
+        /// read the order data from sql and send a xml soap-request to dhl/dpd.
 		/// </summary>
 		public Form1()
 		{
@@ -38,7 +39,8 @@ namespace DHL_Seife
 			//The order number can be transmitted via command line parameter
 			string[] args = Environment.GetCommandLineArgs();
 
-			//The program is able to send dhl and dpd orders via command line parameters
+			//The program is currently able to send dhl and dpd orders via command line parameters
+            //If none is set via args-parameters, dhl is the default option.
 			Sett.OrderType = "DHL";
 
 			//Program was started via command line parameters
@@ -79,26 +81,26 @@ namespace DHL_Seife
 			InitializeComponent();
 
 
-			//If the program was started via a parameter, skip the whole gui thing
+			//If the program was started via command line parameters, read data from the sql server and send a soap request
 			if (!String.IsNullOrEmpty(Sett.OrderNumber))
 			{
-				switch (Sett.OrderType)
+                SqlH.DoSQLMagic(); //Read data from sql and transform it
+
+                switch (Sett.OrderType)
 				{
 					case "DHL":
-						SqlH.DoSQLMagic();
 						XmlH.DoDHLXMLMagic();
 						SoapH.SendDHLSoapRequest();
 						break;
 
 					case "DPD":
-						SqlH.DoSQLMagic();
 						SoapH.DPDAuth();
 						XmlH.DoDPDXMLMagic();
 						SoapH.SendDPDSoapRequest();
 						break;
 
+                    //Default -> DHL
 					default:
-						SqlH.DoSQLMagic();
 						XmlH.DoDHLXMLMagic();
 						SoapH.SendDHLSoapRequest();
 						break;
@@ -107,8 +109,9 @@ namespace DHL_Seife
 				Application.Exit();
 				Environment.Exit(1);
 			}
-			else
-			{
+            //If the program wasn't started via a parameter, show the gui.
+            else
+            {
 				printManualShippingLabel.Visible = true;
 			}
 			WriteToGui();
@@ -174,41 +177,21 @@ namespace DHL_Seife
          * 
          * */
 
-
-		/// <summary>
-		/// Inserts the different variables into the gui.
-		/// </summary>
-		private void WriteToGui()
-		{
-			Sett.OrderNumber = SqlH.XmlOurNumber;
-			textBoxOrdernumber.Text = SqlH.XmlOurNumber;
-			textBoxRecepient.Text = SqlH.XmlRecipient;
-			textBoxStreet.Text = SqlH.XmlStreet;
-			textBoxStreetNumber.Text = SqlH.XmlStreetnumber;
-			textBoxPLZ.Text = SqlH.XmlPlz;
-			textBoxCity.Text = SqlH.XmlCity;
-			textBoxCountry.Text = SqlH.XmlCountry;
-			textBoxWeight.Text = SqlH.XmlWeight;
-			textBoxMail.Text = SqlH.XmlMail;
-		}
-
-
-
 		/// <summary>
 		/// Primary button to create a shipping label.
-		/// If no order number was transmitted (via parameter), the button acts as "get data from Enventa"-button.
+		/// If no order number was transmitted (via parameter), the button acts as "get data from ERP-system"-button.
 		/// </summary>
 		/// <param name="e">Reacts, when the PrintShippingLabel button was pressed.</param>
 		private void PrintShippingLabel_Click(object sender, EventArgs e)
 		{
 			if (String.IsNullOrEmpty(SqlH.XmlOurNumber))
 			{
-				SqlH.DoSQLMagic();
 				WriteToGui();
 				printManualShippingLabel.Visible = false;
 			}
 			else
 			{
+                //TODO: Maybe add DPD support?
 				XmlH.DoDHLXMLMagic();
 				SoapH.SendDHLSoapRequest();
 				Application.Exit();
@@ -216,11 +199,31 @@ namespace DHL_Seife
 		}
 
 
-		/// <summary>
-		/// This button only appears, if no data from Enventa was read. It starts the label-printing.
+        /// <summary>
+		/// After the order data was read from sql, insert it into the gui.
 		/// </summary>
-		/// <param name="e">Reacts, when the PrintShippingLabel button was pressed.</param>
-		private void PrintManualShippingLabel_Click(object sender, EventArgs e)
+		private void WriteToGui()
+        {
+            SqlH.DoSQLMagic();
+
+            Sett.OrderNumber = SqlH.XmlOurNumber;
+            textBoxOrdernumber.Text = SqlH.XmlOurNumber;
+            textBoxRecepient.Text = SqlH.XmlRecipient;
+            textBoxStreet.Text = SqlH.XmlStreet;
+            textBoxStreetNumber.Text = SqlH.XmlStreetnumber;
+            textBoxPLZ.Text = SqlH.XmlPlz;
+            textBoxCity.Text = SqlH.XmlCity;
+            textBoxCountry.Text = SqlH.XmlCountry;
+            textBoxWeight.Text = SqlH.XmlWeight;
+            textBoxMail.Text = SqlH.XmlMail;
+        }
+
+
+        /// <summary>
+        /// This button only appears, if no data from Enventa was read. It starts the label-printing.
+        /// </summary>
+        /// <param name="e">Reacts, when the PrintShippingLabel button was pressed.</param>
+        private void PrintManualShippingLabel_Click(object sender, EventArgs e)
 		{
 			XmlH.DoDHLXMLMagic();
 			SoapH.SendDHLSoapRequest();

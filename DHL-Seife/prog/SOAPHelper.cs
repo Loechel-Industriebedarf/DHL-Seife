@@ -106,7 +106,10 @@ namespace DHL_Seife.prog
                                 Log.writeLog("> " + DateTimeOffset.Now.ToString("dd.MM.yyyy HH:mm:ss") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
 
                                 //Print label
-                                PrintHelper print = new PrintHelper(Sett, Log, labelName);        
+                                if (Sett.printLabels.Equals("true"))
+                                {
+                                    PrintHelper print = new PrintHelper(Sett, Log, labelName);
+                                }
                             }
 							catch (Exception ex)
 							{
@@ -418,7 +421,12 @@ namespace DHL_Seife.prog
 								foreach (XmlElement dpdLabel in soapResultXml.GetElementsByTagName("parcellabelsPDF"))
 								{
 									String labelName = SaveDPDLabel(dpdLabel.InnerText);
-									PrintHelper print = new PrintHelper(Sett, Log, labelName);
+                                    Log.writeLog("> " + DateTimeOffset.Now.ToString("dd.MM.yyyy HH:mm:ss") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
+
+                                    if(Sett.printLabels.Equals("true"))
+                                    {
+                                        PrintHelper print = new PrintHelper(Sett, Log, labelName);
+                                    }                   
 								}
 							}
 							catch (Exception ex)
