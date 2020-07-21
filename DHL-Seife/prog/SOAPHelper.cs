@@ -100,7 +100,7 @@ namespace DHL_Seife.prog
 							try
 							{
 								WebClient Client = new WebClient();
-								labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
+								labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + Sett.ProgramUser + "-DHL-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
 								Client.DownloadFile(labelUrl, @labelName);
 
                                 Log.writeLog("> " + DateTimeOffset.Now.ToString("dd.MM.yyyy HH:mm:ss") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
@@ -461,7 +461,7 @@ namespace DHL_Seife.prog
 		{
 			try
 			{
-				String labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-DPD-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
+				String labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + Sett.ProgramUser + "-DPD-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
 
 				byte[] bytes = Convert.FromBase64String(base64BinaryStr);
 

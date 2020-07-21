@@ -27,6 +27,7 @@ namespace DHL_Seife.util
 		public string SqlInsertNewMemo { get; set; } //Insert String to insert memo to the database
 		public string SqlInsertNewTermin { get; set; } //Insert String to insert termin to the database
 		public string Logfile { get; set; } //Log file
+        public string ProgramUser { get; set; } //User that executed the program
 
 		public string OrderNumber { get; set; } //The number of the order
 

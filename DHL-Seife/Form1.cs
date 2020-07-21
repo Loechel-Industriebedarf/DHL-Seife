@@ -60,6 +60,7 @@ namespace DHL_Seife
                     {
                         Sett.PrinterName = Sett.PrinterName2;
                     }
+                    Sett.ProgramUser = args[2];
                     Log.writeLog("> " + args[2] + " - " + Sett.PrinterName, false);
                 }
                 //Order type (DHL or DPD)
