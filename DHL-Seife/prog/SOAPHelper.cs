@@ -221,7 +221,7 @@ namespace DHL_Seife.prog
 			}
 			catch (Exception ex1)
 			{
-				AnotherApiConnectionTry(ex1);
+				AnotherApiConnectionTry(ex1, orderType);
 			}
 		}
 
