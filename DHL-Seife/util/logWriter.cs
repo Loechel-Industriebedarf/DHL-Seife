@@ -83,7 +83,7 @@ namespace DHL_Seife
 						sw.WriteLine();
 						sw.WriteLine();
                         sett.StartTime = DateTimeOffset.Now;
-                        sw.WriteLine("> " + sett.StartTime.ToString("dd.MM.yyyy HH:mm:ss"));
+                        sw.WriteLine("> " + sett.StartTime.ToString("dd.MM.yyyy HH:mm:ss:fff"));
 						firstrun = false;
 					}
 

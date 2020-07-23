@@ -48,14 +48,22 @@ namespace DHL_Seife.prog
 
                 //logTextToFile("> " + labelName + " was successfully printed!");
                 DateTimeOffset endTime = DateTimeOffset.Now;
-                TimeSpan difference = endTime.Subtract(sett.StartTime);
-                log.writeLog("> " + endTime.ToString("dd.MM.yyyy HH:mm:ss") + " - " + labelName + " wurde erfolgreich gedruckt!", false);
-                log.writeLog("> Der Labeldownload und -druck dauerten " + difference.Seconds + "." + difference.Milliseconds+ " Sekunden.", true);
-                log.writeLogToCsv(sett.OrderNumber + ";" +
-                    sett.StartTime.ToString("dd.MM.yyyy HH:mm:ss") + ";" + 
-                    sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss") + ";" +
-                    endTime.ToString("dd.MM.yyyy HH:mm:ss") + ";" +
-                    difference.Seconds + "," + difference.Milliseconds);
+
+                TimeSpan totalDuration = endTime.Subtract(sett.StartTime);
+                TimeSpan labelDuration = sett.LabelTime.Subtract(sett.StartTime);
+                TimeSpan printDuration = endTime.Subtract(sett.LabelTime);
+
+                log.writeLog("> " + endTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich gedruckt!", false);
+                log.writeLog("> Der Labeldownload und -druck dauerten " + totalDuration.Seconds + "." + totalDuration.Milliseconds+ " Sekunden.", true);
+                log.writeLogToCsv(
+                    sett.OrderNumber + ";" +
+                    sett.StartTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + ";" +
+                    labelDuration.Seconds + "," + labelDuration.Milliseconds + ";" +
+                    sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + ";" +
+                    printDuration.Seconds + "," + printDuration.Milliseconds + ";" +
+                    endTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + ";" +
+                    totalDuration.Seconds + "," + totalDuration.Milliseconds
+                );
             }
 			catch (Exception ex)
 			{

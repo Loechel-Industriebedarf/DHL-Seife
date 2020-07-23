@@ -104,7 +104,7 @@ namespace DHL_Seife.prog
 								Client.DownloadFile(labelUrl, @labelName);
 
                                 Sett.LabelTime = DateTimeOffset.Now;
-                                Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);       
+                                Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);       
 
                                 //Print label
                                 if (Sett.printLabels.Equals("true"))
@@ -423,7 +423,7 @@ namespace DHL_Seife.prog
 								{
 									String labelName = SaveDPDLabel(dpdLabel.InnerText);
                                     Sett.LabelTime = DateTimeOffset.Now;
-                                    Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
+                                    Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
 
                                     if(Sett.printLabels.Equals("true"))
                                     {
