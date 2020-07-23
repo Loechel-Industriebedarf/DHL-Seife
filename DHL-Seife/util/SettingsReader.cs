@@ -27,6 +27,7 @@ namespace DHL_Seife.util
 		public string SqlInsertNewMemo { get; set; } //Insert String to insert memo to the database
 		public string SqlInsertNewTermin { get; set; } //Insert String to insert termin to the database
 		public string Logfile { get; set; } //Log file
+        public string LogfileCsv { get; set; } //Log file
         public string ProgramUser { get; set; } //User that executed the program
 
 		public string OrderNumber { get; set; } //The number of the order
@@ -53,10 +54,13 @@ namespace DHL_Seife.util
 		public string DPDAuthToken { get; set; } //The number of the order
 		public string DPDDepotNumber { get; set; } //The number of the order
 
+        public DateTimeOffset StartTime { get; set; }
+        public DateTimeOffset LabelTime { get; set; }
 
 
 
-		public SettingsReader()
+
+        public SettingsReader()
 		{
 			ReadSettings();
 		}
@@ -72,7 +76,8 @@ namespace DHL_Seife.util
 			XDocument doc = XDocument.Load("var/settings.xml");
 
 			var logfile = doc.Descendants("logfile");
-			var dbconnection = doc.Descendants("dbconnection");
+            var logfilecsv = doc.Descendants("csvlogfile");
+            var dbconnection = doc.Descendants("dbconnection");
 			var dbrowidshipment = doc.Descendants("rowidshipment");
 			var dbrowidcarrier = doc.Descendants("rowidcarrier");
 			var printer = doc.Descendants("printer");
@@ -95,7 +100,8 @@ namespace DHL_Seife.util
 			var dpd_soap_auth = doc.Descendants("dpd_soap_auth");
 			var dpd_soap_label = doc.Descendants("dpd_soap_label");
 			foreach (var foo in logfile) { Logfile = foo.Value; }
-			foreach (var foo in dbconnection) { ConnectionString = foo.Value; }
+            foreach (var foo in logfilecsv) { LogfileCsv = foo.Value; }
+            foreach (var foo in dbconnection) { ConnectionString = foo.Value; }
 			foreach (var foo in dbrowidshipment) { RowIdShipmentnumber = foo.Value; }
 			foreach (var foo in dbrowidcarrier) { RowIdCarrier = foo.Value; }
 			foreach (var foo in printer) { PrinterName = foo.Value; }

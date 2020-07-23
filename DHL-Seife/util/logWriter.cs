@@ -46,12 +46,32 @@ namespace DHL_Seife
 			writeLogToFile(log, nl);
 		}
 
-		/// <summary>
-		/// Writes the log to a file.
-		/// </summary>
-		/// <param name="log">The log text, that should be written to the file.</param>
-		/// <param name="nl">If true: Insert a new line after the logtext. If false: Do nothing.</param>
-		private void writeLogToFile(string log, bool nl)
+        /// <summary>
+        /// Alternative logging method that accesses a different file.
+        /// </summary>
+        /// <param name="log">String that should be logged.</param>
+        public void writeLogToCsv(string log)
+        {
+            try
+            {
+                using (StreamWriter sw = File.AppendText(sett.LogfileCsv))
+                {
+                    sw.WriteLine(log);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+
+
+        /// <summary>
+        /// Writes the log to a file.
+        /// </summary>
+        /// <param name="log">The log text, that should be written to the file.</param>
+        /// <param name="nl">If true: Insert a new line after the logtext. If false: Do nothing.</param>
+        private void writeLogToFile(string log, bool nl)
 		{
 			try
 			{
@@ -62,7 +82,8 @@ namespace DHL_Seife
 						sw.WriteLine();
 						sw.WriteLine();
 						sw.WriteLine();
-                        sw.WriteLine("> " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"));
+                        sett.StartTime = DateTimeOffset.Now;
+                        sw.WriteLine("> " + sett.StartTime.ToString("dd.MM.yyyy HH:mm:ss"));
 						firstrun = false;
 					}
 
@@ -80,13 +101,14 @@ namespace DHL_Seife
 			}
 		}
 
-		/// <summary>
-		/// Writes the log to the orders sql.
-		/// </summary>
-		/// <param name="log">The log text, that should be written to the file.</param>
-		/// <param name="nl">If true: Insert a new line after the logtext.</param>
-		/// <param name="termin">If true: Add a new termin ("Wiedervorlage") for the admin user.</param>
-		private void writeLogToDatabase(string log, bool nl, bool termin)
+        
+        /// <summary>
+        /// Writes the log to the orders sql.
+        /// </summary>
+        /// <param name="log">The log text, that should be written to the file.</param>
+        /// <param name="nl">If true: Insert a new line after the logtext.</param>
+        /// <param name="termin">If true: Add a new termin ("Wiedervorlage") for the admin user.</param>
+        private void writeLogToDatabase(string log, bool nl, bool termin)
 		{
 			//Write to database
 			try

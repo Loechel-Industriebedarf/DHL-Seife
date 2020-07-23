@@ -100,10 +100,11 @@ namespace DHL_Seife.prog
 							try
 							{
 								WebClient Client = new WebClient();
-								labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + Sett.ProgramUser + "-DHL-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
+								labelName = "labels/" + DateTimeOffset.Now.ToString("ddMMyyyy-HHmmss") + "-" + Sett.ProgramUser + "-DHL-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
 								Client.DownloadFile(labelUrl, @labelName);
 
-                                Log.writeLog("> " + DateTimeOffset.Now.ToString("dd.MM.yyyy HH:mm:ss") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
+                                Sett.LabelTime = DateTimeOffset.Now;
+                                Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);       
 
                                 //Print label
                                 if (Sett.printLabels.Equals("true"))
@@ -421,7 +422,8 @@ namespace DHL_Seife.prog
 								foreach (XmlElement dpdLabel in soapResultXml.GetElementsByTagName("parcellabelsPDF"))
 								{
 									String labelName = SaveDPDLabel(dpdLabel.InnerText);
-                                    Log.writeLog("> " + DateTimeOffset.Now.ToString("dd.MM.yyyy HH:mm:ss") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
+                                    Sett.LabelTime = DateTimeOffset.Now;
+                                    Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
 
                                     if(Sett.printLabels.Equals("true"))
                                     {
