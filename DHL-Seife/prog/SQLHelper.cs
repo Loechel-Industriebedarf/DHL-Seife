@@ -55,12 +55,13 @@ namespace DHL_Seife.prog
 		{
 			XmlOurNumber = Sett.OrderNumber;
 
-			string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, LLAENDERKZ, RLAENDERKZ, " +
-				"dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, dbo.AUFTRAGSPOS.ARTIKELNR, " +
-				"GEWICHT, (select count(*) from dbo.VERSANDGUT m2 where m2.BELEGNR = '" + Sett.OrderNumber + "') as PSCount " +
-				"FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
-				"LEFT JOIN dbo.VERSANDGUT ON dbo.VERSANDGUT.BELEGNR = dbo.AUFTRAGSPOS.BELEGNR " +
-				"WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + Sett.OrderNumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + Sett.OrderNumber + "'";
+            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, LLAENDERKZ, RLAENDERKZ, " +
+                "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, dbo.AUFTRAGSPOS.ARTIKELNR, " +
+                "GEWICHT, (select count(*) from dbo.VERSANDGUT where BELEGNR = '" + Sett.OrderNumber + "' " +
+                "AND dbo.VERSANDGUT.versanddatum > '" + Sett.StartTime.AddHours(-12).ToString("dd.MM.yyyy HH:mm:ss") + "') as PSCount, dbo.VERSANDGUT.versanddatum " +
+                "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
+                "LEFT JOIN dbo.VERSANDGUT ON dbo.VERSANDGUT.BELEGNR = dbo.AUFTRAGSPOS.BELEGNR " +
+                "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + Sett.OrderNumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + Sett.OrderNumber + "' ORDER BY PSCount DESC";
 
 			OdbcDataReader dr = null;
 			try
@@ -187,7 +188,8 @@ namespace DHL_Seife.prog
 
 					try
 					{
-						if (dr["GEWICHT"].ToString() == null || dr["GEWICHT"].ToString() == "")
+                        //GEWICHT => Weight of VERSANDGUT
+                        if (dr["GEWICHT"].ToString() == null || dr["GEWICHT"].ToString() == "" || dr["PSCount"].ToString() == "0")
 						{
 							if (dr["STATUS"].ToString() == "2")
 							{
@@ -199,11 +201,18 @@ namespace DHL_Seife.prog
 								xmlweightTemp = (Convert.ToDouble(xmlweightTemp) + Convert.ToDouble(netWeight) * Convert.ToDouble(orderAmount)).ToString();
 							}
 						}
-						else
+						else if (dr["versanddatum"].ToString() != null || dr["versanddatum"].ToString() != "")
 						{
-							XmlWeightArray.Add(dr["GEWICHT"].ToString());
-							XmlWeight = dr["GEWICHT"].ToString();
-							addPackaging = false;
+                            DateTimeOffset versandDatum = DateTime.Parse(dr["versanddatum"].ToString());
+                            TimeSpan timeSinceLastPackage = versandDatum.Subtract(Sett.StartTime);
+
+                            //Only add to array, if the package is younger than 12 hours
+                            if(System.Math.Abs(timeSinceLastPackage.Hours) < 12)
+                            {
+                                XmlWeightArray.Add(dr["GEWICHT"].ToString());
+                                XmlWeight = dr["GEWICHT"].ToString();
+                                addPackaging = false;
+                            }         
 						}
 					}
 					catch (Exception ex)

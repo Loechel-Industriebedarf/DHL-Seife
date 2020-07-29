@@ -46,15 +46,17 @@ namespace DHL_Seife.prog
                 pdfdocument.Print();
 				pdfdocument.Dispose();
 
-                //logTextToFile("> " + labelName + " was successfully printed!");
                 DateTimeOffset endTime = DateTimeOffset.Now;
 
                 TimeSpan totalDuration = endTime.Subtract(sett.StartTime);
                 TimeSpan labelDuration = sett.LabelTime.Subtract(sett.StartTime);
                 TimeSpan printDuration = endTime.Subtract(sett.LabelTime);
 
+                //logTextToFile("> " + labelName + " was successfully printed!");
                 log.writeLog("> " + endTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich gedruckt!", false);
+                //logTextToFile("> The label download and printing took " + totalDuration.Seconds + "." + totalDuration.Milliseconds+ " seconds.", true);
                 log.writeLog("> Der Labeldownload und -druck dauerten " + totalDuration.Seconds + "." + totalDuration.Milliseconds+ " Sekunden.", true);
+                //Logs the diffent times (label download, printing & total) to a csv file
                 log.writeLogToCsv(
                     sett.OrderNumber + ";" +
                     sett.StartTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + ";" +
