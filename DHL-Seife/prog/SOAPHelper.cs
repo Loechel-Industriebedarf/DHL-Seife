@@ -100,14 +100,14 @@ namespace DHL_Seife.prog
 							try
 							{
 								WebClient Client = new WebClient();
-								labelName = "labels/" + DateTimeOffset.Now.ToString("ddMMyyyy-HHmmss") + "-" + Sett.ProgramUser + "-DHL-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
+								labelName = "labels/" + DateTimeOffset.Now.ToString("ddMMyyyy-HHmmssfff") + "-" + Sett.ProgramUser + "-DHL-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
 								Client.DownloadFile(labelUrl, @labelName);
 
                                 Sett.LabelTime = DateTimeOffset.Now;
                                 Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);       
 
                                 //Print label
-                                if (Sett.printLabels.Equals("true"))
+                                if (Sett.printLabels.Equals("true") && !Sett.PrinterName.Equals("false"))
                                 {
                                     PrintHelper print = new PrintHelper(Sett, Log, labelName);
                                 }
@@ -425,7 +425,7 @@ namespace DHL_Seife.prog
                                     Sett.LabelTime = DateTimeOffset.Now;
                                     Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
 
-                                    if(Sett.printLabels.Equals("true"))
+                                    if(Sett.printLabels.Equals("true") && !Sett.PrinterName.Equals("false"))
                                     {
                                         PrintHelper print = new PrintHelper(Sett, Log, labelName);
                                     }                   
@@ -463,7 +463,7 @@ namespace DHL_Seife.prog
 		{
 			try
 			{
-				String labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmss") + "-" + Sett.ProgramUser + "-DPD-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
+				String labelName = "labels/" + DateTime.Now.ToString("ddMMyyyy-HHmmssfff") + "-" + Sett.ProgramUser + "-DPD-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
 
 				byte[] bytes = Convert.FromBase64String(base64BinaryStr);
 
