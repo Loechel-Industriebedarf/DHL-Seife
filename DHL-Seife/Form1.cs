@@ -34,7 +34,8 @@ namespace DHL_Seife
 		public Form1()
 		{
 			//Our users tend to run the program twice, per "accident"...
-			CheckDoubleRun();
+            //Removed it for now. It currently doesn't seem like a problem.
+			//CheckDoubleRun();
 
 			//The order number can be transmitted via command line parameter
 			string[] args = Environment.GetCommandLineArgs();
