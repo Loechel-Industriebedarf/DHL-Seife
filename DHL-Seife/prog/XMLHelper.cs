@@ -301,8 +301,10 @@ Sett.senderName3);
 				// DPD wants weight in grams*10 - If you input "1", DPD thinks it is 10 grams. 
 				double dpdWeight = Math.Round(Convert.ToDouble(SqlH.XmlWeight) * 1000 / 10);
 
-				//Does the order contain multiple parcels?
-				String multipleParcels = "";
+               
+
+                //Does the order contain multiple parcels?
+                String multipleParcels = "";
 				if (Convert.ToDouble(SqlH.XmlPsCount) > 1)
 				{
 					dpdWeight = Math.Round(Convert.ToDouble(SqlH.XmlWeightArray[0]) * 1000 / 10);
@@ -325,7 +327,7 @@ Sett.senderName3);
 				//Should a notification be sent?
 				//Currently not working...
 				String dpdNotification = "";
-				if (!String.IsNullOrEmpty(SqlH.XmlMail) && SqlH.XmlMail.Contains("@") && !SqlH.XmlMail.Contains("amazon"))
+				if (!String.IsNullOrEmpty(SqlH.XmlMail) && SqlH.XmlMail.Contains("@") && !SqlH.XmlMail.Contains("amazon") && SqlH.XmlMail.Length < 35)
 				{
 					dpdNotification = String.Format(@"<proactiveNotification>
                         <channel>1</channel>
@@ -335,6 +337,11 @@ Sett.senderName3);
                     </proactiveNotification>", SqlH.XmlMail);
 				}
 				dpdNotification = ""; //The code doesn't work correctly at the moment.
+
+                if(SqlH.XmlMail.Length > 35)
+                {
+                    SqlH.XmlMail = "";
+                }
 
 
 				Xml = String.Format(@"<?xml version=""1.0"" encoding=""UTF-8""?>
