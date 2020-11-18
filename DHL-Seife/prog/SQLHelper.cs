@@ -276,7 +276,7 @@ namespace DHL_Seife.prog
 				if (!streetDefinition.Any(char.IsDigit))
 				{
 					XmlStreet = streetDefinition;
-					XmlStreetnumber = "0";
+					XmlStreetnumber = " ";
 				}
 				//The user puts his street number BEFORE the actual street (12a Teststreet)
 				else if (char.IsDigit(streetDefinition[0]))
@@ -298,7 +298,7 @@ namespace DHL_Seife.prog
 					if (lastindex == -1)
 					{
 						XmlStreet = RemoveSpecialCharacters(streetDefinition);
-						XmlStreetnumber = "0";
+						XmlStreetnumber = " ";
 					}
 					//Last char is a letter (Teststreet 123 B)
 					else if (streetDefinition[lastindex].Equals(' ') && char.IsLetter(streetDefinition[lastindex + 1]))
@@ -334,7 +334,7 @@ namespace DHL_Seife.prog
 							//If last number is actually a letter, just set the streetnumber to 0
 							if (i == 1)
 							{
-								XmlStreetnumber = "0";
+								XmlStreetnumber = " ";
 							}
 							//If there is no more number, break the loop
 							break;
@@ -348,13 +348,13 @@ namespace DHL_Seife.prog
 				XmlStreet = RemoveSpecialCharacters(XmlStreet);
 				if (String.IsNullOrEmpty(XmlStreetnumber))
 				{
-					XmlStreetnumber = "0";
+					XmlStreetnumber = " ";
 				}
 			}
 			catch (Exception ex)
 			{
 				XmlStreet = RemoveSpecialCharacters(streetDefinition);
-				XmlStreetnumber = "0";
+				XmlStreetnumber = " ";
 				Log.writeLog(ex.ToString(), true);
 			}
 

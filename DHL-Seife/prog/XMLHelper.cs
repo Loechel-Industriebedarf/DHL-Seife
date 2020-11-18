@@ -324,10 +324,16 @@ Sett.senderName3);
 					}
 				}
 
-				//Should a notification be sent?
-				//Currently not working...
-				String dpdNotification = "";
-				if (!String.IsNullOrEmpty(SqlH.XmlMail) && SqlH.XmlMail.Contains("@") && !SqlH.XmlMail.Contains("amazon") && SqlH.XmlMail.Length < 35)
+                //DPD doesn't like long mail addresses
+                if (SqlH.XmlMail.Length > 35)
+                {
+                    SqlH.XmlMail = "";
+                }
+
+                //Should a notification be sent?
+                //Currently not working...
+                String dpdNotification = "";
+				if (!String.IsNullOrEmpty(SqlH.XmlMail) && SqlH.XmlMail.Contains("@") && !SqlH.XmlMail.Contains("amazon"))
 				{
 					dpdNotification = String.Format(@"<proactiveNotification>
                         <channel>1</channel>
@@ -338,10 +344,7 @@ Sett.senderName3);
 				}
 				dpdNotification = ""; //The code doesn't work correctly at the moment.
 
-                if(SqlH.XmlMail.Length > 35)
-                {
-                    SqlH.XmlMail = "";
-                }
+                
 
 
 				Xml = String.Format(@"<?xml version=""1.0"" encoding=""UTF-8""?>
