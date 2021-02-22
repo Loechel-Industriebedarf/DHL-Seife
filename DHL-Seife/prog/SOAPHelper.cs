@@ -47,9 +47,33 @@ namespace DHL_Seife.prog
 		/// TODO: Do tons of refactoring...
 		public void SendDHLSoapRequest()
 		{
-			WebRequest = CreateWebRequest();
+            //Use TSL 1.2
+            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-			try
+            /*
+             * TSL Test Suite, because DHL wants TSL 1.2 on February 2021
+             * 
+            WebRequest = null;
+            WebRequest = (HttpWebRequest)System.Net.WebRequest.Create("https://www.howsmyssl.com/a/check");
+            WebRequest.ContentType = "text/xml;charset=\"utf-8\"";
+            WebRequest.Accept = "text/xml";
+            WebRequest.Method = "POST";
+            WebRequest.KeepAlive = true;
+
+            using (WebResponse response = WebRequest.GetResponse())
+            {
+                using (StreamReader rd = new StreamReader(response.GetResponseStream()))
+                {
+                    Log.writeLog(rd.ReadToEnd());
+                }
+            }
+            */
+
+
+
+            WebRequest = CreateWebRequest();
+
+            try
 			{
 				using (Stream stream = WebRequest.GetRequestStream())
 				{

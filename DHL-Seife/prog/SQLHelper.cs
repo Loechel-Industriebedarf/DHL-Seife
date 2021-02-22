@@ -272,7 +272,8 @@ namespace DHL_Seife.prog
 
 			try
 			{
-				//If there is no number in the string, write eveything into the street and set the street number to 0
+				//If there is no number in the string, write eveything into the street and set the street number to "nothing"
+                //The "nothing" is a FIGURE SPACE U+2007, because normal spaces are ignored.
 				if (!streetDefinition.Any(char.IsDigit))
 				{
 					XmlStreet = streetDefinition;

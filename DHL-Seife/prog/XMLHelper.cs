@@ -475,7 +475,7 @@ SqlH.XmlRecipient02);
 			{
 				double weight = Convert.ToDouble(SqlH.XmlWeight.Replace(".", ","));
 				if (weight > 30) { SqlH.XmlWeight = "30"; }
-				else if (weight <= 0.01) { SqlH.XmlWeight = "4"; }
+				else if (weight <= 0.01) { SqlH.XmlWeight = "5"; }
 				else if (weight < 0.1) { SqlH.XmlWeight = "0.1"; }
 			}
 			catch (Exception ex)
