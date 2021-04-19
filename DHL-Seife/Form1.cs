@@ -33,16 +33,13 @@ namespace DHL_Seife
 		/// </summary>
 		public Form1()
 		{
-			//Our users tend to run the program twice, per "accident"...
-            //Removed it for now. It currently doesn't seem like a problem.
-			//CheckDoubleRun();
-
 			//The order number can be transmitted via command line parameter
 			string[] args = Environment.GetCommandLineArgs();
+                
 
-			//The program is currently able to send dhl and dpd orders via command line parameters
+            //The program is currently able to send dhl and dpd orders via command line parameters
             //If none is set via args-parameters, dhl is the default option.
-			Sett.OrderType = "DHL";
+            Sett.OrderType = "DHL";
 
 			//Program was started via command line parameters
 			try
@@ -57,6 +54,9 @@ namespace DHL_Seife
                 //If it wasn't the standard user (KVO), an alternative printer should be used
                 if (!String.IsNullOrEmpty(args[2]))
                 {
+                    //Our users tend to run the program twice, per "accident"...
+                    CheckDoubleRun(args[2]);
+
                     if (!args[2].Contains("KVO"))
                     {
                         Sett.PrinterName = Sett.PrinterName2;
@@ -77,7 +77,11 @@ namespace DHL_Seife
 				//log.writeLog("> The program was started manually.");
 				Log.writeLog("> Das Programm wurde manuell gestartet.");
 				Log.writeLog(ex.ToString(), true);
-			}
+
+                //Our users tend to run the program twice, per "accident"...
+                //If no user was set, "null" will be the "user"
+                CheckDoubleRun();
+            }
 
 
 			InitializeComponent();
@@ -119,31 +123,36 @@ namespace DHL_Seife
 			WriteToGui();
 		}
 
-
-		/// <summary>
-		/// Checks, how much seconds passed since the last run. If it's less than 3, don't run the program.
-		/// Our users like to start the program multiple times "per accident". So this is a quick and stupid fix to not pay for multiple labels.
-		/// </summary>
-		private void CheckDoubleRun()
+        private void CheckDoubleRun()
+        {
+            CheckDoubleRun("null");
+        }
+        /// <summary>
+        /// Checks, how much seconds passed since the last run. If it's less than 3, don't run the program.
+        /// Our users like to start the program multiple times "per accident". So this is a quick and stupid fix to not pay for multiple labels.
+        /// </summary>
+        private void CheckDoubleRun(String user)
 		{
 			DateTime now = DateTime.Now;
 			DateTime lastrun = Properties.Settings.Default.lastRun;
 			TimeSpan diff = (now - lastrun);
 
-			//If more than 3 seconds passed, write the new time to the settings.
-			if (diff.TotalSeconds > 3)
+            //If less than 3 seconds passed, kill the program. 
+            if (diff.TotalSeconds <= 3 && Properties.Settings.Default.lastUser.Equals(user))
 			{
-				Properties.Settings.Default.lastRun = now;
-				Properties.Settings.Default.Save();
+                //logTextToFile("> Less than 3 seconds passed! Double run!");
+                Log.writeLog("> Doppelte Ausführung! Bitte 3 Sekunden warten.");
+                Application.Exit();
+                Environment.Exit(1);
+                
 			}
-			//If less than 3 seconds passed, kill the program.
-			else
-			{
-				//logTextToFile("> Less than 3 seconds passed! Double run!");
-				Log.writeLog("> Doppelte Ausführung! Bitte 3 Sekunden warten.");
-				Application.Exit();
-				Environment.Exit(1);
-			}
+            //If more than 3 seconds passed, write the new time to the settings.
+            else
+            {
+                Properties.Settings.Default.lastRun = now;
+                Properties.Settings.Default.lastUser = user;
+                Properties.Settings.Default.Save();
+            }
 
 
 		}
