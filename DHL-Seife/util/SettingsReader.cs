@@ -11,7 +11,8 @@ namespace DHL_Seife.util
 	{
 		public string ConnectionString { get; set; } //Connection String for Database
 		public string RowIdShipmentnumber { get; set; } //Row ID for insert
-		public string RowIdCarrier { get; set; } //Row ID for insert
+		public string RowIdReturnnumber { get; set; } //Row ID for insert
+        public string RowIdCarrier { get; set; } //Row ID for insert
 		public string PrinterName { get; set; } //Name of the printer to print on later
 		public string PrinterName2 { get; set; } //Name of the printer to print on later
         public string printLabels { get; set; } //If false: don't print; if true: print the labels after download
@@ -79,7 +80,8 @@ namespace DHL_Seife.util
             var logfilecsv = doc.Descendants("csvlogfile");
             var dbconnection = doc.Descendants("dbconnection");
 			var dbrowidshipment = doc.Descendants("rowidshipment");
-			var dbrowidcarrier = doc.Descendants("rowidcarrier");
+            var dbrowidreturn = doc.Descendants("rowidreturn");
+            var dbrowidcarrier = doc.Descendants("rowidcarrier");
 			var printer = doc.Descendants("printer");
 			var printer2 = doc.Descendants("printer2");
 			var printL = doc.Descendants("printLabels");
@@ -103,7 +105,8 @@ namespace DHL_Seife.util
             foreach (var foo in logfilecsv) { LogfileCsv = foo.Value; }
             foreach (var foo in dbconnection) { ConnectionString = foo.Value; }
 			foreach (var foo in dbrowidshipment) { RowIdShipmentnumber = foo.Value; }
-			foreach (var foo in dbrowidcarrier) { RowIdCarrier = foo.Value; }
+			foreach (var foo in dbrowidreturn) { RowIdReturnnumber = foo.Value; }
+            foreach (var foo in dbrowidcarrier) { RowIdCarrier = foo.Value; }
 			foreach (var foo in printer) { PrinterName = foo.Value; }
 			foreach (var foo in printer2) { PrinterName2 = foo.Value; }
 			foreach (var foo in printL) { printLabels = foo.Value; }

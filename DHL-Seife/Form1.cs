@@ -64,7 +64,7 @@ namespace DHL_Seife
                     Sett.ProgramUser = args[2];
                     Log.writeLog("> " + args[2] + " - " + Sett.PrinterName, false);
                 }
-                //Order type (DHL or DPD)
+                //Order type (DHL / DHLRetoure or DPD)
                 if (!String.IsNullOrEmpty(args[3]))
 				{
 					Sett.OrderType = args[3];
@@ -96,19 +96,24 @@ namespace DHL_Seife
 				{
 					case "DHL":
 						XmlH.DoDHLXMLMagic();
-						SoapH.SendDHLSoapRequest();
-						break;
+						SoapH.SendDHLSoapRequest(false);
+                        break;
 
-					case "DPD":
-						SoapH.DPDAuth();
+                    case "DHLRetoure":
+                        XmlH.DoDHLXMLMagic();
+                        SoapH.SendDHLSoapRequest(true);
+                        break;
+
+                    case "DPD":
+                        SoapH.DPDAuth();
 						XmlH.DoDPDXMLMagic();
-						SoapH.SendDPDSoapRequest();
+                        SoapH.SendDPDSoapRequest();
 						break;
 
                     //Default -> DHL
 					default:
 						XmlH.DoDHLXMLMagic();
-						SoapH.SendDHLSoapRequest();
+						SoapH.SendDHLSoapRequest(false);
 						break;
 				}
 
@@ -204,7 +209,7 @@ namespace DHL_Seife
 			{
                 //TODO: Maybe add DPD support?
 				XmlH.DoDHLXMLMagic();
-				SoapH.SendDHLSoapRequest();
+				SoapH.SendDHLSoapRequest(false);
 				Application.Exit();
 			}
 		}
@@ -237,7 +242,7 @@ namespace DHL_Seife
         private void PrintManualShippingLabel_Click(object sender, EventArgs e)
 		{
 			XmlH.DoDHLXMLMagic();
-			SoapH.SendDHLSoapRequest();
+			SoapH.SendDHLSoapRequest(false);
 			Application.Exit();
 		}
 

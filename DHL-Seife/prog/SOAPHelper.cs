@@ -12,40 +12,41 @@ using System.Xml;
 
 namespace DHL_Seife.prog
 {
-	class SOAPHelper
-	{
-		private SettingsReader Sett;
-		private LogWriter Log;
-		private SQLHelper SqlH;
-		private XMLHelper XmlH;
-		private static HttpWebRequest WebRequest;
+    class SOAPHelper
+    {
+        private SettingsReader Sett;
+        private LogWriter Log;
+        private SQLHelper SqlH;
+        private XMLHelper XmlH;
+        private static HttpWebRequest WebRequest;
 
-		static int apiConnectTries = 0; //If the connection to the api fails, it should try again and increment this counter.
-
-
-		/// <summary>
-		/// This class creates an xml string from the sql inputs, that got read earlier.
-		/// </summary>
-		/// <param name="settingsBuffer">An SettingsReader object, that contains all settings.</param>
-		/// <param name="lw">An LogWriter object, to write logs, if exceptions occur.</param>
-		/// <param name="sql">An SQLHelper object, to write logs, with all the data we need (name, street, weight etc.).</param>
-		/// <param name="xml">An XMLHelper object, with the xml data, that should be sent to the server.</param>
-		public SOAPHelper(SettingsReader settingsBuffer, LogWriter lw, SQLHelper sql, XMLHelper xml)
-		{
-			Sett = settingsBuffer;
-			Log = lw;
-			SqlH = sql;
-			XmlH = xml;
-		}
+        static int apiConnectTries = 0; //If the connection to the api fails, it should try again and increment this counter.
 
 
-		/// <summary>
-		/// Sends a soap request to the dhl-api and receives an answer in xml-format.
-		/// Next, it reads the xml answer, downloads the label and prints it.
-		/// </summary>
-		/// 
-		/// TODO: Do tons of refactoring...
-		public void SendDHLSoapRequest()
+        /// <summary>
+        /// This class creates an xml string from the sql inputs, that got read earlier.
+        /// </summary>
+        /// <param name="settingsBuffer">An SettingsReader object, that contains all settings.</param>
+        /// <param name="lw">An LogWriter object, to write logs, if exceptions occur.</param>
+        /// <param name="sql">An SQLHelper object, to write logs, with all the data we need (name, street, weight etc.).</param>
+        /// <param name="xml">An XMLHelper object, with the xml data, that should be sent to the server.</param>
+        public SOAPHelper(SettingsReader settingsBuffer, LogWriter lw, SQLHelper sql, XMLHelper xml)
+        {
+            Sett = settingsBuffer;
+            Log = lw;
+            SqlH = sql;
+            XmlH = xml;
+        }
+
+
+        /// <summary>
+        /// Sends a soap request to the dhl-api and receives an answer in xml-format.
+        /// Next, it reads the xml answer, downloads the label and prints it.
+        /// </summary>
+        /// 
+        /// Types: createShipmentOrder / 
+        /// TODO: Do tons of refactoring...
+        public void SendDHLSoapRequest(Boolean isReturn)
 		{
             //Use TSL 1.2
             System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -71,7 +72,7 @@ namespace DHL_Seife.prog
 
 
 
-            WebRequest = CreateWebRequest();
+            WebRequest = CreateWebRequest(isReturn);
 
             try
 			{
@@ -147,7 +148,8 @@ namespace DHL_Seife.prog
 						foreach (XmlNode xn in xnList)
 						{
 							string shipmentnumber = xn.InnerText;
-							WriteShipmentNumber(shipmentnumber);
+                            WriteShipmentNumber(shipmentnumber, isReturn);
+							
 						}
 					}
 				}
@@ -166,10 +168,10 @@ namespace DHL_Seife.prog
 		}
 
 
-		/// <summary>
-		/// Create a soap webrequest to to the dhl-api. Also adds basic http-authentication.
-		/// </summary>
-		public HttpWebRequest CreateWebRequest()
+            /// <summary>
+            /// Create a soap webrequest to to the dhl-api. Also adds basic http-authentication.
+            /// </summary>
+            public HttpWebRequest CreateWebRequest(Boolean isReturn)
 		{
 			String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("iso-8859-1").GetBytes(Sett.ApiUser + ":" + Sett.ApiPassword));
 
@@ -177,9 +179,11 @@ namespace DHL_Seife.prog
 			HttpWebRequest webRequest = null;
 			try
 			{
-				webRequest = (HttpWebRequest)System.Net.WebRequest.Create(Sett.DHLSoapConnection);
+                string requestType = "createShipmentOrder";
+                if (isReturn) { requestType = "returns"; }
+                webRequest = (HttpWebRequest)System.Net.WebRequest.Create(Sett.DHLSoapConnection);
 				webRequest.Headers.Add("Authorization", "Basic " + encoded);
-				webRequest.Headers.Add("SOAPAction: urn:createShipmentOrder");
+				webRequest.Headers.Add("SOAPAction: urn:" + requestType);
 				webRequest.ContentType = "text/xml;charset=\"utf-8\"";
 				webRequest.Accept = "text/xml";
 				webRequest.Method = "POST";
@@ -230,9 +234,13 @@ namespace DHL_Seife.prog
 						{
 							case "DHL":
 								XmlH.DoDHLXMLMagic();
-								SendDHLSoapRequest();
+								SendDHLSoapRequest(true);
 								break;
-							case "DPD":
+                            case "DHLRetoure":
+                                XmlH.DoDHLXMLMagic();
+                                SendDHLSoapRequest(false);
+                                break;
+                            case "DPD":
 								XmlH.DoDPDXMLMagic();
 								SendDPDSoapRequest();
 								break;
@@ -272,9 +280,13 @@ namespace DHL_Seife.prog
 				{
 					case "DHL":
 						XmlH.DoDHLXMLMagic();
-						SendDHLSoapRequest();
+						SendDHLSoapRequest(true);
 						break;
-					case "DPD":
+                    case "DHLRetoure":
+                        XmlH.DoDHLXMLMagic();
+                        SendDHLSoapRequest(false);
+                        break;
+                    case "DPD":
 						XmlH.DoDPDXMLMagic();
 						SendDPDSoapRequest();
 						break;
@@ -296,10 +308,17 @@ namespace DHL_Seife.prog
 		/// Writes shipment-number to the database.
 		/// </summary>
 		/// <param name="shipmentnumber">The shipment number as a string, that should be inserted into the database.</param>
-		private void WriteShipmentNumber(string shipmentnumber)
+		private void WriteShipmentNumber(string shipmentnumber, Boolean isReturn)
 		{
 			string sql = Sett.SqlShipmentnumber;
-			sql = sql.Replace("%rowidshipmentnumber%", Sett.RowIdShipmentnumber);
+            if (isReturn)
+            {
+                sql = sql.Replace("%rowidshipmentnumber%", Sett.RowIdReturnnumber);
+            }
+            else
+            {
+                sql = sql.Replace("%rowidshipmentnumber%", Sett.RowIdShipmentnumber);
+            }
 			sql = sql.Replace("%rowid%", SqlH.RowId);
 			sql = sql.Replace("%shipmentnumber%", shipmentnumber);
 			string sql_carrier = Sett.SqlCarrierShipmentnumber;
@@ -337,7 +356,10 @@ namespace DHL_Seife.prog
 		{
 			try
 			{
-				HttpWebRequest request = CreateDPDWebRequest(Sett.DPDSoapAuth);
+                //Use TSL 1.2
+                System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                HttpWebRequest request = CreateDPDWebRequest(Sett.DPDSoapAuth);
 				XmlDocument soapEnvelopeXml = new XmlDocument();
 				String xml = String.Format(@"<?xml version=""1.0"" encoding=""UTF-8""?>
             <SOAP-ENV:Envelope xmlns:SOAP-ENV=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ns1=""http://dpd.com/common/service/types/LoginService/2.0"">   
@@ -351,7 +373,7 @@ namespace DHL_Seife.prog
             </SOAP-ENV:Envelope>", Sett.DPDId, Sett.DPDPassword);
 				soapEnvelopeXml.LoadXml(@xml);
 
-				using (Stream stream = request.GetRequestStream())
+                using (Stream stream = request.GetRequestStream())
 				{
 					soapEnvelopeXml.Save(stream);
 				}
@@ -361,7 +383,7 @@ namespace DHL_Seife.prog
 					using (StreamReader rd = new StreamReader(response.GetResponseStream()))
 					{
 						String soapResult = rd.ReadToEnd();
-						XmlDocument soapResultXml = new XmlDocument();
+                        XmlDocument soapResultXml = new XmlDocument();
 						soapResultXml.LoadXml(soapResult);
 
 						Sett.DPDAuthToken = soapResultXml.GetElementsByTagName("authToken")[0].InnerXml;
@@ -371,13 +393,17 @@ namespace DHL_Seife.prog
 			}
 			catch (WebException ex)
 			{
-				//Log the error message of the WebException
-				AnotherApiConnectionTryHttp(ex, "DPD");
+                Log.writeLog(ex.ToString().ToString(), true, false);
+
+                //Log the error message of the WebException
+                AnotherApiConnectionTryHttp(ex, "DPD");
 			}
 			catch (Exception ex)
 			{
-				//If there is no WebException, log the "normal" exception
-				AnotherApiConnectionTry(ex, "DPD");
+                Log.writeLog("Auth exception: " + ex.ToString().ToString(), true, false);
+
+                //If there is no WebException, log the "normal" exception
+                AnotherApiConnectionTry(ex, "DPD");
 			}
 		}
 
@@ -418,7 +444,10 @@ namespace DHL_Seife.prog
 		{
 			try
 			{
-				HttpWebRequest request = CreateDPDWebRequest(Sett.DPDSoapLabel);
+                //Use TSL 1.2
+                System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                HttpWebRequest request = CreateDPDWebRequest(Sett.DPDSoapLabel);
 
 				using (Stream stream = request.GetRequestStream())
 				{
@@ -440,10 +469,10 @@ namespace DHL_Seife.prog
 							try
 							{
 								XmlDocument soapResultXml = new XmlDocument();
-								soapResultXml.LoadXml(soapResult);
+                                soapResultXml.LoadXml(soapResult);
 
-								WriteShipmentNumber(soapResultXml.GetElementsByTagName("parcelLabelNumber")[0].InnerXml);
-								foreach (XmlElement dpdLabel in soapResultXml.GetElementsByTagName("parcellabelsPDF"))
+                                WriteShipmentNumber(soapResultXml.GetElementsByTagName("parcelLabelNumber")[0].InnerXml, false);
+								foreach (XmlElement dpdLabel in soapResultXml.GetElementsByTagName("content"))
 								{
 									String labelName = SaveDPDLabel(dpdLabel.InnerText);
                                     Sett.LabelTime = DateTimeOffset.Now;
@@ -467,13 +496,13 @@ namespace DHL_Seife.prog
 			}
 			catch (WebException ex)
 			{
-				//Log the error message of the WebException
-				AnotherApiConnectionTryHttp(ex, "DPD");
+                //Log the error message of the WebException
+                AnotherApiConnectionTryHttp(ex, "DPD");
 			}
 			catch (Exception ex)
 			{
-				//If there is no WebException, log the "normal" exception
-				AnotherApiConnectionTry(ex, "DPD");
+                //If there is no WebException, log the "normal" exception
+                AnotherApiConnectionTry(ex, "DPD");
 			}
 		}
 

@@ -344,12 +344,22 @@ Sett.senderName3);
 				}
 				dpdNotification = ""; //The code doesn't work correctly at the moment.
 
-                
+                if (String.IsNullOrEmpty(Sett.DPDDepotNumber))
+                {
+                    Sett.DPDDepotNumber = "0163";
+                }
+
+                String dpdMail = "";
+                if (!String.IsNullOrEmpty(SqlH.XmlMail))
+                {
+                    dpdMail = "<email>" + SqlH.XmlMail + "</email>";
+                }
 
 
-				Xml = String.Format(@"<?xml version=""1.0"" encoding=""UTF-8""?>
+
+                Xml = String.Format(@"<?xml version=""1.0"" encoding=""UTF-8""?>
 <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:ns=""http://dpd.com/common/service/types/Authentication/2.0"" 
-xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/3.2"">   
+xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/4.4"">   
 <soapenv:Header>
     <ns:authentication>
         <delisId>{0}</delisId>
@@ -360,8 +370,10 @@ xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/3.2"">
 <soapenv:Body>
     <ns1:storeOrders>
         <printOptions>
-            <printerLanguage>PDF</printerLanguage>
-            <paperFormat>A6</paperFormat>
+            <printOption>
+                <outputFormat>PDF</outputFormat>
+                <paperFormat>A6</paperFormat>
+            </printOption>
         </printOptions>
         <order>
             <generalShipmentData>
@@ -390,7 +402,7 @@ xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/3.2"">
                     <zipCode>{13}</zipCode>
                     <city>{14}</city>
                     <phone>{22}</phone>
-                    <email>{21}</email>
+                    {21}
                 </recipient>
             </generalShipmentData>
             
@@ -412,13 +424,11 @@ xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/3.2"">
 Sett.senderStreetName, Sett.senderZip, Sett.senderCity, Sett.DPDCustomerNumber, SqlH.XmlRecipient,
 SqlH.XmlStreet, SqlH.XmlCountryCode, SqlH.XmlPlz, SqlH.XmlCity, Sett.OrderNumber,
 dpdWeight.ToString(), Sett.senderStreetNumber, SqlH.XmlStreetnumber, Sett.senderMail, Sett.senderNumber,
-SqlH.XmlMail, "", multipleParcels, dpdNotification, Sett.senderName3,
+dpdMail, "", multipleParcels, dpdNotification, Sett.senderName3,
 SqlH.XmlRecipient02);
 
 				SoapEnvelopeXml.LoadXml(@Xml);
-
-
-			}
+            }
 			catch (Exception ex)
 			{
 				Log.writeLog("> DPD-XML Fehler!\r\n" + Xml + "\r\n" + ex.ToString(), true, true);
