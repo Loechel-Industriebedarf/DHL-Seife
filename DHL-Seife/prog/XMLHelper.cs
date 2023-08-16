@@ -409,7 +409,7 @@ xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/4.4"">
             <parcels>
                 <parcelLabelNumber>{3}</parcelLabelNumber>
                 <customerReferenceNumber1>{15}</customerReferenceNumber1>
-                <customerReferenceNumber2>{21}</customerReferenceNumber2>
+                <customerReferenceNumber2>{27}</customerReferenceNumber2>
                 <weight>{16}</weight>
             </parcels>
             {23}
@@ -425,7 +425,7 @@ Sett.senderStreetName, Sett.senderZip, Sett.senderCity, Sett.DPDCustomerNumber, 
 SqlH.XmlStreet, SqlH.XmlCountryCode, SqlH.XmlPlz, SqlH.XmlCity, Sett.OrderNumber,
 dpdWeight.ToString(), Sett.senderStreetNumber, SqlH.XmlStreetnumber, Sett.senderMail, Sett.senderNumber,
 dpdMail, "", multipleParcels, dpdNotification, Sett.senderName3,
-SqlH.XmlRecipient02);
+SqlH.XmlRecipient02, SqlH.XmlMail);
 
 				SoapEnvelopeXml.LoadXml(@Xml);
             }
