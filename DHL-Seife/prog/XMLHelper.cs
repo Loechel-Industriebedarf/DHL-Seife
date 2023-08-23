@@ -139,9 +139,6 @@ namespace DHL_Seife.prog
                               <ShipmentItem>
                                  <weightInKG>{2}</weightInKG>
                               </ShipmentItem>
-                              <Notification>
-                                 {14}{3}{15}
-                              </Notification>
                            </ShipmentDetails>
                            <Shipper>
                               <Name>
@@ -178,6 +175,7 @@ namespace DHL_Seife.prog
                                  </cis:Origin>
                               </Address>
                               <Communication>
+                                    {14}{3}{15}
                               </Communication>
                            </Receiver>
                         </Shipment>
@@ -219,9 +217,6 @@ Sett.senderName3);
                   <ShipmentItem>
                      <weightInKG>{2}</weightInKG>
                   </ShipmentItem>
-                  <Notification>
-                     {14}{3}{15}
-                  </Notification>
                </ShipmentDetails>
                <Shipper>
                   <Name>
@@ -258,6 +253,7 @@ Sett.senderName3);
                   </Address>
 				  {18}{20}{19}{27}
                   <Communication>
+                        {14}{3}{15}
                   </Communication>
                </Receiver>
             </Shipment>
