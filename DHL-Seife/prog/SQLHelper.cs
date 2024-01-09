@@ -61,7 +61,7 @@ namespace DHL_Seife.prog
                 "AND dbo.VERSANDGUT.versanddatum > '" + Sett.StartTime.AddHours(-12).ToString("dd.MM.yyyy HH:mm:ss") + "') as PSCount, dbo.VERSANDGUT.versanddatum " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
                 "LEFT JOIN dbo.VERSANDGUT ON dbo.VERSANDGUT.BELEGNR = dbo.AUFTRAGSPOS.BELEGNR " +
-                "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + Sett.OrderNumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + Sett.OrderNumber + "' ORDER BY PSCount DESC";
+                "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + Sett.OrderNumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + Sett.OrderNumber + "' ORDER BY PSCount, versanddatum, status DESC";
 
 			OdbcDataReader dr = null;
 			try
