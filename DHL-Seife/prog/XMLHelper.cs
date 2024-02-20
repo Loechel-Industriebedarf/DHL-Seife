@@ -34,253 +34,6 @@ namespace DHL_Seife.prog
 			SqlH = sql;
 		}
 
-		/// <summary>
-		/// Create a xml-string from the inputs the user made erlier.
-		/// This xml will be sent as soap request to the dhl server.
-		/// </summary>
-		/// 
-		/// TODO: Do tons of refactoring...
-		public void DoDHLXMLMagic()
-		{
-			//E-Mail is not a needed thing for the dhl-xml
-			String newxmlmail = "";
-			String newxmlmailopen = "";
-			String newxmlmailclose = "";
-			if (!String.IsNullOrEmpty(SqlH.XmlMail) && SqlH.XmlMail.Contains("@") && !SqlH.XmlMail.Contains("amazon"))
-			{
-				newxmlmailopen = "<recipientEmailAddress>";
-				newxmlmailclose = "</recipientEmailAddress>";
-				newxmlmail = "<recipientEmailAddress>" + SqlH.XmlMail + "</recipientEmailAddress>";
-			}
-
-			//DHL wants decimal values with dots, not commas
-			if (SqlH.XmlWeight.Contains(','))
-			{
-				SqlH.XmlWeight = SqlH.XmlWeight.Replace(",", ".");
-			}
-
-			//If the country is not Germany, send an international parcel
-			if (!SqlH.XmlCountry.ToLower().Equals("deutschland") && !SqlH.XmlCountry.ToLower().Equals("de"))
-			{
-				SqlH.XmlParcelType = "V53WPAK";  //international parcel
-				Sett.XmlAccountnumber = Sett.XmlAccountnumberInt; //international account number
-			}
-
-			//If the street name contains "Packstation", we deliver to a packing station
-			string packstationStart = "";
-			string packstationEnd = "";
-			string packstationNumber = "";
-			string postFiliale = "";
-			if (SqlH.XmlStreet.ToLower().Contains("dhl-packstation"))
-			{
-				SqlH.XmlStreet = SqlH.XmlStreet.Replace("dhl-", "");
-			}
-			else if (SqlH.XmlStreet.ToLower().Contains("dhl packstation"))
-			{
-				SqlH.XmlStreet = SqlH.XmlStreet.Replace("dhl ", "");
-			}
-			if (SqlH.XmlStreet.ToLower().Contains("packstation"))
-			{
-				packstationStart = "<Packstation>" +
-					"<cis:postNumber>";
-				packstationEnd = "</cis:postNumber>" +
-				  "</Packstation>";
-				if (!String.IsNullOrEmpty(SqlH.XmlRecipient02))
-				{
-					packstationNumber = Regex.Replace(SqlH.XmlRecipient02, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
-				}
-				else
-				{
-					packstationNumber = Regex.Replace(SqlH.XmlRecipient03, @"[^0-9]", "").Trim(); //For people who write additional words in the packstation number field; Only allows numbers
-				}
-			}
-			if (SqlH.XmlStreet.ToLower().Contains("postfiliale"))
-			{
-				postFiliale = "<Communication>" +
-					"<cis:email>" + SqlH.XmlCommunicationMail + "</cis:email>" +
-					"</Communication>" +
-					"<Postfiliale>" +
-					"<cis:postfilialNumber>" + SqlH.XmlStreetnumber +
-					"</cis:postfilialNumber>" +
-				  "</Postfiliale>";
-			}
-
-			if (newxmlmail.Length > 70) { newxmlmail = newxmlmail.Substring(0, 70); }
-			RefactorInputs();
-
-			try
-			{
-
-				//Starts at 0, the string variables on the bottom are groups of five
-
-				//I need to clean this up. blargh.
-				String xmlmultiple = "";
-				if (Convert.ToDouble(SqlH.XmlPsCount) > 1)
-				{
-					if (Convert.ToDouble(SqlH.XmlWeightArray[0].ToString()) > 30) { SqlH.XmlWeight = "30"; }
-					else { SqlH.XmlWeight = SqlH.XmlWeightArray[0].ToString().Replace(",", "."); }
-
-					for (int i = 1; i < Convert.ToDouble(SqlH.XmlPsCount); i++)
-					{
-						String weightbuffer = SqlH.XmlWeightArray[i].ToString();
-						if (Convert.ToDouble(weightbuffer) > 30) { weightbuffer = "30"; }
-						weightbuffer = weightbuffer.Replace(",", ".");
-
-						String ournumberbuffer = SqlH.XmlOurNumber + " - Paket " + i + " von " + Convert.ToDouble(SqlH.XmlPsCount);
-
-						xmlmultiple = xmlmultiple + String.Format(@"<ShipmentOrder>
-                        <sequenceNumber>{28}</sequenceNumber>
-                        <Shipment>
-                           <ShipmentDetails>
-                              <product>{13}</product>
-                              <cis:accountNumber>{11}</cis:accountNumber>
-                              <customerReference>{12}</customerReference>
-                              <shipmentDate>{1}</shipmentDate>
-                              <ShipmentItem>
-                                 <weightInKG>{2}</weightInKG>
-                              </ShipmentItem>
-                           </ShipmentDetails>
-                           <Shipper>
-                              <Name>
-                                 <cis:name1>{21}</cis:name1>
-								 <cis:name2>{30}</cis:name2>
-								 <cis:name3>{31}</cis:name3>
-                              </Name>
-                              <Address>
-                                 <cis:streetName>{22}</cis:streetName>
-                                 <cis:streetNumber>{23}</cis:streetNumber>
-                                 <cis:zip>{24}</cis:zip>
-                                 <cis:city>{25}</cis:city>    
-                                 <cis:Origin>
-                                    <cis:country>Deutschland</cis:country>
-                                 </cis:Origin>
-                              </Address>
-                              <Communication>
-								<cis:email>{3}</cis:email>
-								<cis:phone>{26}</cis:phone>
-                              </Communication>
-                           </Shipper>
-                           <Receiver>
-                              <cis:name1>{4}</cis:name1>
-                                {18}{20}{19}{27}
-                              <Address>
-								 <cis:name2>{16}</cis:name2>
-								 <cis:name3>{17}</cis:name3>
-                                 <cis:streetName>{5}</cis:streetName>
-                                 <cis:streetNumber>{6}</cis:streetNumber>
-                                 <cis:zip>{7}</cis:zip>
-                                 <cis:city>{8}</cis:city>
-                                 <cis:Origin>
-                                    <cis:country>{9}</cis:country>
-                                 </cis:Origin>
-                              </Address>
-                              <Communication>
-                                    {14}{3}{15}
-                              </Communication>
-                           </Receiver>
-                        </Shipment>
-                     </ShipmentOrder>", Sett.XmlUser, SqlH.XmlShippmentDate, weightbuffer, SqlH.XmlMail, SqlH.XmlRecipient, SqlH.XmlStreet,
-SqlH.XmlStreetnumber, SqlH.XmlPlz, SqlH.XmlCity, SqlH.XmlCountry, Sett.XmlPass,
-Sett.XmlAccountnumber, ournumberbuffer, SqlH.XmlParcelType, newxmlmailopen, newxmlmailclose,
-SqlH.XmlRecipient02, SqlH.XmlRecipient03, packstationStart, packstationEnd, packstationNumber,
-Sett.senderName, Sett.senderStreetName, Sett.senderStreetNumber, Sett.senderZip, Sett.senderCity,
-Sett.senderNumber, postFiliale, SqlH.XmlPsCount, xmlmultiple, Sett.senderName2,
-Sett.senderName3);
-					}
-
-					SqlH.XmlOurNumber = SqlH.XmlOurNumber + " - Paket " + Convert.ToDouble(SqlH.XmlPsCount) + " von " + Convert.ToDouble(SqlH.XmlPsCount);
-				}
-
-
-				Xml = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
-                <soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns:cis=""http://dhl.de/webservice/cisbase"" xmlns:bus=""http://dhl.de/webservices/businesscustomershipping"">
-   <soapenv:Header>
-      <cis:Authentification>
-         <cis:user>{0}</cis:user>
-         <cis:signature>{10}</cis:signature>
-      </cis:Authentification>
-   </soapenv:Header>
-   <soapenv:Body>
-      <bus:CreateShipmentOrderRequest>
-         <bus:Version>
-            <majorRelease>3</majorRelease>
-            <minorRelease>0</minorRelease>
-         </bus:Version>
-         <ShipmentOrder>
-            <sequenceNumber>{28}</sequenceNumber>
-            <Shipment>
-               <ShipmentDetails>
-                  <product>{13}</product>
-                  <cis:accountNumber>{11}</cis:accountNumber>
-                  <customerReference>{12}</customerReference>
-                  <shipmentDate>{1}</shipmentDate>
-                  <ShipmentItem>
-                     <weightInKG>{2}</weightInKG>
-                  </ShipmentItem>
-               </ShipmentDetails>
-               <Shipper>
-                  <Name>
-                     <cis:name1>{21}</cis:name1>
-					 <cis:name2>{30}</cis:name2>
-					 <cis:name3>{31}</cis:name3>
-                  </Name>
-                  <Address>
-                     <cis:streetName>{22}</cis:streetName>
-                     <cis:streetNumber>{23}</cis:streetNumber>
-                     <cis:zip>{24}</cis:zip>
-                     <cis:city>{25}</cis:city>    
-                     <cis:Origin>
-                        <cis:country>Deutschland</cis:country>
-                     </cis:Origin>
-                  </Address>
-                  <Communication>
-					<cis:email>{3}</cis:email>
-					<cis:phone>{26}</cis:phone>
-                  </Communication>
-               </Shipper>
-               <Receiver>
-                  <cis:name1>{4}</cis:name1>       
-                  <Address>
-					 <cis:name2>{16}</cis:name2>
-					 <cis:name3>{17}</cis:name3>
-                     <cis:streetName>{5}</cis:streetName>
-                     <cis:streetNumber>{6}</cis:streetNumber>
-                     <cis:zip>{7}</cis:zip>
-                     <cis:city>{8}</cis:city>
-                     <cis:Origin>
-                        <cis:country>{9}</cis:country>
-                     </cis:Origin>
-                  </Address>
-				  {18}{20}{19}{27}
-                  <Communication>
-                        {14}{3}{15}
-                  </Communication>
-               </Receiver>
-            </Shipment>
-         </ShipmentOrder>{29}
-      </bus:CreateShipmentOrderRequest>
-   </soapenv:Body>
-</soapenv:Envelope>", Sett.XmlUser, SqlH.XmlShippmentDate, SqlH.XmlWeight, SqlH.XmlMail, SqlH.XmlRecipient, SqlH.XmlStreet,
-SqlH.XmlStreetnumber, SqlH.XmlPlz, SqlH.XmlCity, SqlH.XmlCountry, Sett.XmlPass,
-Sett.XmlAccountnumber, SqlH.XmlOurNumber, SqlH.XmlParcelType, newxmlmailopen, newxmlmailclose,
-SqlH.XmlRecipient02, SqlH.XmlRecipient03, packstationStart, packstationEnd, packstationNumber,
-Sett.senderName, Sett.senderStreetName, Sett.senderStreetNumber, Sett.senderZip, Sett.senderCity,
-Sett.senderNumber, postFiliale, SqlH.XmlPsCount, xmlmultiple, Sett.senderName2,
-Sett.senderName3);
-
-				SoapEnvelopeXml.LoadXml(Xml);
-
-			}
-			catch (Exception ex)
-			{
-				//logTextToFile(" > XML error!");
-				Log.writeLog("> XML Fehler!" + ex.ToString(), true, true);
-			}
-
-		}
-
-
-
 
 		/// <summary>
 		/// Create a xml-string from the inputs the user made erlier.
@@ -350,6 +103,10 @@ Sett.senderName3);
                 {
                     dpdMail = "<email>" + SqlH.XmlMail + "</email>";
                 }
+
+                SqlH.GetStreetAndStreetnumber(SqlH.XmlStreet);
+                if (SqlH.XmlStreetnumber.Length > 10) { SqlH.XmlStreetnumber = SqlH.XmlStreetnumber.Substring(0, 10); }
+
 
 
 
@@ -472,7 +229,6 @@ SqlH.XmlRecipient02, SqlH.XmlMail);
 
 
 			if (SqlH.XmlStreet.Length > recLen) { SqlH.XmlStreet = SqlH.XmlStreet.Substring(0, recLen); }
-			if (SqlH.XmlStreetnumber.Length > 10) { SqlH.XmlStreetnumber = SqlH.XmlStreetnumber.Substring(0, 10); }
 			if (SqlH.XmlPlz.Length > 10) { SqlH.XmlPlz = SqlH.XmlPlz.Substring(0, 10); }
 			if (SqlH.XmlCity.Length > recLen) { SqlH.XmlCity = SqlH.XmlCity.Substring(0, recLen); }
 			if (SqlH.XmlCountry.Length > 30) { SqlH.XmlCountry = SqlH.XmlCountry.Substring(0, 30); }
@@ -481,7 +237,7 @@ SqlH.XmlRecipient02, SqlH.XmlMail);
 			{
 				double weight = Convert.ToDouble(SqlH.XmlWeight.Replace(".", ","));
 				if (weight > 30) { SqlH.XmlWeight = "30"; }
-				else if (weight <= 0.01) { SqlH.XmlWeight = "5"; }
+				else if (weight <= 0.001) { SqlH.XmlWeight = "3"; }
 				else if (weight < 0.1) { SqlH.XmlWeight = "0.1"; }
 			}
 			catch (Exception ex)

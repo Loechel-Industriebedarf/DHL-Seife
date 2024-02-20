@@ -53,6 +53,12 @@
     <ApplicationIcon>dhl-seife.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Spire.License, Version=1.3.7.40, Culture=neutral, PublicKeyToken=b1144360237c8b3f, processorArchitecture=MSIL">
       <HintPath>..\packages\FreeSpire.PDF.5.10.0\lib\net40\Spire.License.dll</HintPath>
     </Reference>
@@ -71,7 +77,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="prog\json\details\DHLDetailsDimJson.cs" />
+    <Compile Include="prog\json\details\DHLDetailsWeightJson.cs" />
+    <Compile Include="prog\json\DHLConsigneeJson.cs" />
+    <Compile Include="prog\json\DHLDetailsJson.cs" />
+    <Compile Include="prog\json\DHLJson.cs" />
+    <Compile Include="prog\JSONHelper.cs" />
+    <Compile Include="prog\json\DHLShipmentsJson.cs" />
+    <Compile Include="prog\json\DHLShipperJson.cs" />
     <Compile Include="prog\PrintHelper.cs" />
+    <Compile Include="prog\RESTHelper.cs" />
     <Compile Include="prog\SOAPHelper.cs" />
     <Compile Include="prog\SQLHelper.cs" />
     <Compile Include="prog\XMLHelper.cs" />

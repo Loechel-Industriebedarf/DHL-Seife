@@ -21,8 +21,10 @@ namespace DHL_Seife.util
 		public string ApiPassword { get; set; } //Password to connect to the api
 		public string XmlAccountnumber { get; set; } //DHL customer id / dhl business id
 		public string XmlAccountnumberInt { get; set; } //DHL customer id / dhl business id international
-		public string XmlPass { get; set; } //DHL api password  / dhl business password
-		public string XmlUser { get; set; } //DHL api username / dhl business username
+		public string DHLPass { get; set; } //DHL api password  / dhl business password
+		public string DHLUser { get; set; } //DHL api username / dhl business username
+		public string DHLApiKey { get; set; } //DHL api key rest
+		public string DHLApiSecret { get; set; } //DHL api secret rest
 		public string SqlShipmentnumber { get; set; } //Insert String to insert the shipment number to the database
 		public string SqlCarrierShipmentnumber { get; set; } //Insert String to insert the carrier number to the database
 		public string SqlInsertNewMemo { get; set; } //Insert String to insert memo to the database
@@ -92,6 +94,8 @@ namespace DHL_Seife.util
 			var dhl_id_int = doc.Descendants("dhl_id_int");
 			var dhl_pass = doc.Descendants("dhl_password");
 			var dhl_username = doc.Descendants("dhl_username");
+			var dhl_api_key = doc.Descendants("dhl_api_key");
+			var dhl_api_secret = doc.Descendants("dhl_api_secret");
 			var insertshipmenttodb = doc.Descendants("insertshipmenttodb");
 			var insertcarriertodb = doc.Descendants("insertcarriertodb");
 			var insertnewmemotodb = doc.Descendants("insertnewmemotodb");
@@ -115,8 +119,10 @@ namespace DHL_Seife.util
 			foreach (var foo in api_pass) { ApiPassword = foo.Value; }
 			foreach (var foo in dhl_id) { XmlAccountnumber = foo.Value; }
 			foreach (var foo in dhl_id_int) { XmlAccountnumberInt = foo.Value; }
-			foreach (var foo in dhl_pass) { XmlPass = foo.Value; }
-			foreach (var foo in dhl_username) { XmlUser = foo.Value; }
+			foreach (var foo in dhl_pass) { DHLPass = foo.Value; }
+			foreach (var foo in dhl_username) { DHLUser = foo.Value; }
+			foreach (var foo in dhl_api_key) { DHLApiKey = foo.Value; }
+			foreach (var foo in dhl_api_secret) { DHLApiSecret = foo.Value; }
 			foreach (var foo in insertshipmenttodb) { SqlShipmentnumber = foo.Value; }
 			foreach (var foo in insertcarriertodb) { SqlCarrierShipmentnumber = foo.Value; }
 			foreach (var foo in insertnewmemotodb) { SqlInsertNewMemo = foo.Value; }

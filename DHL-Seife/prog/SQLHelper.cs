@@ -55,13 +55,20 @@ namespace DHL_Seife.prog
 		{
 			XmlOurNumber = Sett.OrderNumber;
 
-            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, LSTRASSE, RSTRASSE, LPLZ, RPLZ, LORT, RORT, LLAND, RLAND, LLAENDERKZ, RLAENDERKZ, " +
-                "dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, dbo.AUFTRAGSPOS.ARTIKELNR, " +
-                "GEWICHT, (select count(*) from dbo.VERSANDGUT where BELEGNR = '" + Sett.OrderNumber + "' " +
-                "AND dbo.VERSANDGUT.versanddatum > '" + Sett.StartTime.AddHours(-12).ToString("dd.MM.yyyy HH:mm:ss") + "') as PSCount, dbo.VERSANDGUT.versanddatum " +
+            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, " +
+                "RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, " +
+                "LSTRASSE, RSTRASSE, LPLZ, RPLZ, " +
+                "LORT, RORT, LLAND, RLAND, " +
+                "LLAENDERKZ, RLAENDERKZ, dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, " +
+                "NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, " +
+                "dbo.AUFTRAGSPOS.ARTIKELNR, GEWICHT, versanddatum, " +
+                "(select count(*) from dbo.VERSANDGUT where BELEGNR = '" + Sett.OrderNumber + "' " +
+                "AND dbo.VERSANDGUT.versanddatum > '" + Sett.StartTime.AddHours(-12).ToString("dd.MM.yyyy HH:mm:ss") + "') as PSCount " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
-                "LEFT JOIN dbo.VERSANDGUT ON dbo.VERSANDGUT.BELEGNR = dbo.AUFTRAGSPOS.BELEGNR " +
-                "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + Sett.OrderNumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + Sett.OrderNumber + "' ORDER BY PSCount, versanddatum DESC, status";
+                "LEFT JOIN dbo.POSPACKSTUECKE ON dbo.POSPACKSTUECKE.FIXPOSNR = dbo.AUFTRAGSPOS.FIXPOSNR AND dbo.POSPACKSTUECKE.BELEGNR = dbo.AUFTRAGSPOS.BELEGNR " +
+                "LEFT JOIN dbo.VERSANDGUT ON dbo.VERSANDGUT.VERSANDGUTNR = dbo.POSPACKSTUECKE.VERSANDGUTNR " +
+                "WHERE dbo.AUFTRAGSKOPF.BELEGNR = '" + Sett.OrderNumber + "' AND dbo.AUFTRAGSPOS.BELEGNR = '" + Sett.OrderNumber + "' " +
+                "ORDER BY versanddatum DESC, status";
 
 			OdbcDataReader dr = null;
 			try
@@ -103,14 +110,19 @@ namespace DHL_Seife.prog
 
 					if (String.IsNullOrEmpty(dr["LSTRASSE"].ToString()))
 					{
-						GetStreetAndStreetnumber(dr, "RSTRASSE");
-					}
+                        //Obsolete
+                        //GetStreetAndStreetnumber(dr, "RSTRASSE");
+                        XmlStreet = dr["RSTRASSE"].ToString().Trim();
+                    }
 					else
 					{
-						GetStreetAndStreetnumber(dr, "LSTRASSE");
-					}
+                        //Obsolete
+                        //GetStreetAndStreetnumber(dr, "LSTRASSE");
+                        XmlStreet = dr["LSTRASSE"].ToString().Trim();
+                    }
+                    XmlStreetnumber = null;
 
-					if (String.IsNullOrEmpty(dr["LPLZ"].ToString())) { XmlPlz = dr["RPLZ"].ToString().Trim(); }
+                    if (String.IsNullOrEmpty(dr["LPLZ"].ToString())) { XmlPlz = dr["RPLZ"].ToString().Trim(); }
 					else { XmlPlz = dr["LPLZ"].ToString().Trim(); }
 					//Check, if zip code contains letters
 					if (Regex.Matches(XmlPlz, @"[a-zA-Z]").Count > 0)
@@ -258,11 +270,9 @@ namespace DHL_Seife.prog
 		/// </summary>
 		/// <param name="dr">An OdbcDataReader object.</param>
 		/// <param name="streetDef">A string, that tells the program if it should look for RSTREET or LSTREET.</param>
-		/// 
-		/// TODO: Why don't I just send streetdefinition, instead of two variables?
-		private void GetStreetAndStreetnumber(OdbcDataReader dr, string streetDef)
+		public void GetStreetAndStreetnumber(string streetDef)
 		{
-			string streetDefinition = dr[streetDef].ToString().Trim(); //String that contains the street name + street number
+			string streetDefinition = streetDef.Trim(); //String that contains the street name + street number
 			XmlStreetnumber = "";
 			XmlStreet = "";
 			int lastindex = streetDefinition.LastIndexOf(" "); //Last space in the string

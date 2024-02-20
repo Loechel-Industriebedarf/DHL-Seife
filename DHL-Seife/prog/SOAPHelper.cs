@@ -39,163 +39,6 @@ namespace DHL_Seife.prog
         }
 
 
-        /// <summary>
-        /// Sends a soap request to the dhl-api and receives an answer in xml-format.
-        /// Next, it reads the xml answer, downloads the label and prints it.
-        /// </summary>
-        /// 
-        /// Types: createShipmentOrder / 
-        /// TODO: Do tons of refactoring...
-        public void SendDHLSoapRequest(Boolean isReturn)
-		{
-            //Use TSL 1.2
-            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-            /*
-             * TSL Test Suite, because DHL wants TSL 1.2 on February 2021
-             * 
-            WebRequest = null;
-            WebRequest = (HttpWebRequest)System.Net.WebRequest.Create("https://www.howsmyssl.com/a/check");
-            WebRequest.ContentType = "text/xml;charset=\"utf-8\"";
-            WebRequest.Accept = "text/xml";
-            WebRequest.Method = "POST";
-            WebRequest.KeepAlive = true;
-
-            using (WebResponse response = WebRequest.GetResponse())
-            {
-                using (StreamReader rd = new StreamReader(response.GetResponseStream()))
-                {
-                    Log.writeLog(rd.ReadToEnd());
-                }
-            }
-            */
-
-
-
-            WebRequest = CreateWebRequest(isReturn);
-
-            try
-			{
-				using (Stream stream = WebRequest.GetRequestStream())
-				{
-					XmlH.SoapEnvelopeXml.Save(stream);
-				}
-			}
-			catch (Exception ex)
-			{
-				Log.writeLog(ex.ToString(), true);
-			}
-
-
-
-			try
-			{
-				// Get a soap response
-				using (WebResponse response = WebRequest.GetResponse())
-				{
-					using (StreamReader rd = new StreamReader(response.GetResponseStream()))
-					{
-						string soapResult = rd.ReadToEnd();
-
-						//Check, if a hard validation error occurs. If yes: log it.
-						//If a hard validation error occurs, no label is printed usually.
-						if (soapResult.Contains("Hard validation"))
-						{
-							//logTextToFile("Critical adress-error!");
-							Log.writeLog("> Kritischer Adressfehler!\r\n" + soapResult + "\r\n\r\n" + XmlH.Xml, true, true);
-						}
-						//Weak validation errors normally occur, when there is a "Leitcodenachentgelt" error from DHL
-						//Labels can be printed, but are a bit more expansive then.
-						else if (soapResult.Contains("Weak validation"))
-						{
-							//logTextToFile("You'll have to pay 'Leitcodenachentgelt' for this order!");
-							Log.writeLog("> Leitcodenachentgelt muss für diesen Auftrag bezahlt werden!");
-							Log.writeLog(soapResult, true);
-						}
-
-						XmlDocument xmldoc = new XmlDocument();
-						xmldoc.LoadXml(soapResult);
-
-						XmlNodeList xnList = xmldoc.GetElementsByTagName("labelUrl");
-						foreach (XmlNode xn in xnList)
-						{
-							string labelUrl = xn.InnerText;
-							//Download label and save it to file
-							string labelName = "";
-							try
-							{
-								WebClient Client = new WebClient();
-								labelName = "labels/" + DateTimeOffset.Now.ToString("ddMMyyyy-HHmmssfff") + "-" + Sett.ProgramUser + "-DHL-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
-								Client.DownloadFile(labelUrl, @labelName);
-
-                                Sett.LabelTime = DateTimeOffset.Now;
-                                Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);       
-
-                                //Print label
-                                if (Sett.printLabels.Equals("true") && !Sett.PrinterName.Equals("false"))
-                                {
-                                    PrintHelper print = new PrintHelper(Sett, Log, labelName);
-                                }
-                            }
-							catch (Exception ex)
-							{
-								Log.writeLog(ex.ToString(), true);
-							}
-							
-						}
-
-						xnList = xmldoc.GetElementsByTagName("cis:shipmentNumber");
-						foreach (XmlNode xn in xnList)
-						{
-							string shipmentnumber = xn.InnerText;
-                            WriteShipmentNumber(shipmentnumber, isReturn);
-							
-						}
-					}
-				}
-			}
-			catch (WebException ex)
-			{
-				//Log the error message of the WebException
-				AnotherApiConnectionTryHttp(ex);
-			}
-			catch (Exception ex)
-			{
-				//If there is no WebException, log the "normal" exception
-				AnotherApiConnectionTry(ex);
-			}
-
-		}
-
-
-            /// <summary>
-            /// Create a soap webrequest to to the dhl-api. Also adds basic http-authentication.
-            /// </summary>
-            public HttpWebRequest CreateWebRequest(Boolean isReturn)
-		{
-			String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("iso-8859-1").GetBytes(Sett.ApiUser + ":" + Sett.ApiPassword));
-
-			//SOAP webrequest
-			HttpWebRequest webRequest = null;
-			try
-			{
-                string requestType = "createShipmentOrder";
-                if (isReturn) { requestType = "returns"; }
-                webRequest = (HttpWebRequest)System.Net.WebRequest.Create(Sett.DHLSoapConnection);
-				webRequest.Headers.Add("Authorization", "Basic " + encoded);
-				webRequest.Headers.Add("SOAPAction: urn:" + requestType);
-				webRequest.ContentType = "text/xml;charset=\"utf-8\"";
-				webRequest.Accept = "text/xml";
-				webRequest.Method = "POST";
-				webRequest.KeepAlive = true;
-			}
-			catch (Exception ex)
-			{
-				Log.writeLog(ex.ToString(), true);
-			}
-			return webRequest;
-		}
-
 
 		/// <summary>
 		/// If we can't get a connection to the dhl api, log the error message and try again.
@@ -222,7 +65,7 @@ namespace DHL_Seife.prog
 						{
 							string text = reader.ReadToEnd();
 							//logTextToFile("> Error while connecting to DHL-API!");
-							Log.writeLog("> Fehlerhafte Datenübermittlung an DHL/DPD  - neuer Versuch in 5 Sekunden!!\r\n" +
+							Log.writeLog("> Fehlerhafte Datenübermittlung an DPD  - neuer Versuch in 5 Sekunden!!\r\n" +
 								text + "\r\n\r\n" +
 								XmlH.Xml + "\r\n\r\n" +
 								ex.ToString(), true, false);
@@ -232,14 +75,6 @@ namespace DHL_Seife.prog
 
 						switch (orderType)
 						{
-							case "DHL":
-								XmlH.DoDHLXMLMagic();
-								SendDHLSoapRequest(true);
-								break;
-                            case "DHLRetoure":
-                                XmlH.DoDHLXMLMagic();
-                                SendDHLSoapRequest(false);
-                                break;
                             case "DPD":
 								XmlH.DoDPDXMLMagic();
 								SendDPDSoapRequest();
@@ -248,7 +83,7 @@ namespace DHL_Seife.prog
 					}
 					else
 					{
-						Log.writeLog("> Fehlerhafte Datenübermittlung an DHL/DPD!\r\n" + ex.ToString() + "\r\n\r\n" + XmlH.Xml, true, true);
+						Log.writeLog("> Fehlerhafte Datenübermittlung an DPD!\r\n" + ex.ToString() + "\r\n\r\n" + XmlH.Xml, true, true);
 					}
 				}
 			}
@@ -274,18 +109,10 @@ namespace DHL_Seife.prog
 			if (apiConnectTries <= 10)
 			{
 				//logTextToFile("> Error while connecting to DHL-API!");
-				Log.writeLog("> Fehler bei der Verbindung mit der DHL/DPD-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
+				Log.writeLog("> Fehler bei der Verbindung mit der DPD-API - neuer Versuch in 3 Sekunden!\r\n" + ex.ToString(), true, false);
 				System.Threading.Thread.Sleep(3000);
 				switch (orderType)
 				{
-					case "DHL":
-						XmlH.DoDHLXMLMagic();
-						SendDHLSoapRequest(true);
-						break;
-                    case "DHLRetoure":
-                        XmlH.DoDHLXMLMagic();
-                        SendDHLSoapRequest(false);
-                        break;
                     case "DPD":
 						XmlH.DoDPDXMLMagic();
 						SendDPDSoapRequest();
@@ -294,7 +121,7 @@ namespace DHL_Seife.prog
 			}
 			else
 			{
-				Log.writeLog("> Fehler bei der Verbindung mit der DHL/DPD-API!\r\n" + ex.ToString(), true, true);
+				Log.writeLog("> Fehler bei der Verbindung mit der DPD-API!\r\n" + ex.ToString(), true, true);
 			}
 		}
 

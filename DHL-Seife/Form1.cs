@@ -20,7 +20,9 @@ namespace DHL_Seife
 		private static LogWriter Log = new LogWriter(Sett);
 		private static SQLHelper SqlH = new SQLHelper(Sett, Log);
 		private static XMLHelper XmlH = new XMLHelper(Sett, Log, SqlH);
-		private static SOAPHelper SoapH = new SOAPHelper(Sett, Log, SqlH, XmlH);
+		private static JSONHelper JsonH = new JSONHelper(Sett, Log, SqlH);
+        private static SOAPHelper SoapH = new SOAPHelper(Sett, Log, SqlH, XmlH);
+        private static RESTHelper RestH = new RESTHelper(Sett, Log, SqlH, JsonH);
 
 
 		/// <summary>
@@ -86,22 +88,24 @@ namespace DHL_Seife
 
 			InitializeComponent();
 
+            
 
-			//If the program was started via command line parameters, read data from the sql server and send a soap request
-			if (!String.IsNullOrEmpty(Sett.OrderNumber))
+
+            //If the program was started via command line parameters, read data from the sql server and send a soap request
+            if (!String.IsNullOrEmpty(Sett.OrderNumber))
 			{
                 SqlH.DoSQLMagic(); //Read data from sql and transform it
 
                 switch (Sett.OrderType)
 				{
 					case "DHL":
-						XmlH.DoDHLXMLMagic();
-						SoapH.SendDHLSoapRequest(false);
+                        JsonH.DoDHLJsonMagic();
+                        RestH.SendDHLRestRequest(false);
                         break;
 
                     case "DHLRetoure":
-                        XmlH.DoDHLXMLMagic();
-                        SoapH.SendDHLSoapRequest(true);
+                        JsonH.DoDHLJsonMagic();
+                        RestH.SendDHLRestRequest(true);
                         break;
 
                     case "DPD":
@@ -112,8 +116,8 @@ namespace DHL_Seife
 
                     //Default -> DHL
 					default:
-						XmlH.DoDHLXMLMagic();
-						SoapH.SendDHLSoapRequest(false);
+						JsonH.DoDHLJsonMagic();
+                        RestH.SendDHLRestRequest(false); //Takes JsonHelper as Base
 						break;
 				}
 
@@ -207,11 +211,15 @@ namespace DHL_Seife
 			}
 			else
 			{
+                JsonH.DoDHLJsonMagic();
+                RestH.SendDHLRestRequest(false); //Takes JsonHelper as Base
+                Application.Exit();
+
                 //TODO: Maybe add DPD support?
-				XmlH.DoDHLXMLMagic();
-				SoapH.SendDHLSoapRequest(false);
-				Application.Exit();
-			}
+                SoapH.DPDAuth();
+                XmlH.DoDPDXMLMagic();
+                SoapH.SendDPDSoapRequest();
+            }
 		}
 
 
@@ -241,9 +249,9 @@ namespace DHL_Seife
         /// <param name="e">Reacts, when the PrintShippingLabel button was pressed.</param>
         private void PrintManualShippingLabel_Click(object sender, EventArgs e)
 		{
-			XmlH.DoDHLXMLMagic();
-			SoapH.SendDHLSoapRequest(false);
-			Application.Exit();
+            JsonH.DoDHLJsonMagic();
+            RestH.SendDHLRestRequest(false); //Takes JsonHelper as Base
+            Application.Exit();
 		}
 
 		/// <summary>
