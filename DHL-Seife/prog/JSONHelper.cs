@@ -214,6 +214,13 @@ namespace DHL_Seife.prog
                 if (SqlH.XmlStreet.Length > recLen) { dJson.consignee_addressStreet = SqlH.XmlStreet.Substring(0, recLen); }
                 else { dJson.consignee_addressStreet = SqlH.XmlStreet; }
 
+                //Check if the house number is missing. If it's missing, addressHouse must not be null
+                //The "nothing" is a FIGURE SPACE U+2007, because normal spaces are ignored. :)
+                if (!dJson.consignee_addressStreet.All(char.IsDigit))
+                {
+                    dJson.consignee_addressHouse = " ";
+                }
+
                 if (SqlH.XmlPlz.Length > 10) { dJson.consignee_postalCode = SqlH.XmlPlz.Substring(0, 10); }
                 else { dJson.consignee_postalCode = SqlH.XmlPlz; }
 
