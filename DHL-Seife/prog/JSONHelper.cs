@@ -16,6 +16,7 @@ namespace DHL_Seife.prog
         private static LogWriter Log;
         private static SQLHelper SqlH;
         private static DHLJson dJson;
+        private static DHLReturnJson dReJson;
 
 
         public string Json = ""; //Json to send to dhl
@@ -32,11 +33,15 @@ namespace DHL_Seife.prog
             Log = lw;
             SqlH = sql;
             dJson =  new DHLJson(Sett);
+            dReJson =  new DHLReturnJson(Sett);
         }
 
 
-
         public void DoDHLJsonMagic()
+        {
+            DoDHLJsonMagic(false);
+        }
+        public void DoDHLJsonMagic(Boolean isReturn)
         {
             try
             {
@@ -54,9 +59,6 @@ namespace DHL_Seife.prog
                     dJson.billingNumber = Sett.XmlAccountnumberInt; //international account number
                 }
 
-                
-
-                //Logic for postfiliale?
 
                 //Length of email?
                 if (SqlH.XmlMail.Length > 80) { dJson.consignee_email = SqlH.XmlMail.Substring(0, 80); }
@@ -84,33 +86,56 @@ namespace DHL_Seife.prog
                         int currentPackNum = i + 1;
                         dJson.refNo = SqlH.XmlOurNumber + " - Paket " + currentPackNum + " von " + Convert.ToDouble(SqlH.XmlPsCount);
 
-                        dJson.GenerateJson();
+                        if (isReturn) { dReJson.GenerateJson(dJson); }
+                        else { dJson.GenerateJson(); }
+                        
                     }
                 }
                 else
                 {
-                    dJson.GenerateJson();
+                    if (isReturn) { dReJson.GenerateJson(dJson); }
+                    else { dJson.GenerateJson(); }
                 }
 
-
-                Json = JsonConvert.SerializeObject(dJson, Formatting.Indented, new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore
-                });
-
-                //Debug write to file
-                using (StreamWriter writer = new StreamWriter("json.json"))
-                {
-                    writer.WriteLine(Json);
-                }
-            }catch(Exception ex)
+                if (isReturn) { SerializeReturnJson(); }
+                else { SerializeJson(); }
+            }
+            catch (Exception ex)
             {
                 Log.writeLog(ex.ToString());
             }
             
         }
 
-        private void CheckForRetail()
+            private void SerializeJson()
+        {
+            Json = JsonConvert.SerializeObject(dJson, Formatting.Indented, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            });
+
+            //Debug write to file
+            using (StreamWriter writer = new StreamWriter("json.json"))
+            {
+                writer.WriteLine(Json);
+            }
+        }
+
+        private void SerializeReturnJson()
+        {
+            Json = JsonConvert.SerializeObject(dReJson, Formatting.Indented, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            });
+
+            //Debug write to file
+            using (StreamWriter writer = new StreamWriter("json.json"))
+            {
+                writer.WriteLine(Json);
+            }
+        }
+
+            private void CheckForRetail()
         {
             //Takes the first 3 digit number and defines it as retailid
             String regex = @"\d{3}$";
@@ -152,8 +177,8 @@ namespace DHL_Seife.prog
 
         private void CheckForPostNumber()
         {
-            //Takes the first 4-10 digit number in name1-name3 and defines it as postnumber
-            String regex = @"\d[0-9]{4,10}$";
+            //Takes the first 6-10 digit number in name1-name3 and defines it as postnumber
+            String regex = @"\d[0-9]{6,10}$";
             if (dJson.consignee_lockerID != null || dJson.consignee_retailID != null)
             {
                 String regexStr1 = Regex.Match(dJson.consignee_name1, regex).Value;
@@ -208,7 +233,6 @@ namespace DHL_Seife.prog
                 if (dJson.consignee_name3 == "") { dJson.consignee_name3 = null; }
 
                 Log.writeLog(dJson.consignee_name1);
-                dJson.consignee_contactName = dJson.consignee_name1;
                 dJson.consignee_name = dJson.consignee_name1;
 
                 if (SqlH.XmlStreet.Length > recLen) { dJson.consignee_addressStreet = SqlH.XmlStreet.Substring(0, recLen); }
@@ -216,7 +240,7 @@ namespace DHL_Seife.prog
 
                 //Check if the house number is missing. If it's missing, addressHouse must not be null
                 //The "nothing" is a FIGURE SPACE U+2007, because normal spaces are ignored. :)
-                if (!dJson.consignee_addressStreet.All(char.IsDigit))
+                if (!Regex.IsMatch(dJson.consignee_addressStreet, @"\d"))
                 {
                     dJson.consignee_addressHouse = " ";
                 }
@@ -235,31 +259,43 @@ namespace DHL_Seife.prog
 
         private static void SwitchCountryCode()
         {
-            List<string> lkz = new List<string>();
-            List<string> isoAlpha3 = new List<string>();
-
+            //The two most common codes are hard coded, so we don't have to deal with a csv file in most cases
+            if(SqlH.XmlCountryCode == "DE")
+            {
+                dJson.consignee_country = "DEU";
+            }
+            else if (SqlH.XmlCountryCode == "AT")
+            {
+                dJson.consignee_country = "AUT";
+            }
             //Read csv file with country codes
-            using (var reader = new StreamReader(@"countryCodes.csv"))
+            else
             {
-                while (!reader.EndOfStream)
-                {
-                    var line = reader.ReadLine();
-                    var values = line.Split(';');
+                List<string> lkz = new List<string>();
+                List<string> isoAlpha3 = new List<string>();
 
-                    lkz.Add(values[0]);
-                    isoAlpha3.Add(values[1]);
-                }
-            }
-
-            //Search original country string in list
-            //DE => DEU
-            for (int i =0; i < lkz.Count; i++)
-            {
-                if(lkz[i] == SqlH.XmlCountryCode)
+                using (var reader = new StreamReader(@"countryCodes.csv"))
                 {
-                    dJson.consignee_country = isoAlpha3[i];
+                    while (!reader.EndOfStream)
+                    {
+                        var line = reader.ReadLine();
+                        var values = line.Split(';');
+
+                        lkz.Add(values[0]);
+                        isoAlpha3.Add(values[1]);
+                    }
                 }
-            }
+
+                //Search original country string in list
+                //DE => DEU
+                for (int i = 0; i < lkz.Count; i++)
+                {
+                    if (lkz[i] == SqlH.XmlCountryCode)
+                    {
+                        dJson.consignee_country = isoAlpha3[i];
+                    }
+                }
+            }  
         }
 
         /// <summary>
@@ -291,6 +327,17 @@ namespace DHL_Seife.prog
                 dJson.shipper_name2 = "c/o Auslieferungslager";
                 dJson.shipper_name3 = "Löchel Industriebedarf";
             }
+        }
+
+        /// <summary>
+		/// 
+		/// </summary>
+        public void AddBlankStreetNumber()
+        {
+            dJson.consignee_addressHouse = " "; //The "nothing" is a FIGURE SPACE U+2007, because normal spaces are ignored.r
+            dJson.ClearShipments();
+            dJson.GenerateJson();
+            SerializeJson();
         }
 
     }

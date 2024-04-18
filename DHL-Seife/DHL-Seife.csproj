@@ -83,6 +83,7 @@
     <Compile Include="prog\json\DHLDetailsJson.cs" />
     <Compile Include="prog\json\DHLJson.cs" />
     <Compile Include="prog\JSONHelper.cs" />
+    <Compile Include="prog\json\DHLReturnJson.cs" />
     <Compile Include="prog\json\DHLShipmentsJson.cs" />
     <Compile Include="prog\json\DHLShipperJson.cs" />
     <Compile Include="prog\PrintHelper.cs" />

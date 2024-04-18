@@ -25,6 +25,8 @@ namespace DHL_Seife.prog
         private JSONHelper JsonH;
         private static HttpWebRequest WebRequest;
 
+        private Boolean err = true;
+
         static int apiConnectTries = 0; //If the connection to the api fails, it should try again and increment this counter.
 
 
@@ -105,16 +107,91 @@ namespace DHL_Seife.prog
                 }
                 catch (Exception ex)
                 {
-                    Log.writeLog("> Kritischer Adressfehler:", true);
-                    Log.writeLog(response.Content, true);
-                    Log.writeLog(JsonH.Json, true);
-                    Log.writeLog(ex.ToString(), true);
+                    try
+                    {
+                        if (err)
+                        {
+                            dynamic dhlRes = JObject.Parse(response.Content);
+                            foreach (dynamic valMsg in dhlRes.items[0].validationMessages)
+                            {
+                                if (valMsg.validationMessage == "Bitte geben Sie eine Hausnummer an.")
+                                {
+                                    err = false;
+                                    JsonH.AddBlankStreetNumber();
+                                    SendDHLRestRequest(false);             
+                                }
+                            }
+                        }
+
+                        if (err)
+                        {
+                            Log.writeLog("Kritischer Adressfehler", true, true);
+                            Log.writeLog(response.Content, true);
+                            Log.writeLog(JsonH.Json, true);
+                            err = false;
+                        }
+                    } catch(Exception ex1)
+                    {
+                        Log.writeLog("Kritischer Adressfehler", true, true);
+                        Log.writeLog(response.Content, true);
+                        Log.writeLog(JsonH.Json, true);
+                    }  
                 }  
             }
             catch(Exception ex)
             {
                 Log.writeLog(ex.ToString());
                 AnotherApiConnectionTry("DHL", isReturn);
+            }
+
+        }
+
+
+
+        public void SendDHLRestReturnRequest()
+        {
+            try
+            {
+                //Use TSL 1.2
+                System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                //Encode username + password to base64
+                String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("iso-8859-1").GetBytes(Sett.DHLUserReturn + ":" + Sett.DHLPassReturn));
+
+                var client = new RestClient(Sett.DHLConnectionReturn);
+                var request = new RestRequest(Method.POST);
+                request.AddHeader("Content-Type", "application/json");
+                request.AddHeader("Accept-Language", "de-DE");
+                request.AddHeader("Authorization", "Basic " + encoded);
+                request.AddHeader("Accept", "application/json");
+                request.AddHeader("Allow", "GET, PUT, POST, DELETE");
+                request.AddHeader("dhl-api-key", Sett.DHLApiKey);
+                request.AddParameter("application/json", JsonH.Json, ParameterType.RequestBody);
+                IRestResponse response = client.Execute(request);
+
+                try
+                {
+                    dynamic dhlResponse = JObject.Parse(response.Content);
+
+                    String labelName = "retouren/" + DateTimeOffset.Now.ToString("ddMMyyyy-HHmmssfff") + "-" + Sett.ProgramUser + 
+                        "-DHL-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
+                    String b64Label = dhlResponse.label.b64;
+                    SaveBase64Label(b64Label, labelName);
+
+                    Sett.LabelTime = DateTimeOffset.Now;
+                    Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
+
+                    WriteShipmentNumber(dhlResponse.shipmentNo.Value, true);
+                }
+                catch (Exception ex1)
+                {
+                    Log.writeLog(ex1.ToString());
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                Log.writeLog(ex.ToString());
             }
 
         }

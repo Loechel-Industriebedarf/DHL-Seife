@@ -67,6 +67,8 @@ namespace DHL_Seife.prog
 
         public String details_weight_uom = "kg"; //weight unit
         public String details_weight_value = "3"; //default weight
+
+        public String receiverID = "deu";
         
 
         public DHLJson(SettingsReader sr)
@@ -102,6 +104,14 @@ namespace DHL_Seife.prog
             shipments.Add(new DHLShipmentsJson(
                 product, billingNumber, refNo, creationSoftware, shipDate, shipper, consignee, details
             ));
+        }
+
+            public void ClearShipments()
+        {
+            while(shipments.Count > 0)
+            {
+                shipments.RemoveAt(0);
+            }
         }
     }
 }

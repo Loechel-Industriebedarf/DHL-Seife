@@ -17,12 +17,15 @@ namespace DHL_Seife.util
 		public string PrinterName2 { get; set; } //Name of the printer to print on later
         public string printLabels { get; set; } //If false: don't print; if true: print the labels after download
         public string DHLSoapConnection { get; set; } //Connection string for the soap request
-		public string ApiUser { get; set; }//Username to connect to the api
+        public string DHLConnectionReturn { get; set; } //Connection string for the return request
+        public string ApiUser { get; set; }//Username to connect to the api
 		public string ApiPassword { get; set; } //Password to connect to the api
 		public string XmlAccountnumber { get; set; } //DHL customer id / dhl business id
 		public string XmlAccountnumberInt { get; set; } //DHL customer id / dhl business id international
 		public string DHLPass { get; set; } //DHL api password  / dhl business password
+		public string DHLPassReturn { get; set; } //DHL api password  / dhl business password
 		public string DHLUser { get; set; } //DHL api username / dhl business username
+		public string DHLUserReturn { get; set; } //DHL api username / dhl business username
 		public string DHLApiKey { get; set; } //DHL api key rest
 		public string DHLApiSecret { get; set; } //DHL api secret rest
 		public string SqlShipmentnumber { get; set; } //Insert String to insert the shipment number to the database
@@ -32,6 +35,7 @@ namespace DHL_Seife.util
 		public string Logfile { get; set; } //Log file
         public string LogfileCsv { get; set; } //Log file
         public string ProgramUser { get; set; } //User that executed the program
+        public string ReceiverId { get; set; } //Id for dhl returns
 
 		public string OrderNumber { get; set; } //The number of the order
 
@@ -89,7 +93,9 @@ namespace DHL_Seife.util
 			var printL = doc.Descendants("printLabels");
             var dhlsoap = doc.Descendants("dhlsoap");
 			var api_username = doc.Descendants("api_username");
+			var api_username_return = doc.Descendants("dhl_username_return");
 			var api_pass = doc.Descendants("api_password");
+			var api_pass_return = doc.Descendants("dhl_password_return");
 			var dhl_id = doc.Descendants("dhl_id");
 			var dhl_id_int = doc.Descendants("dhl_id_int");
 			var dhl_pass = doc.Descendants("dhl_password");
@@ -105,7 +111,9 @@ namespace DHL_Seife.util
 			var dpd_customer_number = doc.Descendants("dpd_customer_number");
 			var dpd_soap_auth = doc.Descendants("dpd_soap_auth");
 			var dpd_soap_label = doc.Descendants("dpd_soap_label");
-			foreach (var foo in logfile) { Logfile = foo.Value; }
+			var dhl_connection_return = doc.Descendants("dhlsoapreturn");
+			var receiver_id = doc.Descendants("receiver_id");
+            foreach (var foo in logfile) { Logfile = foo.Value; }
             foreach (var foo in logfilecsv) { LogfileCsv = foo.Value; }
             foreach (var foo in dbconnection) { ConnectionString = foo.Value; }
 			foreach (var foo in dbrowidshipment) { RowIdShipmentnumber = foo.Value; }
@@ -115,9 +123,11 @@ namespace DHL_Seife.util
 			foreach (var foo in printer2) { PrinterName2 = foo.Value; }
 			foreach (var foo in printL) { printLabels = foo.Value; }
 			foreach (var foo in dhlsoap) { DHLSoapConnection = foo.Value; }
+			foreach (var foo in api_username_return) { DHLUserReturn = foo.Value; }
 			foreach (var foo in api_username) { ApiUser = foo.Value; }
-			foreach (var foo in api_pass) { ApiPassword = foo.Value; }
-			foreach (var foo in dhl_id) { XmlAccountnumber = foo.Value; }
+            foreach (var foo in api_pass) { ApiPassword = foo.Value; }
+            foreach (var foo in api_pass_return) { DHLPassReturn = foo.Value; }
+            foreach (var foo in dhl_id) { XmlAccountnumber = foo.Value; }
 			foreach (var foo in dhl_id_int) { XmlAccountnumberInt = foo.Value; }
 			foreach (var foo in dhl_pass) { DHLPass = foo.Value; }
 			foreach (var foo in dhl_username) { DHLUser = foo.Value; }
@@ -132,6 +142,8 @@ namespace DHL_Seife.util
 			foreach (var foo in dpd_customer_number) { DPDCustomerNumber = foo.Value; }
 			foreach (var foo in dpd_soap_auth) { DPDSoapAuth = foo.Value; }
 			foreach (var foo in dpd_soap_label) { DPDSoapLabel = foo.Value; }
-		}
+			foreach (var foo in dhl_connection_return) { DHLConnectionReturn = foo.Value; }
+			foreach (var foo in receiver_id) { ReceiverId = foo.Value; }
+        }
 	}
 }

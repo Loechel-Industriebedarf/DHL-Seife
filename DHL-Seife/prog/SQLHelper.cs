@@ -34,13 +34,14 @@ namespace DHL_Seife.prog
 		public string XmlParcelType = "V01PAK"; //Parcel type (Germany only or international)
 		public string XmlShippmentDate = DateTime.Now.ToString("yyyy-MM-dd"); //YYYY-MM-DD
 		public string RowId = ""; //Row ID for insert 
+		public string XmlStatus = ""; //Order Status - 3 = completed
 
-		/// <summary>
-		/// This class handles data from a sql database.
-		/// </summary>
-		/// <param name="settingsBuffer">An SettingsReader object, that contains all settings.</param>
-		/// <param name="lw">An LogWriter object, to write logs, if exceptions occur.</param>
-		public SQLHelper(SettingsReader settingsBuffer, LogWriter lw)
+        /// <summary>
+        /// This class handles data from a sql database.
+        /// </summary>
+        /// <param name="settingsBuffer">An SettingsReader object, that contains all settings.</param>
+        /// <param name="lw">An LogWriter object, to write logs, if exceptions occur.</param>
+        public SQLHelper(SettingsReader settingsBuffer, LogWriter lw)
 		{
 			Sett = settingsBuffer;
 			Log = lw;
@@ -55,7 +56,7 @@ namespace DHL_Seife.prog
 		{
 			XmlOurNumber = Sett.OrderNumber;
 
-            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, " +
+            string sql = "SELECT dbo.AUFTRAGSKOPF.FSROWID, dbo.AUFTRAGSKOPF.STATUS as KOPFSTATUS, dbo.AUFTRAGSKOPF.BELEGART, LFIRMA1, LFIRMA2, " +
                 "RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, " +
                 "LSTRASSE, RSTRASSE, LPLZ, RPLZ, " +
                 "LORT, RORT, LLAND, RLAND, " +
@@ -198,7 +199,9 @@ namespace DHL_Seife.prog
 					String netWeight = dr["NetWeightPerSalesUnit"].ToString();
 					String orderAmount = dr["MENGE_BESTELLT"].ToString();
 
-					try
+                    XmlStatus = dr["KOPFSTATUS"].ToString();
+
+                    try
 					{
                         //GEWICHT => Weight of VERSANDGUT
                         if (dr["GEWICHT"].ToString() == null || dr["GEWICHT"].ToString() == "" || dr["PSCount"].ToString() == "0")

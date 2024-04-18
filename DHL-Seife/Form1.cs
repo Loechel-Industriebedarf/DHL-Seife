@@ -95,31 +95,39 @@ namespace DHL_Seife
             if (!String.IsNullOrEmpty(Sett.OrderNumber))
 			{
                 SqlH.DoSQLMagic(); //Read data from sql and transform it
+                if(SqlH.XmlStatus == "3" || SqlH.XmlStatus == "4")
+                {
+                    JsonH.DoDHLJsonMagic(true);
+                    RestH.SendDHLRestReturnRequest();
+                }
+                else
+                {
+                    switch (Sett.OrderType)
+                    {
+                        case "DHL":
+                            JsonH.DoDHLJsonMagic();
+                            RestH.SendDHLRestRequest(false);
+                            break;
 
-                switch (Sett.OrderType)
-				{
-					case "DHL":
-                        JsonH.DoDHLJsonMagic();
-                        RestH.SendDHLRestRequest(false);
-                        break;
+                        case "DHLRetoure":
+                            JsonH.DoDHLJsonMagic();
+                            RestH.SendDHLRestRequest(true);
+                            break;
 
-                    case "DHLRetoure":
-                        JsonH.DoDHLJsonMagic();
-                        RestH.SendDHLRestRequest(true);
-                        break;
+                        case "DPD":
+                            SoapH.DPDAuth();
+                            XmlH.DoDPDXMLMagic();
+                            SoapH.SendDPDSoapRequest();
+                            break;
 
-                    case "DPD":
-                        SoapH.DPDAuth();
-						XmlH.DoDPDXMLMagic();
-                        SoapH.SendDPDSoapRequest();
-						break;
-
-                    //Default -> DHL
-					default:
-						JsonH.DoDHLJsonMagic();
-                        RestH.SendDHLRestRequest(false); //Takes JsonHelper as Base
-						break;
-				}
+                        //Default -> DHL
+                        default:
+                            JsonH.DoDHLJsonMagic();
+                            RestH.SendDHLRestRequest(false); //Takes JsonHelper as Base
+                            break;
+                    }
+                }
+                
 
 				Application.Exit();
 				Environment.Exit(1);
@@ -211,14 +219,22 @@ namespace DHL_Seife
 			}
 			else
 			{
+                JsonH.DoDHLJsonMagic(true);
+                RestH.SendDHLRestReturnRequest();
+                Application.Exit();
+                Environment.Exit(1);
+
                 JsonH.DoDHLJsonMagic();
                 RestH.SendDHLRestRequest(false); //Takes JsonHelper as Base
                 Application.Exit();
+                Environment.Exit(1);
 
                 //TODO: Maybe add DPD support?
                 SoapH.DPDAuth();
                 XmlH.DoDPDXMLMagic();
                 SoapH.SendDPDSoapRequest();
+                Application.Exit();
+                Environment.Exit(1);
             }
 		}
 
