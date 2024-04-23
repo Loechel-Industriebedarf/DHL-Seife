@@ -174,9 +174,11 @@ namespace DHL_Seife.prog
                     dynamic dhlResponse = JObject.Parse(response.Content);
 
                     String labelName = "retouren/" + DateTimeOffset.Now.ToString("ddMMyyyy-HHmmssfff") + "-" + Sett.ProgramUser + 
-                        "-DHL-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + ".pdf";
+                        "-DHL-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + "";
                     String b64Label = dhlResponse.label.b64;
-                    SaveBase64Label(b64Label, labelName);
+                    String b64qrLabel = dhlResponse.qrLabel.b64;
+                    SaveBase64Label(b64Label, labelName + ".pdf");
+                    SaveBase64Label(b64qrLabel, labelName + ".png");
 
                     Sett.LabelTime = DateTimeOffset.Now;
                     Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);

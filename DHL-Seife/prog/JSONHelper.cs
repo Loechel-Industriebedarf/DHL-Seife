@@ -334,9 +334,7 @@ namespace DHL_Seife.prog
 		/// </summary>
         public void AddBlankStreetNumber()
         {
-            dJson.consignee_addressHouse = " "; //The "nothing" is a FIGURE SPACE U+2007, because normal spaces are ignored.r
-            dJson.ClearShipments();
-            dJson.GenerateJson();
+            dJson.AddBlankStreetNumberToShipments();
             SerializeJson();
         }
 

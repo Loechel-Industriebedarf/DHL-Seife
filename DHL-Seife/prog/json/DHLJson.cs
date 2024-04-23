@@ -69,7 +69,7 @@ namespace DHL_Seife.prog
         public String details_weight_value = "3"; //default weight
 
         public String receiverID = "deu";
-        
+
 
         public DHLJson(SettingsReader sr)
         {
@@ -81,7 +81,7 @@ namespace DHL_Seife.prog
         {
             shipper = new DHLShipperJson(
                 shipper_name1, shipper_name2, shipper_name3,
-                shipper_addressStreet, shipper_addressHouse, shipper_postalCode, 
+                shipper_addressStreet, shipper_addressHouse, shipper_postalCode,
                 shipper_city, shipper_country,
                 shipper_email, shipper_phone
             );
@@ -106,11 +106,19 @@ namespace DHL_Seife.prog
             ));
         }
 
-            public void ClearShipments()
+        public void ClearShipments()
         {
-            while(shipments.Count > 0)
+            while (shipments.Count > 0)
             {
                 shipments.RemoveAt(0);
+            }
+        }
+
+        public void AddBlankStreetNumberToShipments()
+        {
+            for (int i = 0; i < shipments.Count; i++)
+            {
+                shipments[i].consignee.addressHouse = " "; //The "nothing" is a FIGURE SPACE U+2007, because normal spaces are ignored.
             }
         }
     }
