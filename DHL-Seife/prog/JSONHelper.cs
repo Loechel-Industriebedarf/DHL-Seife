@@ -53,7 +53,7 @@ namespace DHL_Seife.prog
                 dJson.details_weight_value = SqlH.XmlWeight.Replace(",", ".");
 
                 //If the country is not Germany, send an international parcel
-                if (!SqlH.XmlCountry.ToLower().Equals("deutschland") && !SqlH.XmlCountry.ToLower().Equals("de"))
+                if (!SqlH.XmlCountry.ToLower().Equals("deutschland") && !SqlH.XmlCountryCode.ToLower().Equals("de"))
                 {
                     dJson.product = "V53WPAK";  //international parcel
                     dJson.billingNumber = Sett.XmlAccountnumberInt; //international account number

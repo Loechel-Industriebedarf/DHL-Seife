@@ -177,8 +177,10 @@ xmlns:ns1=""http://dpd.com/common/service/types/ShipmentService/4.4"">
 Sett.senderStreetName, Sett.senderZip, Sett.senderCity, Sett.DPDCustomerNumber, SqlH.XmlRecipient,
 SqlH.XmlStreet, SqlH.XmlCountryCode, SqlH.XmlPlz, SqlH.XmlCity, Sett.OrderNumber,
 dpdWeight.ToString(), Sett.senderStreetNumber, SqlH.XmlStreetnumber, Sett.senderMail, Sett.senderNumber,
-dpdMail, "", multipleParcels, dpdNotification, Sett.senderName3,
+dpdMail, SqlH.XmlPhone, multipleParcels, dpdNotification, Sett.senderName3,
 SqlH.XmlRecipient02, SqlH.XmlMail);
+
+                Log.writeLog(Xml);
 
 				SoapEnvelopeXml.LoadXml(@Xml);
             }

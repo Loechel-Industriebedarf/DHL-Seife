@@ -48,6 +48,11 @@ namespace DHL_Seife.prog
                 dJson.consignee_email, dJson.consignee_phone
             );
 
+            if(dJson.consignee_country != "DEU")
+            {
+                receiverId = Sett.ReceiverIdInt;
+            }
+
             customerReference = dJson.refNo;
         }
     }

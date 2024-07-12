@@ -105,13 +105,13 @@ namespace DHL_Seife
                     switch (Sett.OrderType)
                     {
                         case "DHL":
-                            JsonH.DoDHLJsonMagic();
+                            JsonH.DoDHLJsonMagic(false);
                             RestH.SendDHLRestRequest(false);
                             break;
 
                         case "DHLRetoure":
-                            JsonH.DoDHLJsonMagic();
-                            RestH.SendDHLRestRequest(true);
+                            JsonH.DoDHLJsonMagic(true);
+                            RestH.SendDHLRestReturnRequest();
                             break;
 
                         case "DPD":
@@ -219,15 +219,14 @@ namespace DHL_Seife
 			}
 			else
 			{
-                /*
                 JsonH.DoDHLJsonMagic(true);
                 RestH.SendDHLRestReturnRequest();
                 Application.Exit();
                 Environment.Exit(1);
-                */
 
-                JsonH.DoDHLJsonMagic();
-                RestH.SendDHLRestRequest(false); //Takes JsonHelper as Base
+                JsonH.DoDHLJsonMagic(true);
+                //RestH.SendDHLRestRequest(false); //Takes JsonHelper as Base
+                RestH.SendDHLRestRequest(true); //Takes JsonHelper as Base
                 Application.Exit();
                 Environment.Exit(1);
 

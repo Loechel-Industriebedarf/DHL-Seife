@@ -36,6 +36,7 @@ namespace DHL_Seife.util
         public string LogfileCsv { get; set; } //Log file
         public string ProgramUser { get; set; } //User that executed the program
         public string ReceiverId { get; set; } //Id for dhl returns
+        public string ReceiverIdInt { get; set; } //Id for dhl returns
 
 		public string OrderNumber { get; set; } //The number of the order
 
@@ -113,6 +114,7 @@ namespace DHL_Seife.util
 			var dpd_soap_label = doc.Descendants("dpd_soap_label");
 			var dhl_connection_return = doc.Descendants("dhlsoapreturn");
 			var receiver_id = doc.Descendants("receiver_id");
+			var receiver_id_int = doc.Descendants("receiver_id_int");
             foreach (var foo in logfile) { Logfile = foo.Value; }
             foreach (var foo in logfilecsv) { LogfileCsv = foo.Value; }
             foreach (var foo in dbconnection) { ConnectionString = foo.Value; }
@@ -144,6 +146,7 @@ namespace DHL_Seife.util
 			foreach (var foo in dpd_soap_label) { DPDSoapLabel = foo.Value; }
 			foreach (var foo in dhl_connection_return) { DHLConnectionReturn = foo.Value; }
 			foreach (var foo in receiver_id) { ReceiverId = foo.Value; }
+			foreach (var foo in receiver_id_int) { ReceiverIdInt = foo.Value; }
         }
 	}
 }

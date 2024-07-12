@@ -173,17 +173,33 @@ namespace DHL_Seife.prog
                 {
                     dynamic dhlResponse = JObject.Parse(response.Content);
 
-                    String labelName = "retouren/" + DateTimeOffset.Now.ToString("ddMMyyyy-HHmmssfff") + "-" + Sett.ProgramUser + 
+                    try
+                    {
+                        String labelName = "retouren/" + DateTimeOffset.Now.ToString("ddMMyyyy-HHmmssfff") + "-" + Sett.ProgramUser +
                         "-DHL-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + "";
-                    String b64Label = dhlResponse.label.b64;
-                    String b64qrLabel = dhlResponse.qrLabel.b64;
-                    SaveBase64Label(b64Label, labelName + ".pdf");
-                    SaveBase64Label(b64qrLabel, labelName + ".png");
+                        String b64Label = dhlResponse.label.b64;
+                        try
+                        {
+                            String b64qrLabel = dhlResponse.qrLabel.b64;
+                            SaveBase64Label(b64qrLabel, labelName + ".png");
+                        }
+                        catch (Exception ex3)
+                        {
+                            Log.writeLog(ex3.ToString());
+                        }
+                        SaveBase64Label(b64Label, labelName + ".pdf");
 
-                    Sett.LabelTime = DateTimeOffset.Now;
-                    Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
+                        Sett.LabelTime = DateTimeOffset.Now;
+                        Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
 
-                    WriteShipmentNumber(dhlResponse.shipmentNo.Value, true);
+                        WriteShipmentNumber(dhlResponse.shipmentNo.Value, true);
+
+                    }
+                    catch(Exception ex2)
+                    {
+                        Log.writeLog(ex2.ToString());
+                    }
+                    
                 }
                 catch (Exception ex1)
                 {

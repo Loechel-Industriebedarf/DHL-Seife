@@ -28,7 +28,8 @@ namespace DHL_Seife.prog
 		public string XmlCountry = "Deutschland"; //recipient country
 		public string XmlCountryCode = "DE"; //recipient countrycode
 		public string XmlMail = ""; //recipient mail
-		public string XmlCommunicationMail = ""; //Mail that gets used for postfilals
+		public string XmlPhone = ""; //recipient mail
+        public string XmlCommunicationMail = ""; //Mail that gets used for postfilals
 		public string XmlOurNumber = "";
 		public ArrayList XmlWeightArray = new ArrayList(); //Number of shipments in a package
 		public string XmlParcelType = "V01PAK"; //Parcel type (Germany only or international)
@@ -61,7 +62,7 @@ namespace DHL_Seife.prog
                 "LSTRASSE, RSTRASSE, LPLZ, RPLZ, " +
                 "LORT, RORT, LLAND, RLAND, " +
                 "LLAENDERKZ, RLAENDERKZ, dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, " +
-                "NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, " +
+                "NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, dbo.AUFTRAGSKOPF.CODE4, " +
                 "dbo.AUFTRAGSPOS.ARTIKELNR, GEWICHT, versanddatum, " +
                 "(select count(*) from dbo.VERSANDGUT where BELEGNR = '" + Sett.OrderNumber + "' " +
                 "AND dbo.VERSANDGUT.versanddatum > '" + Sett.StartTime.AddHours(-12).ToString("dd.MM.yyyy HH:mm:ss") + "') as PSCount " +
@@ -200,6 +201,8 @@ namespace DHL_Seife.prog
 					String orderAmount = dr["MENGE_BESTELLT"].ToString();
 
                     XmlStatus = dr["KOPFSTATUS"].ToString();
+
+                    XmlPhone = dr["CODE4"].ToString();
 
                     try
 					{
