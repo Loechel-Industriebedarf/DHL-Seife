@@ -32,6 +32,7 @@ namespace DHL_Seife.prog
         public string XmlCommunicationMail = ""; //Mail that gets used for postfilals
 		public string XmlOurNumber = "";
 		public ArrayList XmlWeightArray = new ArrayList(); //Number of shipments in a package
+        public ArrayList XmlRowNumArray = new ArrayList(); //Only first row of every shipment should be considered
 		public string XmlParcelType = "V01PAK"; //Parcel type (Germany only or international)
 		public string XmlShippmentDate = DateTime.Now.ToString("yyyy-MM-dd"); //YYYY-MM-DD
 		public string RowId = ""; //Row ID for insert 
@@ -63,7 +64,8 @@ namespace DHL_Seife.prog
                 "LORT, RORT, LLAND, RLAND, " +
                 "LLAENDERKZ, RLAENDERKZ, dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, " +
                 "NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, dbo.AUFTRAGSKOPF.CODE4, " +
-                "dbo.AUFTRAGSPOS.ARTIKELNR, GEWICHT, versanddatum, " +
+                "dbo.AUFTRAGSPOS.ARTIKELNR, GEWICHT, versanddatum, dbo.POSPACKSTUECKE.VERSANDGUTNR, " +
+                "ROW_NUMBER() OVER(PARTITION BY dbo.POSPACKSTUECKE.VERSANDGUTNR ORDER BY dbo.POSPACKSTUECKE.VERSANDGUTNR DESC) rn, " +
                 "(select count(*) from dbo.VERSANDGUT where BELEGNR = '" + Sett.OrderNumber + "' " +
                 "AND dbo.VERSANDGUT.versanddatum > '" + Sett.StartTime.AddHours(-12).ToString("dd.MM.yyyy HH:mm:ss") + "') as PSCount " +
                 "FROM dbo.AUFTRAGSKOPF, dbo.AUFTRAGSPOS " +
@@ -228,6 +230,7 @@ namespace DHL_Seife.prog
                             if(System.Math.Abs(timeSinceLastPackage.Hours) < 12)
                             {
                                 XmlWeightArray.Add(dr["GEWICHT"].ToString());
+                                XmlRowNumArray.Add(dr["rn"].ToString());
                                 XmlWeight = dr["GEWICHT"].ToString();
                                 addPackaging = false;
                             }         

@@ -219,14 +219,14 @@ namespace DHL_Seife
 			}
 			else
 			{
-                JsonH.DoDHLJsonMagic(true);
-                RestH.SendDHLRestReturnRequest();
+                JsonH.DoDHLJsonMagic(false);
+                //RestH.SendDHLRestRequest(false); //Takes JsonHelper as Base
+                RestH.SendDHLRestRequest(true); //Takes JsonHelper as Base
                 Application.Exit();
                 Environment.Exit(1);
 
                 JsonH.DoDHLJsonMagic(true);
-                //RestH.SendDHLRestRequest(false); //Takes JsonHelper as Base
-                RestH.SendDHLRestRequest(true); //Takes JsonHelper as Base
+                RestH.SendDHLRestReturnRequest();
                 Application.Exit();
                 Environment.Exit(1);
 

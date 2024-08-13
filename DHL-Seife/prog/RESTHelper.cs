@@ -185,7 +185,7 @@ namespace DHL_Seife.prog
                         }
                         catch (Exception ex3)
                         {
-                            Log.writeLog(ex3.ToString());
+                            Log.writeLog("Internationale Retoure ohne QR-Code...");
                         }
                         SaveBase64Label(b64Label, labelName + ".pdf");
 

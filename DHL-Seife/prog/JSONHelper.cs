@@ -77,18 +77,22 @@ namespace DHL_Seife.prog
                 //Do we ship multiple packages for the same person at once?
                 if (Convert.ToDouble(SqlH.XmlPsCount) > 1)
                 {
-                    for (int i = 0; i < Convert.ToDouble(SqlH.XmlPsCount); i++)
+                    int currentPackNum = 0;
+                    for (int i = 0; i < SqlH.XmlRowNumArray.Count; i++)
                     {
-                        String weightbuffer = SqlH.XmlWeightArray[i].ToString();
-                        if (Convert.ToDouble(weightbuffer) > 30) { weightbuffer = "30"; }
-                        dJson.details_weight_value = weightbuffer.Replace(",", ".");
+                        //Only add, if rownumber is "1" - don't add duplicates
+                        if (SqlH.XmlRowNumArray[i].ToString() == "1")
+                        {
+                            String weightbuffer = SqlH.XmlWeightArray[i].ToString();
+                            if (Convert.ToDouble(weightbuffer) > 30) { weightbuffer = "30"; }
+                            dJson.details_weight_value = weightbuffer.Replace(",", ".");
 
-                        int currentPackNum = i + 1;
-                        dJson.refNo = SqlH.XmlOurNumber + " - Paket " + currentPackNum + " von " + Convert.ToDouble(SqlH.XmlPsCount);
+                            currentPackNum++;
+                            dJson.refNo = SqlH.XmlOurNumber + " - Paket " + currentPackNum + " von " + Convert.ToDouble(SqlH.XmlPsCount);
 
-                        if (isReturn) { dReJson.GenerateJson(dJson); }
-                        else { dJson.GenerateJson(); }
-                        
+                            if (isReturn) { dReJson.GenerateJson(dJson); }
+                            else { dJson.GenerateJson(); }
+                        }
                     }
                 }
                 else
