@@ -80,6 +80,7 @@
     <Compile Include="prog\json\details\DHLDetailsDimJson.cs" />
     <Compile Include="prog\json\details\DHLDetailsWeightJson.cs" />
     <Compile Include="prog\json\DHLConsigneeJson.cs" />
+    <Compile Include="prog\json\DHLServicesJson.cs" />
     <Compile Include="prog\json\DHLDetailsJson.cs" />
     <Compile Include="prog\json\DHLJson.cs" />
     <Compile Include="prog\JSONHelper.cs" />

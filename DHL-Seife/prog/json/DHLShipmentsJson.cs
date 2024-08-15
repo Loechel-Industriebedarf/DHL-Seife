@@ -16,8 +16,9 @@ namespace DHL_Seife.prog.json
         public DHLShipperJson shipper;
         public DHLConsigneeJson consignee;
         public DHLDetailsJson details;
+        public DHLServicesJson services;
 
-        public DHLShipmentsJson(string product, string billingNumber, string refNo, string creationSoftware, string shipDate, DHLShipperJson shipper, DHLConsigneeJson consignee, DHLDetailsJson details)
+        public DHLShipmentsJson(string product, string billingNumber, string refNo, string creationSoftware, string shipDate, DHLShipperJson shipper, DHLConsigneeJson consignee, DHLDetailsJson details, DHLServicesJson services)
         {
             this.product = product;
             this.billingNumber = billingNumber;
@@ -27,6 +28,7 @@ namespace DHL_Seife.prog.json
             this.shipper = shipper;
             this.consignee = consignee;
             this.details = details;
+            this.services = services;
         }
     }
 }

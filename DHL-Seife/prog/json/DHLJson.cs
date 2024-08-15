@@ -22,6 +22,7 @@ namespace DHL_Seife.prog
         public DHLShipperJson shipper;
         public DHLConsigneeJson consignee;
         public DHLDetailsJson details;
+        public DHLServicesJson services;
 
         public String product = "V01PAK"; //default value for package in germany
         public String billingNumber = "";
@@ -101,8 +102,12 @@ namespace DHL_Seife.prog
                 details_dim_uom, details_dim_height, details_dim_length, details_dim_width, details_weight_uom, details_weight_value
             );
 
+            services = new DHLServicesJson(
+                consignee_email
+            );
+
             shipments.Add(new DHLShipmentsJson(
-                product, billingNumber, refNo, creationSoftware, shipDate, shipper, consignee, details
+                product, billingNumber, refNo, creationSoftware, shipDate, shipper, consignee, details, services
             ));
         }
 
