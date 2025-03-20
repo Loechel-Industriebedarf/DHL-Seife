@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Net.Mail;
 
 namespace DHL_Seife.prog
 {
@@ -29,7 +30,7 @@ namespace DHL_Seife.prog
 		public string XmlCountryCode = "DE"; //recipient countrycode
 		public string XmlMail = ""; //recipient mail
 		public string XmlPhone = ""; //recipient mail
-        public string XmlCommunicationMail = ""; //Mail that gets used for postfilals
+        public string XmlCommunicationMail = ""; //Mail that gets used for postfilials
 		public string XmlOurNumber = "";
 		public ArrayList XmlWeightArray = new ArrayList(); //Number of shipments in a package
         public ArrayList XmlRowNumArray = new ArrayList(); //Only first row of every shipment should be considered
@@ -62,7 +63,7 @@ namespace DHL_Seife.prog
                 "RFIRMA1, RFIRMA2, DCOMPANY3, ICOMPANY3, " +
                 "LSTRASSE, RSTRASSE, LPLZ, RPLZ, " +
                 "LORT, RORT, LLAND, RLAND, " +
-                "LLAENDERKZ, RLAENDERKZ, dbo.AUFTRAGSKOPF.CODE3, dbo.AUFTRAGSKOPF.BELEGNR, " +
+                "LLAENDERKZ, RLAENDERKZ, dbo.AUFTRAGSKOPF.CODE3, dbo.AUFTRAGSKOPF.CODE1, dbo.AUFTRAGSKOPF.BELEGNR, " +
                 "NetWeightPerSalesUnit, MENGE_BESTELLT, dbo.AUFTRAGSPOS.STATUS, dbo.AUFTRAGSPOS.FARTIKELNR, dbo.AUFTRAGSKOPF.CODE4, " +
                 "dbo.AUFTRAGSPOS.ARTIKELNR, GEWICHT, versanddatum, dbo.POSPACKSTUECKE.VERSANDGUTNR, " +
                 "ROW_NUMBER() OVER(PARTITION BY dbo.POSPACKSTUECKE.VERSANDGUTNR ORDER BY dbo.POSPACKSTUECKE.VERSANDGUTNR DESC) rn, " +
@@ -189,13 +190,18 @@ namespace DHL_Seife.prog
 						XmlCountryCode = "DE";
 					}
 
-					//If the "CODE3" field contains an @, it is an e-mail adress.
-					//If the "CODE3" field contains an amazon adress, ignore it; Amazon blocks DHL mails
-					if (dr["CODE3"].ToString().Contains('@') && !dr["CODE3"].ToString().Contains("amazon"))
-					{
+                    //If the "CODE3" field contains an @, it is an e-mail adress.
+                    //If the "CODE3" field contains an amazon adress, ignore it; Amazon blocks DHL mails
+                    if (IsValidEmail(dr["CODE1"].ToString()))
+                    {
+                        XmlMail = dr["CODE1"].ToString().Trim();
+                        XmlCommunicationMail = dr["CODE1"].ToString().Trim();
+                    }
+                    else if (IsValidEmail(dr["CODE3"].ToString()))
+                    {
 						XmlMail = dr["CODE3"].ToString().Trim();
-					}
-					XmlCommunicationMail = dr["CODE3"].ToString().Trim();
+                        XmlCommunicationMail = dr["CODE3"].ToString().Trim();
+                    }                    
 
 
 					XmlOurNumber = dr["BELEGNR"].ToString();
@@ -274,12 +280,41 @@ namespace DHL_Seife.prog
 			}
 		}
 
-		/// <summary>
-		/// Figures out, if the input street contains a street number and returns the street name and number seperatly
-		/// </summary>
-		/// <param name="dr">An OdbcDataReader object.</param>
-		/// <param name="streetDef">A string, that tells the program if it should look for RSTREET or LSTREET.</param>
-		public void GetStreetAndStreetnumber(string streetDef)
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public bool IsValidEmail(string email)
+        {
+            try
+            {
+                // Prüfen mit MailAddress
+                var addr = new MailAddress(email);
+                if (addr.Address != email) return false;
+
+                // Zusätzliche Prüfung auf TLD mit Regex
+                string pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+                return Regex.IsMatch(email, pattern);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// Figures out, if the input street contains a street number and returns the street name and number seperatly
+        /// </summary>
+        /// <param name="dr">An OdbcDataReader object.</param>
+        /// <param name="streetDef">A string, that tells the program if it should look for RSTREET or LSTREET.</param>
+        public void GetStreetAndStreetnumber(string streetDef)
 		{
 			string streetDefinition = streetDef.Trim(); //String that contains the street name + street number
 			XmlStreetnumber = "";
