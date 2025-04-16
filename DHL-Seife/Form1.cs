@@ -159,6 +159,9 @@ namespace DHL_Seife
 			{
                 //logTextToFile("> Less than 3 seconds passed! Double run!");
                 Log.writeLog("> Doppelte Ausführung! Bitte 3 Sekunden warten.");
+                Log.writeLog("Letzte Ausführung: " + lastrun.ToString());
+                Log.writeLog("Derzeitige Uhrzeit: " + now.ToString());
+                Log.writeLog("Differenz in Sekunden: " + diff.ToString());
                 Application.Exit();
                 Environment.Exit(1);
                 
