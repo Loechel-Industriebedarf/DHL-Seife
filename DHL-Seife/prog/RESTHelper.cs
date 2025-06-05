@@ -177,13 +177,23 @@ namespace DHL_Seife.prog
                     {
                         String labelName = "retouren/" + DateTimeOffset.Now.ToString("ddMMyyyy-HHmmssfff") + "-" + Sett.ProgramUser +
                         "-DHL-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + "";
-                        String b64Label = dhlResponse.label.b64;
+                        String b64Label = "";
+
+                        try
+                        {
+                            b64Label = dhlResponse.label.b64;
+                        }
+                        catch (Exception ex3)
+                        {
+                            Log.writeLog("Fehler beim Generieren des Labels!");
+                            Log.writeLog(string.Join(", ", dhlResponse));
+                        }
                         try
                         {
                             String b64qrLabel = dhlResponse.qrLabel.b64;
                             SaveBase64Label(b64qrLabel, labelName + ".png");
                         }
-                        catch (Exception ex3)
+                        catch (Exception ex4)
                         {
                             Log.writeLog("Internationale Retoure ohne QR-Code...");
                         }

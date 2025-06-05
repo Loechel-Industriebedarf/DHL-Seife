@@ -32,7 +32,16 @@ namespace DHL_Seife.prog
 		public string XmlPhone = ""; //recipient mail
         public string XmlCommunicationMail = ""; //Mail that gets used for postfilials
 		public string XmlOurNumber = "";
-		public ArrayList XmlWeightArray = new ArrayList(); //Number of shipments in a package
+
+        public string XmlNeutralSender = ""; //recipient name
+        public string XmlNeutralSender02 = ""; //recipient name (second line)
+        public string XmlNeutralSender03 = ""; //recipient name (third line)
+        public string XmlNeutralStreet = ""; //recipient street
+        public string XmlNeutralStreetnumber = ""; //recipient streetnumber
+        public string XmlNeutralPlz = ""; //recipient plz
+        public string XmlNeutralCity = ""; //recipient city
+
+        public ArrayList XmlWeightArray = new ArrayList(); //Number of shipments in a package
         public ArrayList XmlRowNumArray = new ArrayList(); //Only first row of every shipment should be considered
 		public string XmlParcelType = "V01PAK"; //Parcel type (Germany only or international)
 		public string XmlShippmentDate = DateTime.Now.ToString("yyyy-MM-dd"); //YYYY-MM-DD
@@ -107,13 +116,19 @@ namespace DHL_Seife.prog
 					if (String.IsNullOrEmpty(dr["LFIRMA1"].ToString())) { XmlRecipient = RemoveSpecialCharacters(dr["RFIRMA1"].ToString()); }
 					else { XmlRecipient = RemoveSpecialCharacters(dr["LFIRMA1"].ToString()); }
 
-					if (String.IsNullOrEmpty(dr["LFIRMA2"].ToString())) { XmlRecipient02 = RemoveSpecialCharacters(dr["RFIRMA2"].ToString()); }
+                    XmlNeutralSender = RemoveSpecialCharacters(dr["RFIRMA1"].ToString());
+
+                    if (String.IsNullOrEmpty(dr["LFIRMA2"].ToString())) { XmlRecipient02 = RemoveSpecialCharacters(dr["RFIRMA2"].ToString()); }
 					else { XmlRecipient02 = RemoveSpecialCharacters(dr["LFIRMA2"].ToString()); }
 
-					if (String.IsNullOrEmpty(dr["DCOMPANY3"].ToString())) { XmlRecipient03 = RemoveSpecialCharacters(dr["ICOMPANY3"].ToString()); }
+                    XmlNeutralSender02 = RemoveSpecialCharacters(dr["RFIRMA2"].ToString());
+
+                    if (String.IsNullOrEmpty(dr["DCOMPANY3"].ToString())) { XmlRecipient03 = RemoveSpecialCharacters(dr["ICOMPANY3"].ToString()); }
 					else { XmlRecipient03 = RemoveSpecialCharacters(dr["DCOMPANY3"].ToString()); }
 
-					if (String.IsNullOrEmpty(dr["LSTRASSE"].ToString()))
+                    XmlNeutralSender03 = RemoveSpecialCharacters(dr["ICOMPANY3"].ToString());
+
+                    if (String.IsNullOrEmpty(dr["LSTRASSE"].ToString()))
 					{
                         //Obsolete
                         //GetStreetAndStreetnumber(dr, "RSTRASSE");
@@ -125,12 +140,17 @@ namespace DHL_Seife.prog
                         //GetStreetAndStreetnumber(dr, "LSTRASSE");
                         XmlStreet = dr["LSTRASSE"].ToString().Trim();
                     }
+                    XmlNeutralStreet = dr["RSTRASSE"].ToString().Trim();
+
                     XmlStreetnumber = null;
+                    XmlNeutralStreetnumber = null;
 
                     if (String.IsNullOrEmpty(dr["LPLZ"].ToString())) { XmlPlz = dr["RPLZ"].ToString().Trim(); }
 					else { XmlPlz = dr["LPLZ"].ToString().Trim(); }
-					//Check, if zip code contains letters
-					if (Regex.Matches(XmlPlz, @"[a-zA-Z]").Count > 0)
+                    XmlNeutralPlz = dr["RPLZ"].ToString().Trim();
+
+                    //Check, if zip code contains letters
+                    if (Regex.Matches(XmlPlz, @"[a-zA-Z]").Count > 0)
 					{
 						//For zips like 5051DV AND D-12345
 						if (!XmlPlz.ToLower().Contains(' '))
@@ -166,8 +186,10 @@ namespace DHL_Seife.prog
 					if (String.IsNullOrEmpty(dr["LORT"].ToString())) { XmlCity = RemoveSpecialCharacters(dr["RORT"].ToString().Trim()); }
 					else { XmlCity = RemoveSpecialCharacters(dr["LORT"].ToString().Trim()); }
 
-					//Read delivery country; If it is emty, set it to "Deutschland"
-					if (!String.IsNullOrEmpty(dr["LLAND"].ToString())) { XmlCountry = dr["LLAND"].ToString().Trim(); }
+                    XmlNeutralCity = RemoveSpecialCharacters(dr["RORT"].ToString().Trim());
+
+                    //Read delivery country; If it is emty, set it to "Deutschland"
+                    if (!String.IsNullOrEmpty(dr["LLAND"].ToString())) { XmlCountry = dr["LLAND"].ToString().Trim(); }
 					else if (!String.IsNullOrEmpty(dr["RLAND"].ToString().Trim()))
 					{
 						XmlCountry = dr["RLAND"].ToString().Trim();

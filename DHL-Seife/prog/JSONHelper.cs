@@ -69,6 +69,7 @@ namespace DHL_Seife.prog
                 RefactorRecepientAddress();
                 RefactorWeight();
                 RefactorIfMercateo();
+                RefactorIfNeutral();
                 SwitchCountryCode(); //DE => DEU etc.
                 CheckForPackstation();
                 CheckForRetail(); //Postfiliale
@@ -332,6 +333,41 @@ namespace DHL_Seife.prog
                 dJson.shipper_name3 = "Löchel Industriebedarf";
             }
         }
+
+        /// <summary>
+        /// Refactors some of the inputs, so we can use it correctly.
+        /// </summary>
+        private void RefactorIfNeutral()
+        {
+            if (SqlH.XmlOrderType.Equals("28"))
+            {
+                dJson.shipper_name1 = SqlH.XmlNeutralSender;
+                if (String.IsNullOrEmpty(SqlH.XmlNeutralSender02))
+                {
+                    dJson.shipper_name2 = null;
+                }
+                else
+                {
+                    dJson.shipper_name2 = SqlH.XmlNeutralSender02;
+                }
+                if (String.IsNullOrEmpty(SqlH.XmlNeutralSender03))
+                {
+                    dJson.shipper_name3 = null;
+                }
+                else
+                {
+                    dJson.shipper_name3 = SqlH.XmlNeutralSender03;
+                }
+                dJson.shipper_addressStreet = SqlH.XmlNeutralStreet;
+                dJson.shipper_addressHouse = SqlH.XmlNeutralStreetnumber;
+                dJson.shipper_postalCode = SqlH.XmlNeutralPlz;
+                dJson.shipper_city = SqlH.XmlNeutralCity;
+                dJson.shipper_country = "DEU";
+                dJson.shipper_email = null;
+                dJson.shipper_phone = null;
+            }
+        }
+
 
         /// <summary>
 		/// 
