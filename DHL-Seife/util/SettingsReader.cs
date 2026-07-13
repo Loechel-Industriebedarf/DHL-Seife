@@ -59,8 +59,16 @@ namespace DHL_Seife.util
 		public string DPDCustomerNumber { get; set; } //DPD customer number
 		public string DPDSoapAuth { get; set; } //Path to authservice
 		public string DPDSoapLabel { get; set; } //Path to storeOrders / label printing service
-		public string DPDAuthToken { get; set; } //The number of the order
+		public string DPDAuthToken { get; set; } //The auth token
 		public string DPDDepotNumber { get; set; } //The number of the order
+
+        //GLS specific
+        public string GLSAuthToken { get; set; } //The number of the order
+        public string GLSAuthUrl { get; set; }
+        public string GLSShipmentUrl { get; set; }
+        public string GLSContactId { get; set; }
+        public string GLSClientId { get; set; }
+        public string GLSClientSecret { get; set; }
 
         public DateTimeOffset StartTime { get; set; }
         public DateTimeOffset LabelTime { get; set; }
@@ -115,6 +123,11 @@ namespace DHL_Seife.util
 			var dhl_connection_return = doc.Descendants("dhlsoapreturn");
 			var receiver_id = doc.Descendants("receiver_id");
 			var receiver_id_int = doc.Descendants("receiver_id_int");
+			var gls_auth_url = doc.Descendants("gls_auth_url");
+			var gls_shipment_url = doc.Descendants("gls_shipment_url");
+			var gls_contact_id = doc.Descendants("gls_contact_id");
+			var gls_client_id = doc.Descendants("gls_client_id");
+			var gls_client_secret = doc.Descendants("gls_client_secret");
             foreach (var foo in logfile) { Logfile = foo.Value; }
             foreach (var foo in logfilecsv) { LogfileCsv = foo.Value; }
             foreach (var foo in dbconnection) { ConnectionString = foo.Value; }
@@ -147,6 +160,11 @@ namespace DHL_Seife.util
 			foreach (var foo in dhl_connection_return) { DHLConnectionReturn = foo.Value; }
 			foreach (var foo in receiver_id) { ReceiverId = foo.Value; }
 			foreach (var foo in receiver_id_int) { ReceiverIdInt = foo.Value; }
+			foreach (var foo in gls_auth_url) { GLSAuthUrl = foo.Value; }
+			foreach (var foo in gls_shipment_url) { GLSShipmentUrl = foo.Value; }
+			foreach (var foo in gls_contact_id) { GLSContactId = foo.Value; }
+			foreach (var foo in gls_client_id) { GLSClientId = foo.Value; }
+			foreach (var foo in gls_client_secret) { GLSClientSecret = foo.Value; }
         }
 	}
 }

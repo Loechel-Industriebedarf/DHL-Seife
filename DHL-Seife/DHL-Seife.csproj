@@ -80,6 +80,12 @@
     <Compile Include="prog\json\details\DHLDetailsDimJson.cs" />
     <Compile Include="prog\json\details\DHLDetailsWeightJson.cs" />
     <Compile Include="prog\json\DHLConsigneeJson.cs" />
+    <Compile Include="prog\json\GLSShipmentsJson.cs" />
+    <Compile Include="prog\json\GLSConsigneeJson.cs" />
+    <Compile Include="prog\json\GLSPrintingOptions.cs" />
+    <Compile Include="prog\json\GLSShipmentUnitJson.cs" />
+    <Compile Include="prog\json\GLSShipperJson.cs" />
+    <Compile Include="prog\json\GLSJson.cs" />
     <Compile Include="prog\json\DHLServicesJson.cs" />
     <Compile Include="prog\json\DHLDetailsJson.cs" />
     <Compile Include="prog\json\DHLJson.cs" />

@@ -112,17 +112,62 @@ namespace DHL_Seife.prog
             
         }
 
-            private void SerializeJson()
-        {
-            Json = JsonConvert.SerializeObject(dJson, Formatting.Indented, new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore
-            });
 
-            //Debug write to file
-            using (StreamWriter writer = new StreamWriter("json.json"))
+        public void DoGLSJsonMagic()
+        {
+            try
             {
-                writer.WriteLine(Json);
+                GLSJson gJson = new GLSJson(Sett);
+
+                gJson.ContactID = Sett.GLSContactId;
+                gJson.ConsigneeID = SqlH.XmlRecipient;
+
+                gJson.Name1 = SqlH.XmlRecipient;
+                gJson.Name2 = SqlH.XmlRecipient02;
+                gJson.Name3 = SqlH.XmlRecipient03;
+                gJson.Street = SqlH.XmlStreet;
+                gJson.ZIPCode = SqlH.XmlPlz;
+                gJson.City = SqlH.XmlCity;
+                gJson.CountryCode = SqlH.XmlCountryCode;
+                gJson.ContactPerson = SqlH.XmlRecipient;
+                gJson.eMail = SqlH.XmlMail;
+                gJson.MobilePhoneNumber = SqlH.XmlPhone;
+
+                gJson.ShipmentReferenceStr = SqlH.XmlOurNumber;
+
+                gJson.Weight = Convert.ToDouble(SqlH.XmlWeight);
+
+                gJson.GenerateJson();
+                SerializeJson(gJson);
+            }
+            catch (Exception ex)
+            {
+                Log.writeLog(ex.ToString());
+            }
+        }
+
+
+        private void SerializeJson()
+        {
+            SerializeJson(dJson);
+        }
+        private void SerializeJson(dynamic jsonObj)
+        {
+            try { 
+                Json = JsonConvert.SerializeObject(jsonObj, Formatting.Indented, new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                });
+
+                //Debug write to file
+                using (StreamWriter writer = new StreamWriter("json.json"))
+                {
+                    writer.WriteLine(Json);
+                }
+            }
+            catch(Exception ex)
+            {
+                Log.writeLog(ex.ToString());
             }
         }
 
@@ -328,7 +373,7 @@ namespace DHL_Seife.prog
         {
             if (SqlH.XmlOrderType.Equals("10"))
             {
-                dJson.shipper_name1 = "Mercateo Deutschland AG";
+                dJson.shipper_name1 = "Unite Procurement Deutschland AG";
                 dJson.shipper_name2 = "c/o Auslieferungslager";
                 dJson.shipper_name3 = "Löchel Industriebedarf";
             }

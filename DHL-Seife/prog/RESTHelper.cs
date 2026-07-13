@@ -45,6 +45,10 @@ namespace DHL_Seife.prog
             JsonH = json;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="isReturn"></param>
         public void SendDHLRestRequest(Boolean isReturn)
         {
             try
@@ -144,6 +148,86 @@ namespace DHL_Seife.prog
                 AnotherApiConnectionTry("DHL", isReturn);
             }
 
+        }
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void GLSAuth()
+        {
+            //Use TSL 1.2
+            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+            using (var client = new HttpClient())
+            {
+                var content = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("grant_type", "client_credentials"),
+                    new KeyValuePair<string, string>("client_id", Sett.GLSClientId),
+                    new KeyValuePair<string, string>("client_secret", Sett.GLSClientSecret)
+                });
+
+                var response = client.PostAsync(Sett.GLSAuthUrl, content).Result;
+                response.EnsureSuccessStatusCode();
+
+                var json = response.Content.ReadAsStringAsync().Result;
+
+                JObject obj = JObject.Parse(json);
+
+                Sett.GLSAuthToken = obj["access_token"].ToString();
+                //Log.writeLog("GLS Token: " + Sett.GLSAuthToken.ToString(), true, false);
+            }
+        }
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void SendGLSRestRequest()
+        {
+            try {
+                //Use TSL 1.2
+                System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+                //Test Json
+                //JsonH.Json = "{\r\n    \"Shipment\": {\r\n        \"ShipmentReference\": [\r\n      \"2620292005\"\r\n    ],\r\n        \"Product\":\"PARCEL\",\r\n        \"Consignee\":{\r\n            \"ConsigneeID\":\"1234567890\",\r\n            \"Address\":{\r\n                \"Name1\":\"Tim Test\",\r\n                \"Name2\":\"\",\r\n                \"Name3\":\"\",\r\n                \"CountryCode\":\"DE\",\r\n                \"ZIPCode\":\"65760\",\r\n                \"City\":\"Testingen\",\r\n                \"Street\":\"Testallee\",\r\n                \"eMail\":\"tim.test@gls.de\",\r\n                \"ContactPerson\":\"Laura Test\",\r\n                \"MobilePhoneNumber\":\"004912345678910\",\r\n                \"FixedLinePhonenumber\":\"004912345678910\"\r\n            }\r\n        },\r\n        \"Shipper\": {\r\n            \"ContactID\": \"276a45fYqi\"\r\n        },\r\n        \"ShipmentUnit\": [\r\n            {\r\n                \"Weight\": 5\r\n            }\r\n        ]\r\n    },\r\n    \"PrintingOptions\":{\r\n        \"ReturnLabels\":{\r\n            \"TemplateSet\":\"NONE\",\r\n            \"LabelFormat\":\"PDF\"\r\n        }\r\n    }\r\n}";
+                //JsonH.Json = File.ReadAllText(@"json_test.json");
+
+                var client = new RestClient(Sett.GLSShipmentUrl);
+                var request = new RestRequest(Method.POST);
+                request.AddHeader("Content-Type", "application/glsVersion1+json");
+                request.AddHeader("Authorization", "Bearer " + Sett.GLSAuthToken.ToString());
+                request.AddHeader("Accept", "application/glsVersion1+json, application/json");
+                request.AddHeader("Allow", "GET, PUT, POST, DELETE");
+                request.AddParameter("application/glsVersion1+json", JsonH.Json, ParameterType.RequestBody);
+
+                IRestResponse response = client.Execute(request);
+
+                dynamic glsResponse = JObject.Parse(response.Content);
+
+                //Label herunterladen
+                String labelName = "labels/" + DateTimeOffset.Now.ToString("ddMMyyyy-HHmmssfff") + "-" + Sett.ProgramUser +
+                            "-GLS-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + "";
+                String b64Label = "";
+
+                b64Label = glsResponse.CreatedShipment.PrintData[0].Data;
+
+                SaveBase64Label(b64Label, labelName + ".pdf");
+
+                Sett.LabelTime = DateTimeOffset.Now;
+                Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
+
+                WriteShipmentNumber(glsResponse.CreatedShipment.ParcelData[0].TrackID.Value, false);
+
+                //Log.writeLog("Shipment Result: " + glsResponse, true, false);
+            }
+            catch(Exception ex)
+            {
+                Log.writeLog(ex.ToString());
+            }
         }
 
 
@@ -276,9 +360,12 @@ namespace DHL_Seife.prog
             if (Sett.OrderType.Contains("DPD"))
             {
                 sql_carrier = sql_carrier.Replace("DHL", "DPD");
+            } else if (Sett.OrderType.Contains("DPD"))
+            {
+                sql_carrier = sql_carrier.Replace("DHL", "GLS");
             }
 
-            try
+                try
             {
                 OdbcConnection conn = new OdbcConnection(Sett.ConnectionString);
                 conn.Open();

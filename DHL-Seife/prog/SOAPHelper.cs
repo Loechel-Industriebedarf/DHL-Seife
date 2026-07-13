@@ -6,9 +6,12 @@ using System.Data.Odbc;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Newtonsoft.Json.Linq;
+
 
 namespace DHL_Seife.prog
 {
@@ -21,6 +24,7 @@ namespace DHL_Seife.prog
         private static HttpWebRequest WebRequest;
 
         static int apiConnectTries = 0; //If the connection to the api fails, it should try again and increment this counter.
+        private object httpClient;
 
 
         /// <summary>
@@ -238,11 +242,14 @@ namespace DHL_Seife.prog
 
 
 
-		/// <summary>
-		/// The webrequest to get the authtoken.
-		/// </summary>
-		/// <param name="endPoint">The endpoint that should be used for the request (Auth, label creation etc.)</param>
-		private HttpWebRequest CreateDPDWebRequest(String endPoint)
+
+
+
+        /// <summary>
+        /// The webrequest to get the authtoken.
+        /// </summary>
+        /// <param name="endPoint">The endpoint that should be used for the request (Auth, label creation etc.)</param>
+        private HttpWebRequest CreateDPDWebRequest(String endPoint)
 		{
 			try
 			{

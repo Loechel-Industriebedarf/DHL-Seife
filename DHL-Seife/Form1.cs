@@ -120,6 +120,12 @@ namespace DHL_Seife
                             SoapH.SendDPDSoapRequest();
                             break;
 
+                        case "GLS":
+                            RestH.GLSAuth();
+                            JsonH.DoGLSJsonMagic();
+                            RestH.SendGLSRestRequest();
+                            break;
+
                         //Default -> DHL
                         default:
                             JsonH.DoDHLJsonMagic();
@@ -222,6 +228,13 @@ namespace DHL_Seife
 			}
 			else
 			{
+                //GLS Test
+                RestH.GLSAuth();
+                JsonH.DoGLSJsonMagic();
+                RestH.SendGLSRestRequest();
+                Application.Exit();
+                Environment.Exit(1);
+
                 JsonH.DoDHLJsonMagic(false);
                 //RestH.SendDHLRestRequest(false); //Takes JsonHelper as Base
                 RestH.SendDHLRestRequest(true); //Takes JsonHelper as Base
