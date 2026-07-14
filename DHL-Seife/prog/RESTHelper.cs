@@ -360,7 +360,7 @@ namespace DHL_Seife.prog
             if (Sett.OrderType.Contains("DPD"))
             {
                 sql_carrier = sql_carrier.Replace("DHL", "DPD");
-            } else if (Sett.OrderType.Contains("DPD"))
+            } else if (Sett.OrderType.Contains("GLS"))
             {
                 sql_carrier = sql_carrier.Replace("DHL", "GLS");
             }

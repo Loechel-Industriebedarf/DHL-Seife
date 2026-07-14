@@ -37,6 +37,14 @@ namespace DHL_Seife.prog
 
         //Consignee
         public String ConsigneeID = null;
+        public String AlternativeShipperAddressName1 = null;
+        public String AlternativeShipperAddressName2 = null;
+        public String AlternativeShipperAddressName3 = null;
+        public String AlternativeShipperAddressCountryCode = null;
+        public String AlternativeShipperAddressCity = null;
+        public String AlternativeShipperAddressStreet = null;
+        public String AlternativeShipperAddressZIPCode = null;
+
         //In Address
         public String Name1 = null;
         public String Name2 = null;
@@ -77,8 +85,10 @@ namespace DHL_Seife.prog
                     ContactPerson, eMail, MobilePhoneNumber
                 );
 
+                //If Mercateo: Different shipping address
                 Shipper = new GLSShipperJson(
-                    ContactID
+                    ContactID, AlternativeShipperAddressName1, AlternativeShipperAddressName2, AlternativeShipperAddressName3,
+                    AlternativeShipperAddressCountryCode, AlternativeShipperAddressCity, AlternativeShipperAddressStreet, AlternativeShipperAddressZIPCode
                 );
 
                 ShipmentUnit.Add(new Dictionary<string, Double>

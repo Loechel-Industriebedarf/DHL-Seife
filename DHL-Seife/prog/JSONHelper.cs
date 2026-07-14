@@ -32,8 +32,8 @@ namespace DHL_Seife.prog
             Sett = settingsBuffer;
             Log = lw;
             SqlH = sql;
-            dJson =  new DHLJson(Sett);
-            dReJson =  new DHLReturnJson(Sett);
+            dJson = new DHLJson(Sett);
+            dReJson = new DHLReturnJson(Sett);
         }
 
 
@@ -109,7 +109,7 @@ namespace DHL_Seife.prog
             {
                 Log.writeLog(ex.ToString());
             }
-            
+
         }
 
 
@@ -135,7 +135,18 @@ namespace DHL_Seife.prog
 
                 gJson.ShipmentReferenceStr = SqlH.XmlOurNumber;
 
-                gJson.Weight = Convert.ToDouble(SqlH.XmlWeight);
+                gJson.Weight = Convert.ToDouble(SqlH.XmlWeight) + 0.3;
+
+                if (SqlH.XmlOrderType.Equals("10"))
+                {
+                    gJson.AlternativeShipperAddressName1 = "Unite Procurement Deutschland AG";
+                    gJson.AlternativeShipperAddressName2 = "c/o Auslieferungslager";
+                    gJson.AlternativeShipperAddressName3 = "Löchel Industriebedarf";
+                    gJson.AlternativeShipperAddressCountryCode = "DE";
+                    gJson.AlternativeShipperAddressCity = "Köthen";
+                    gJson.AlternativeShipperAddressStreet = "Museumsgasse 4-5";
+                    gJson.AlternativeShipperAddressZIPCode = "06366";
+                }
 
                 gJson.GenerateJson();
                 SerializeJson(gJson);
@@ -153,7 +164,7 @@ namespace DHL_Seife.prog
         }
         private void SerializeJson(dynamic jsonObj)
         {
-            try { 
+            try {
                 Json = JsonConvert.SerializeObject(jsonObj, Formatting.Indented, new JsonSerializerSettings
                 {
                     NullValueHandling = NullValueHandling.Ignore
@@ -165,7 +176,7 @@ namespace DHL_Seife.prog
                     writer.WriteLine(Json);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.writeLog(ex.ToString());
             }
@@ -185,7 +196,7 @@ namespace DHL_Seife.prog
             }
         }
 
-            private void CheckForRetail()
+        private void CheckForRetail()
         {
             //Takes the first 3 digit number and defines it as retailid
             String regex = @"\d{3}$";
@@ -201,7 +212,7 @@ namespace DHL_Seife.prog
                 {
                     String regexStr2 = Regex.Match(dJson.consignee_name2, regex).Value;
                     if (regexStr2 != null) dJson.consignee_retailID = regexStr2;
-                }   
+                }
             }
             if (dJson.consignee_name3 != null)
             {
@@ -209,7 +220,7 @@ namespace DHL_Seife.prog
                 {
                     String regexStr3 = Regex.Match(dJson.consignee_name3, regex).Value;
                     if (regexStr3 != null) dJson.consignee_retailID = regexStr3;
-                }         
+                }
             }
 
         }
@@ -222,7 +233,7 @@ namespace DHL_Seife.prog
                 dJson.consignee_lockerID = Regex.Match(dJson.consignee_addressStreet, @"\d{3}").Value;
             }
 
-               
+
         }
 
         private void CheckForPostNumber()
@@ -260,7 +271,7 @@ namespace DHL_Seife.prog
                 dJson.consignee_name1 = SqlH.XmlRecipient;
                 dJson.consignee_name2 = SqlH.XmlRecipient02;
                 dJson.consignee_name3 = SqlH.XmlRecipient03;
-                
+
 
                 while (dJson.consignee_name1.Length > recLen)
                 {
@@ -310,7 +321,7 @@ namespace DHL_Seife.prog
         private static void SwitchCountryCode()
         {
             //The two most common codes are hard coded, so we don't have to deal with a csv file in most cases
-            if(SqlH.XmlCountryCode == "DE")
+            if (SqlH.XmlCountryCode == "DE")
             {
                 dJson.consignee_country = "DEU";
             }
@@ -345,7 +356,7 @@ namespace DHL_Seife.prog
                         dJson.consignee_country = isoAlpha3[i];
                     }
                 }
-            }  
+            }
         }
 
         /// <summary>
