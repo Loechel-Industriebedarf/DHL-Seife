@@ -26,6 +26,10 @@ namespace DHL_Seife.prog.json
                 AlternativeShipperAddress.Add("Street", AlternativeShipperAddressStreet);
                 AlternativeShipperAddress.Add("ZIPCode", AlternativeShipperAddressZIPCode);
             }
+            else
+            {
+                AlternativeShipperAddress = null;
+            }
             
         }
     }

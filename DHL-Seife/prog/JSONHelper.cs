@@ -137,6 +137,7 @@ namespace DHL_Seife.prog
 
                 gJson.Weight = Convert.ToDouble(SqlH.XmlWeight) + 0.3;
 
+                //Mercateo Order
                 if (SqlH.XmlOrderType.Equals("10"))
                 {
                     gJson.AlternativeShipperAddressName1 = "Unite Procurement Deutschland AG";
@@ -158,6 +159,9 @@ namespace DHL_Seife.prog
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void SerializeJson()
         {
             SerializeJson(dJson);
@@ -182,6 +186,10 @@ namespace DHL_Seife.prog
             }
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
         private void SerializeReturnJson()
         {
             Json = JsonConvert.SerializeObject(dReJson, Formatting.Indented, new JsonSerializerSettings
