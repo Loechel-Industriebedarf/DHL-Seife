@@ -207,26 +207,44 @@ namespace DHL_Seife.prog
                 IRestResponse response = client.Execute(request);
 
                 dynamic glsResponse = JObject.Parse(response.Content);
-
-                //Label herunterladen
-                String labelName = "labels/" + DateTimeOffset.Now.ToString("ddMMyyyy-HHmmssfff") + "-" + Sett.ProgramUser +
-                            "-GLS-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + "";
+                
                 String b64Label = "";
+                String trackingNumbers = "";
 
-                b64Label = glsResponse.CreatedShipment.PrintData[0].Data;
+                //Download all labels
+                foreach (dynamic i in glsResponse.CreatedShipment.PrintData)
+                {
+                    String labelName = "labels/" + DateTimeOffset.Now.ToString("ddMMyyyy-HHmmssfff") + "-" + Sett.ProgramUser +
+                            "-GLS-" + SqlH.XmlRecipient.Replace(" ", string.Empty).Replace("/", string.Empty).Replace("\\", string.Empty) + "";
 
-                SaveBase64Label(b64Label, labelName + ".pdf");
+                    b64Label = i.Data;
+                    SaveBase64Label(b64Label, labelName + ".pdf");
 
-                Sett.LabelTime = DateTimeOffset.Now;
-                Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
+                    Sett.LabelTime = DateTimeOffset.Now;
+                    Log.writeLog("> " + Sett.LabelTime.ToString("dd.MM.yyyy HH:mm:ss:fff") + " - " + labelName + " wurde erfolgreich heruntergeladen!", false);
+                }
 
-                WriteShipmentNumber(glsResponse.CreatedShipment.ParcelData[0].TrackID.Value, false);
+                //Write all Trackingnumbers to string
+                foreach (dynamic i in glsResponse.CreatedShipment.ParcelData)
+                {
+                    //Write all trackingnumbers to string
+                    if (String.IsNullOrEmpty(trackingNumbers))
+                    {
+                        trackingNumbers = i.TrackID.Value;
+                    }
+                    else
+                    {
+                        trackingNumbers = trackingNumbers + ", " + i.TrackID.Value;
+                    }
+                }
+
+                WriteShipmentNumber(trackingNumbers, false);
 
                 //Log.writeLog("Shipment Result: " + glsResponse, true, false);
             }
             catch(Exception ex)
             {
-                Log.writeLog(ex.ToString());
+                Log.writeLog(ex.ToString(), false, true);
             }
         }
 

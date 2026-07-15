@@ -135,7 +135,19 @@ namespace DHL_Seife.prog
 
                 gJson.ShipmentReferenceStr = SqlH.XmlOurNumber;
 
-                gJson.Weight = Convert.ToDouble(SqlH.XmlWeight) + 0.3;
+                //Different logic for multiple shipments
+                if(SqlH.XmlWeightArray.Count > 0)
+                {
+                    foreach(string i in SqlH.XmlWeightArray)
+                    {
+                        gJson.Weight.Add(Convert.ToDouble(i) + 0.001);
+                    }
+                }
+                else
+                {
+                    gJson.Weight.Add(Convert.ToDouble(SqlH.XmlWeight) + 0.001);
+                }
+                
 
                 //Mercateo Order
                 if (SqlH.XmlOrderType.Equals("10"))

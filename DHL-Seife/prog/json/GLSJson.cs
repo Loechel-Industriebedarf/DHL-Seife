@@ -58,7 +58,7 @@ namespace DHL_Seife.prog
         public String MobilePhoneNumber = null;
 
         //ShipmentUnit - Only weight needed
-        public Double Weight = 3; //default weight
+        public List<Double> Weight = new List<Double>(); //Multiple weights
 
         //PrintingOptions
         //ReturnLabels
@@ -91,10 +91,13 @@ namespace DHL_Seife.prog
                     AlternativeShipperAddressCountryCode, AlternativeShipperAddressCity, AlternativeShipperAddressStreet, AlternativeShipperAddressZIPCode
                 );
 
-                ShipmentUnit.Add(new Dictionary<string, Double>
+                foreach (double i in Weight)
                 {
-                    { "Weight", Weight }
-                });
+                    ShipmentUnit.Add(new Dictionary<string, Double>
+                    {
+                        { "Weight", i }
+                    });
+                }
 
                 ShipmentReference.Add(ShipmentReferenceStr);
 
