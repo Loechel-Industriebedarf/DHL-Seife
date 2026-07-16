@@ -140,12 +140,12 @@ namespace DHL_Seife.prog
                 {
                     foreach(string i in SqlH.XmlWeightArray)
                     {
-                        gJson.Weight.Add(Convert.ToDouble(i) + 0.001);
+                        gJson.Weight.Add(Convert.ToDouble(i));
                     }
                 }
                 else
                 {
-                    gJson.Weight.Add(Convert.ToDouble(SqlH.XmlWeight) + 0.001);
+                    gJson.Weight.Add(Convert.ToDouble(SqlH.XmlWeight));
                 }
                 
 

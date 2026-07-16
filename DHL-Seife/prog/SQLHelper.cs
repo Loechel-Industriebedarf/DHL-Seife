@@ -285,7 +285,7 @@ namespace DHL_Seife.prog
 				//If temporary weight was set (no position with status 2): use that one.
 				if (String.IsNullOrEmpty(xmlweightTemp) || Convert.ToDouble(xmlweightTemp) <= 0.001)
 				{
-					XmlWeight = "0";
+					XmlWeight = "3";
 				}
 				else
 				{
