@@ -193,7 +193,6 @@ namespace DHL_Seife.prog
                 System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
                 //Test Json
-                //JsonH.Json = "{\r\n    \"Shipment\": {\r\n        \"ShipmentReference\": [\r\n      \"2620292005\"\r\n    ],\r\n        \"Product\":\"PARCEL\",\r\n        \"Consignee\":{\r\n            \"ConsigneeID\":\"1234567890\",\r\n            \"Address\":{\r\n                \"Name1\":\"Tim Test\",\r\n                \"Name2\":\"\",\r\n                \"Name3\":\"\",\r\n                \"CountryCode\":\"DE\",\r\n                \"ZIPCode\":\"65760\",\r\n                \"City\":\"Testingen\",\r\n                \"Street\":\"Testallee\",\r\n                \"eMail\":\"tim.test@gls.de\",\r\n                \"ContactPerson\":\"Laura Test\",\r\n                \"MobilePhoneNumber\":\"004912345678910\",\r\n                \"FixedLinePhonenumber\":\"004912345678910\"\r\n            }\r\n        },\r\n        \"Shipper\": {\r\n            \"ContactID\": \"276a45fYqi\"\r\n        },\r\n        \"ShipmentUnit\": [\r\n            {\r\n                \"Weight\": 5\r\n            }\r\n        ]\r\n    },\r\n    \"PrintingOptions\":{\r\n        \"ReturnLabels\":{\r\n            \"TemplateSet\":\"NONE\",\r\n            \"LabelFormat\":\"PDF\"\r\n        }\r\n    }\r\n}";
                 //JsonH.Json = File.ReadAllText(@"json_test.json");
 
                 var client = new RestClient(Sett.GLSShipmentUrl);
@@ -205,9 +204,19 @@ namespace DHL_Seife.prog
                 request.AddParameter("application/glsVersion1+json", JsonH.Json, ParameterType.RequestBody);
 
                 IRestResponse response = client.Execute(request);
+                dynamic glsResponse = null;
+                try
+                {
+                    glsResponse = JObject.Parse(response.Content);
+                }
+                catch(Exception ex)
+                {
+                    Log.writeLog(response.Headers[3].ToString(), false, false);
+                    Log.writeLog(ex.ToString(), true, true);
+                    Environment.Exit(1);
+                }
 
-                dynamic glsResponse = JObject.Parse(response.Content);
-                
+
                 String b64Label = "";
                 String trackingNumbers = "";
 
